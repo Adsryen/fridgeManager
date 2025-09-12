@@ -52,18 +52,20 @@
                     <button type="button" class="btn btn-outline-info btn-sm fru-btn" data-source="fruit"><i class="fa-solid fa-apple-whole"></i> 水果</button>
                     <button type="button" class="btn btn-outline-info btn-sm sea-btn" data-source="seafood"><i class="fa-solid fa-fish-fins"></i> 海鮮</button>
                     <button type="button" class="btn btn-outline-info btn-sm drink-btn" data-source="beverage"><i class="fa-solid fa-wine-glass"></i> 飲料</button>
-                    <button type="button" class="btn btn-outline-info btn-sm meat-btn" data-source="meat"><span class="material-symbols-outlined">kebab_dining</span> 肉類</button>
+                    <button type="button" class="btn btn-outline-info btn-sm meat-btn" data-source="meat"><i class="fa-solid fa-bacon"></i> 肉類</button>
                     <button type="button" class="btn btn-outline-info btn-sm diary-btn" data-source="diary"><i class="fa-solid fa-cow"></i> 乳製品</button>
                     <button type="button" class="btn btn-outline-info btn-sm egg-btn" data-source="egg"><i class="fa-solid fa-egg"></i> 蛋豆類</button>
                     <button type="button" class="btn btn-outline-info btn-sm bread-btn" data-source="bread"><i class="fa-solid fa-bread-slice"></i> 麵包</button>
                     <button type="button" class="btn btn-outline-info btn-sm froze-btn" data-source="frozen"><i class="fa-solid fa-ice-cream"></i> 冷凍食品</button>
                     <button type="button" class="btn btn-outline-info btn-sm sauce-btn" data-source="sauce"><i class="fa-solid fa-bottle-water"></i> 醬料</button>
+                    <button type="button" class="btn btn-outline-info btn-sm snack-btn" data-source="snack"><i class="fa-solid fa-ice-cream"></i> 零食</button>
                     <button type="button" class="btn btn-outline-info btn-sm other-btn" data-source="other"><i class="fa-solid fa-circle-info"></i> 其他</button>
                 </div>
                 <h1 class="expire-txt">位置</h1>
                 <div class="place-container">
                     <button type="button" class="btn btn-outline-info btn-sm cold-btn" data-source="cold">冷藏</button>
                     <button type="button" class="btn btn-outline-info btn-sm fro-btn" data-source="frozer">冷凍</button>
+                    <button type="button" class="btn btn-outline-info btn-sm room-btn" data-source="room">室溫</button>
                 </div>
             </div>
         </div>
@@ -105,6 +107,10 @@
                                             <input class="itemType" type="radio" name="itemPlace" id="inlineRadio2" value="frozer">
                                             <label class="form-check-label" for="inlineRadio2">冷凍</label>
                                         </div>
+                                        <div class="form-check form-check-inline">
+                                            <input class="itemType" type="radio" name="itemPlace" id="inlineRadio3" value="room">
+                                            <label class="form-check-label" for="inlineRadio3">室溫</label>
+                                        </div>
                                     </div>
                                     <h1 class="expire-txt">類別</h1>
                                     <div class="type-container">
@@ -122,7 +128,7 @@
                                         </div>
                                         <div class="form-check form-check-inline">
                                             <input class="itemType" type="radio" name="itemType" id="inlineRadio3" value="meat">
-                                            <label class="form-check-label" for="inlineRadio3"><span class="material-symbols-outlined">kebab_dining</span> 肉類</label>
+                                            <label class="form-check-label" for="inlineRadio3"><i class="fa-solid fa-bacon"></i> 肉類</label>
                                         </div> 
                                         <div class="form-check form-check-inline">
                                             <input class="itemType" type="radio" name="itemType" id="inlineRadio3" value="beverage">
@@ -147,6 +153,10 @@
                                         <div class="form-check form-check-inline">
                                             <input class="itemType" type="radio" name="itemType" id="inlineRadio3" value="sauce">
                                             <label class="form-check-label" for="inlineRadio3"><i class="fa-solid fa-bottle-water"></i> 醬料</label>
+                                        </div>
+                                        <div class="form-check form-check-inline">
+                                            <input class="itemType" type="radio" name="itemType" id="inlineRadio3" value="snack">
+                                            <label class="form-check-label" for="inlineRadio3"><i class="fa-solid fa-ice-cream"></i> 零食</label>
                                         </div>
                                         <div class="form-check form-check-inline">
                                             <input class="itemType" type="radio" name="itemType" id="inlineRadio3" value="other">
@@ -199,6 +209,10 @@
                                             <input class="itemType" type="radio" name="itemPlace" id="inlineRadio2" value="frozer">
                                             <label class="form-check-label" for="inlineRadio2">冷凍</label>
                                         </div>
+                                        <div class="form-check form-check-inline">
+                                            <input class="itemType" type="radio" name="itemPlace" id="inlineRadio3" value="room">
+                                            <label class="form-check-label" for="inlineRadio3">室溫</label>
+                                        </div>
                                     </div>
                                     <h1 class="expire-txt">類別</h1>
                                     <div class="type-container">
@@ -216,7 +230,7 @@
                                         </div>
                                         <div class="form-check form-check-inline">
                                             <input class="itemType" type="radio" name="itemType" id="inlineRadio3" value="meat">
-                                            <label class="form-check-label" for="inlineRadio3"><span class="material-symbols-outlined">kebab_dining</span> 肉類</label>
+                                            <label class="form-check-label" for="inlineRadio3"><i class="fa-solid fa-bacon"></i> 肉類</label>
                                         </div> 
                                         <div class="form-check form-check-inline">
                                             <input class="itemType" type="radio" name="itemType" id="inlineRadio3" value="beverage">
@@ -241,6 +255,10 @@
                                         <div class="form-check form-check-inline">
                                             <input class="itemType" type="radio" name="itemType" id="inlineRadio3" value="sauce">
                                             <label class="form-check-label" for="inlineRadio3"><i class="fa-solid fa-bottle-water"></i> 醬料</label>
+                                        </div>
+                                        <div class="form-check form-check-inline">
+                                            <input class="itemType" type="radio" name="itemType" id="inlineRadio3" value="snack">
+                                            <label class="form-check-label" for="inlineRadio3"><i class="fa-solid fa-ice-cream"></i> 零食</label>
                                         </div>
                                         <div class="form-check form-check-inline">
                                             <input class="itemType" type="radio" name="itemType" id="inlineRadio3" value="other">

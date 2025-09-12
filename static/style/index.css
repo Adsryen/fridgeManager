@@ -380,6 +380,7 @@ body {
   background: none;
   border: solid 0.07rem #79b55d;
   color: #79b55d;
+  width: 5rem;
 }
 
 .typeTD .material-symbols-outlined{
@@ -393,7 +394,7 @@ body {
   display: flex;
   justify-content: space-evenly;
   align-items: center;
-  width: 5vw;
+  width: 50%;
 }
 
 .placeTD span {
