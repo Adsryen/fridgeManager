@@ -4,6 +4,7 @@ import uuid
 from bson.objectid import ObjectId
 from datetime import datetime
 import pprint
+from functools import wraps
 
 client = MongoClient(host="localhost", port=27017)
 
@@ -14,6 +15,7 @@ class JSONEncoder(json.JSONEncoder):
         return json.JSONEncoder.default(self, o)
 
 app = Flask(__name__)
+
 @app.route('/')
 def index():
     return render_template('template.html')

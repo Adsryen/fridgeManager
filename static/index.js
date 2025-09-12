@@ -311,6 +311,7 @@ $(document).ready(function () {
     tagSearch('diary-btn');
     tagSearch('egg-btn');
     tagSearch('bread-btn');
+    tagSearch('snack-btn');
     tagSearch('froze-btn');
     tagSearch('sauce-btn');
     tagSearch('other-btn');
@@ -429,31 +430,20 @@ function tagSearch(s) {
 }
 
 function convertType(s) {
-    if(s == 'vegetable')
-        return `<i class="fa-solid fa-carrot"></i> 蔬菜`
-    if(s == 'fruit')
-        return `<i class="fa-solid fa-apple-whole"></i> 水果`
-    if(s == 'seafood')
-        return `<i class="fa-solid fa-fish-fins"></i> 海鮮`
-    if(s == 'meat')
-        return `<span class="material-symbols-outlined">kebab_dining</span> 肉類`
-    if(s == 'beverage')
-        return `<i class="fa-solid fa-wine-glass"></i> 飲料`
-    if(s == 'diary')
-        return `<i class="fa-solid fa-cow"></i> 乳製品`
-    if(s == 'egg')
-        return `<i class="fa-solid fa-egg"></i> 蛋豆類`
-    if(s == 'bread')
-        return `<i class="fa-solid fa-bread-slice"></i> 麵包`
-    if(s == 'frozen')
-        return `<i class="fa-solid fa-ice-cream"></i> 冷凍食品`
-    if(s == 'sauce')
-        return `<i class="fa-solid fa-bottle-water"></i> 醬料`
-    if(s == 'other')
-        return `<i class="fa-solid fa-circle-info"></i> 其他`
-    if(s == 'cold')
-        return '冷藏'
-    if(s == 'frozer')
-        return '冷凍'
+    if(s == 'vegetable') {return `<i class="fa-solid fa-carrot"></i> 蔬菜`;}
+    if(s == 'fruit') {return `<i class="fa-solid fa-apple-whole"></i> 水果`;}
+    if(s == 'seafood') {return `<i class="fa-solid fa-fish-fins"></i> 海鮮`;}
+    if(s == 'meat') {return `<i class="fa-solid fa-bacon"></i> 肉類`;}
+    if(s == 'beverage') {return `<i class="fa-solid fa-wine-glass"></i> 飲料`;}
+    if(s == 'diary') {return `<i class="fa-solid fa-cow"></i> 乳製品`;}
+    if(s == 'egg') {return `<i class="fa-solid fa-egg"></i> 蛋豆類`;}
+    if(s == 'bread') {return `<i class="fa-solid fa-bread-slice"></i> 麵包`;}
+    if(s == 'frozen') {return `<i class="fa-solid fa-ice-cream"></i> 冷凍食品`;}
+    if(s == 'sauce') {return `<i class="fa-solid fa-bottle-water"></i> 醬料`;}
+    if(s == 'other') {return `<i class="fa-solid fa-circle-info"></i> 其他`;}
+    if(s == 'snack') {return `<i class="fa-solid fa-ice-cream"></i> 零食`;}
+    if(s == 'cold') {return '冷藏';}
+    if(s == 'frozer') {return '冷凍';}
+    if(s == 'room') {return '室溫';}
 }
 
