@@ -40,7 +40,7 @@ echo ========================================
 echo   配置完成！
 echo ========================================
 echo.
-echo 运行 start.bat 启动应用
-echo 或手动运行: py app.py
+echo 运行 scripts\start.bat 启动应用
+echo 或手动运行: py run.py
 echo.
 pause

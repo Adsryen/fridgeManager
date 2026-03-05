@@ -21,6 +21,7 @@ echo 启动应用...
 echo 访问地址: http://127.0.0.1:8080
 echo 按 Ctrl+C 停止服务器
 echo.
-py app.py
+cd ..
+py run.py
 
 pause

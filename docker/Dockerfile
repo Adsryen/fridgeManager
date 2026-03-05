@@ -1,4 +1,4 @@
-FROM python:3.11-slim
+FROM python:3.12-slim
 
 WORKDIR /app
 
@@ -14,6 +14,7 @@ EXPOSE 8080
 
 ENV HOST=0.0.0.0
 ENV PORT=8080
-ENV SQLITE_DB_DIR=/data
+ENV DATABASE_DIR=/data
+ENV FLASK_ENV=production
 
-CMD ["python", "app.py"]
+CMD ["python", "run.py"]

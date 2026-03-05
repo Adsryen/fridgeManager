@@ -8,7 +8,7 @@
 [![Bootstrap](https://img.shields.io/badge/Bootstrap-5.0.0-purple.svg)](https://getbootstrap.com)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 
-[English](./README_EN.md) | 中文
+[English](./docs/README_EN.md) | 中文
 
 ---
 
@@ -92,13 +92,13 @@
 2. **一键配置**
    ```bash
    # 双击运行
-   setup.bat
+   scripts\setup.bat
    ```
 
 3. **启动应用**
    ```bash
    # 双击运行
-   start.bat
+   scripts\start.bat
    ```
 
 4. **访问应用**
@@ -126,12 +126,31 @@
 
 4. **运行应用**
    ```bash
-   python app.py
+   python run.py
    ```
 
 5. **访问应用**
    
    打开浏览器访问 `http://127.0.0.1:8080`
+
+### Docker 部署（推荐生产环境）
+
+1. **克隆仓库**
+   ```bash
+   git clone https://github.com/Adsryen/fridgeManager.git
+   cd fridgeManager/docker
+   ```
+
+2. **启动服务**
+   ```bash
+   docker-compose up -d
+   ```
+
+3. **访问应用**
+   
+   打开浏览器访问 `http://localhost:8080`
+
+详细说明请查看 [Docker 部署指南](./docker/README.md)
 
 ## 📖 使用指南
 
@@ -203,28 +222,51 @@
 
 ```
 fridgeManager/
-├── app.py                 # Flask 主应用
-├── auth.py                # 用户认证模块
-├── README.md              # 项目文档（中文）
-├── README_EN.md           # 项目文档（英文）
-├── 快速开始.md            # 快速开始指南
-├── requirements.txt       # Python 依赖
-├── setup.bat              # Windows 配置脚本
-├── start.bat              # Windows 启动脚本
-├── migrate_add_user_id.py # 数据迁移脚本
-├── data/                  # 数据库目录（不提交到 Git）
-├── templates/             # HTML 模板
-│   ├── template.html      # 主页模板
-│   ├── login.html         # 登录页面
-│   └── register.html      # 注册页面
+├── app/                   # 应用核心代码
+│   ├── __init__.py        # Flask 应用工厂
+│   ├── models/            # 数据模型
+│   │   ├── user.py        # 用户模型
+│   │   └── item.py        # 物品模型
+│   ├── routes/            # 路由蓝图
+│   │   ├── main.py        # 主页路由
+│   │   ├── auth.py        # 认证路由
+│   │   └── item.py        # 物品路由
+│   ├── services/          # 业务逻辑
+│   │   ├── user_service.py
+│   │   └── item_service.py
+│   └── utils/             # 工具函数
+│       ├── auth.py        # 认证工具
+│       └── database.py    # 数据库工具
+├── config/                # 配置文件
+│   └── settings.py        # 应用配置
+├── docker/                # Docker 部署
+│   ├── Dockerfile         # Docker 镜像
+│   ├── docker-compose.yml # Docker Compose 配置
+│   └── README.md          # Docker 部署指南
+├── docs/                  # 文档
+│   ├── README_EN.md       # 英文文档
+│   └── 快速开始.md        # 快速开始指南
+├── migrations/            # 数据库迁移脚本
+├── scripts/               # 脚本工具
+│   ├── setup.bat          # Windows 配置脚本
+│   ├── start.bat          # Windows 启动脚本
+│   └── migrate_add_user_id.py # 数据迁移
 ├── static/                # 静态资源
 │   ├── index.js           # 前端 JavaScript
 │   └── style/
 │       └── index.css      # 样式表
-└── tests/                 # 测试套件
-    ├── conftest.py        # Pytest 配置
-    ├── test_app.py        # 单元测试
-    └── test_database.py   # 集成测试
+├── templates/             # HTML 模板
+│   ├── template.html      # 主页模板
+│   ├── login.html         # 登录页面
+│   └── register.html      # 注册页面
+├── tests/                 # 测试套件
+│   ├── conftest.py        # Pytest 配置
+│   ├── test_app.py        # 单元测试
+│   └── test_database.py   # 集成测试
+├── data/                  # 数据库目录（不提交到 Git）
+├── run.py                 # 应用启动入口
+├── requirements.txt       # Python 依赖
+└── README.md              # 项目文档（中文）
 ```
 
 ## 🧪 测试

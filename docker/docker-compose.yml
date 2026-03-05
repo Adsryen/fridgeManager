@@ -1,12 +1,15 @@
 services:
   fridge-manager:
-    build: .
+    build:
+      context: ..
+      dockerfile: docker/Dockerfile
     ports:
       - "8080:8080"
     environment:
       HOST: 0.0.0.0
       PORT: 8080
-      SQLITE_DB_DIR: /data
+      DATABASE_DIR: /data
+      FLASK_ENV: production
     volumes:
       - fridge_data:/data
 

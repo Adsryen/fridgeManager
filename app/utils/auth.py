@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-"""用户认证模块"""
+"""用户认证工具"""
 import hashlib
 import secrets
 from functools import wraps
@@ -48,7 +48,7 @@ def login_required(f):
     @wraps(f)
     def decorated_function(*args, **kwargs):
         if 'user_id' not in session:
-            return redirect(url_for('login', next=request.url))
+            return redirect(url_for('auth.login', next=request.url))
         return f(*args, **kwargs)
     return decorated_function
 

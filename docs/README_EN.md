@@ -8,7 +8,7 @@
 [![Bootstrap](https://img.shields.io/badge/Bootstrap-5.0.0-purple.svg)](https://getbootstrap.com)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 
-English | [中文](./README.md)
+English | [中文](../README.md)
 
 ---
 
@@ -92,13 +92,13 @@ This project is a secondary development based on [hill0106/fridgeManager](https:
 2. **One-Click Setup**
    ```bash
    # Double-click to run
-   setup.bat
+   scripts\setup.bat
    ```
 
 3. **Start Application**
    ```bash
    # Double-click to run
-   start.bat
+   scripts\start.bat
    ```
 
 4. **Access Application**
@@ -126,7 +126,7 @@ This project is a secondary development based on [hill0106/fridgeManager](https:
 
 4. **Run Application**
    ```bash
-   python app.py
+   python run.py
    ```
 
 5. **Access Application**
@@ -203,27 +203,28 @@ This project is a secondary development based on [hill0106/fridgeManager](https:
 
 ```
 fridgeManager/
-├── app.py                 # Flask main application
-├── auth.py                # User authentication module
-├── README.md              # Project documentation (Chinese)
-├── README_EN.md           # Project documentation (English)
-├── requirements.txt       # Python dependencies
-├── setup.bat              # Windows setup script
-├── start.bat              # Windows start script
-├── migrate_add_user_id.py # Data migration script
-├── data/                  # Database directory (not committed to Git)
-├── templates/             # HTML templates
-│   ├── template.html      # Main page template
-│   ├── login.html         # Login page
-│   └── register.html      # Registration page
+├── app/                   # Application core code
+│   ├── __init__.py        # Flask application factory
+│   ├── models/            # Data models
+│   ├── routes/            # Route blueprints
+│   ├── services/          # Business logic
+│   └── utils/             # Utility functions
+├── config/                # Configuration files
+├── docs/                  # Documentation
+│   ├── README_EN.md       # English documentation
+│   └── 快速开始.md        # Quick start guide
+├── migrations/            # Database migration scripts
+├── scripts/               # Script tools
+│   ├── setup.bat          # Windows setup script
+│   ├── start.bat          # Windows start script
+│   └── migrate_add_user_id.py # Data migration
 ├── static/                # Static resources
-│   ├── index.js           # Frontend JavaScript
-│   └── style/
-│       └── index.css      # Stylesheet
-└── tests/                 # Test suite
-    ├── conftest.py        # Pytest configuration
-    ├── test_app.py        # Unit tests
-    └── test_database.py   # Integration tests
+├── templates/             # HTML templates
+├── tests/                 # Test suite
+├── data/                  # Database directory (not committed to Git)
+├── run.py                 # Application entry point
+├── requirements.txt       # Python dependencies
+└── README.md              # Project documentation (Chinese)
 ```
 
 ## 🧪 Testing

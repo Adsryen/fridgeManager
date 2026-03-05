@@ -1,0 +1,48 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+
+# Virtual Environment
+venv/
+env/
+ENV/
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# Git
+.git/
+.gitignore
+
+# Testing
+.pytest_cache/
+.coverage
+htmlcov/
+.tox/
+
+# Database (will be mounted as volume)
+data/
+*.db
+*.sqlite3
+
+# Documentation
+docs/
+*.md
+web.png
+
+# Scripts
+scripts/
+
+# Docker
+docker/
+.dockerignore
+
+# OS
+.DS_Store
+Thumbs.db
