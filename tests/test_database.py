@@ -2,17 +2,21 @@ import unittest
 import os
 import sys
 from datetime import datetime
-from pymongo import MongoClient
+import tempfile
 
 # Add the parent directory to the path to import app
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+
+os.environ['SQLITE_DB_DIR'] = tempfile.mkdtemp(prefix='fridge_manager_tests_')
+
+from app import client
 
 class TestDatabaseOperations(unittest.TestCase):
     """Integration tests for database operations"""
     
     def setUp(self):
         """Set up test database connection"""
-        self.client = MongoClient(host="localhost", port=27017)
+        self.client = client
         self.test_db = self.client.test_fridge
         self.test_collection = self.test_db.item
         
@@ -26,7 +30,7 @@ class TestDatabaseOperations(unittest.TestCase):
     
     def test_database_connection(self):
         """Test database connection"""
-        # Test if we can connect to MongoDB
+        # Test if we can connect to SQLite
         self.assertIsNotNone(self.client)
         
         # Test if we can access the test database

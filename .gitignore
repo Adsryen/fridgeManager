@@ -61,6 +61,10 @@ logs/
 # Database
 *.db
 *.sqlite3
+data/
+
+# Uploads (user privacy)
+static/uploads/
 
 # Environment variables
 .env

@@ -88,7 +88,6 @@ def test_database_operations():
     print("🧪 Testing database operations...")
     try:
         from app import client
-        from bson.objectid import ObjectId
         
         # Use test database
         test_db = client.test_fridge
@@ -140,20 +139,18 @@ def test_database_operations():
         return False
 
 def test_json_encoding():
-    """Test JSON encoding with ObjectId"""
+    """Test JSON encoding with datetime"""
     print("🧪 Testing JSON encoding...")
     try:
         from app import JSONEncoder
-        from bson.objectid import ObjectId
         import json
         
-        # Test ObjectId encoding
-        test_id = ObjectId()
+        test_dt = datetime(2024, 12, 31)
         encoder = JSONEncoder()
-        encoded = encoder.default(test_id)
+        encoded = encoder.default(test_dt)
         
         if not isinstance(encoded, str):
-            print("❌ ObjectId encoding failed")
+            print("❌ JSON encoding failed")
             return False
         
         print("✅ JSON encoding working")

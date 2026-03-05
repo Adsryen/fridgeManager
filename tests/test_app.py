@@ -4,9 +4,12 @@ import os
 import sys
 from unittest.mock import patch, MagicMock
 from datetime import datetime
+import tempfile
 
 # Add the parent directory to the path to import app
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+
+os.environ['SQLITE_DB_DIR'] = tempfile.mkdtemp(prefix='fridge_manager_tests_')
 
 from app import app, client
 
