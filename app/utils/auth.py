@@ -3,7 +3,7 @@
 import hashlib
 import secrets
 from functools import wraps
-from flask import session, redirect, url_for, request
+from flask import session, redirect, url_for, request, abort
 
 
 def hash_password(password: str, salt: str | None = None) -> tuple[str, str]:
@@ -53,6 +53,20 @@ def login_required(f):
     return decorated_function
 
 
+def admin_required(f):
+    """管理员权限验证装饰器"""
+    @wraps(f)
+    def decorated_function(*args, **kwargs):
+        if 'user_id' not in session:
+            return redirect(url_for('auth.login', next=request.url))
+        
+        if not session.get('is_admin', False):
+            abort(403)  # Forbidden
+        
+        return f(*args, **kwargs)
+    return decorated_function
+
+
 def get_current_user_id() -> str | None:
     """获取当前登录用户 ID"""
     return session.get('user_id')
@@ -61,3 +75,8 @@ def get_current_user_id() -> str | None:
 def get_current_username() -> str | None:
     """获取当前登录用户名"""
     return session.get('username')
+
+
+def is_admin() -> bool:
+    """检查当前用户是否是管理员"""
+    return session.get('is_admin', False)

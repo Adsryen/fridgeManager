@@ -205,6 +205,7 @@ class SQLiteDatabase:
         self._conn = conn
         self.item = SQLiteCollection(conn, 'item')
         self.user = SQLiteCollection(conn, 'user')
+        self.settings = SQLiteCollection(conn, 'settings')
 
 
 class SQLiteMongoLikeClient:
@@ -251,7 +252,22 @@ class SQLiteMongoLikeClient:
             "email TEXT UNIQUE NOT NULL, "
             "password_hash TEXT NOT NULL, "
             "salt TEXT NOT NULL, "
-            "created_at TEXT NOT NULL"
+            "created_at TEXT NOT NULL, "
+            "is_admin INTEGER DEFAULT 0, "
+            "is_active INTEGER DEFAULT 1"
+            ")"
+        )
+        
+        # 创建 settings 表
+        conn.execute(
+            "CREATE TABLE IF NOT EXISTS settings ("
+            "_id TEXT PRIMARY KEY, "
+            "user_id TEXT NOT NULL, "
+            "notify_expiring INTEGER DEFAULT 1, "
+            "notify_days INTEGER DEFAULT 3, "
+            "items_per_page INTEGER DEFAULT 20, "
+            "default_view TEXT DEFAULT 'all', "
+            "profile_public INTEGER DEFAULT 0"
             ")"
         )
         
@@ -260,6 +276,7 @@ class SQLiteMongoLikeClient:
         conn.execute("CREATE INDEX IF NOT EXISTS idx_item_expire ON item(ExpireDate)")
         conn.execute("CREATE INDEX IF NOT EXISTS idx_user_username ON user(username)")
         conn.execute("CREATE INDEX IF NOT EXISTS idx_user_email ON user(email)")
+        conn.execute("CREATE INDEX IF NOT EXISTS idx_settings_user_id ON settings(user_id)")
         
         conn.commit()
         self._connections[path] = conn

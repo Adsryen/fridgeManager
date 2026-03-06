@@ -1,0 +1,150 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>用户设置 - 冰箱管理系统</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <style>
+        body { background: #f5f5f5; padding: 20px; }
+        .settings-container { max-width: 800px; margin: 0 auto; }
+        .card { border-radius: 15px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); margin-bottom: 20px; }
+        .card-header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border-radius: 15px 15px 0 0 !important;
+            padding: 20px;
+        }
+        .btn-primary {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border: none;
+        }
+    </style>
+</head>
+<body>
+    <div class="settings-container">
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <h2><i class="fas fa-cog"></i> 用户设置</h2>
+            <a href="/" class="btn btn-outline-secondary">
+                <i class="fas fa-arrow-left"></i> 返回主页
+            </a>
+        </div>
+
+        <div id="alertBox" class="alert alert-success d-none" role="alert">
+            <i class="fas fa-check-circle"></i>
+            <span id="alertMessage"></span>
+        </div>
+
+        <form id="settingsForm">
+            <!-- 通知设置 -->
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="mb-0"><i class="fas fa-bell"></i> 通知设置</h5>
+                </div>
+                <div class="card-body">
+                    <div class="form-check form-switch mb-3">
+                        <input class="form-check-input" type="checkbox" id="notify_expiring" 
+                               name="notify_expiring" {% if settings.notify_expiring %}checked{% endif %}>
+                        <label class="form-check-label" for="notify_expiring">
+                            启用过期提醒
+                        </label>
+                    </div>
+                    <div class="mb-3">
+                        <label for="notify_days" class="form-label">提前提醒天数</label>
+                        <input type="number" class="form-control" id="notify_days" name="notify_days" 
+                               value="{{ settings.notify_days }}" min="1" max="30">
+                        <div class="form-text">在物品过期前几天提醒你</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 显示设置 -->
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="mb-0"><i class="fas fa-eye"></i> 显示设置</h5>
+                </div>
+                <div class="card-body">
+                    <div class="mb-3">
+                        <label for="items_per_page" class="form-label">每页显示数量</label>
+                        <select class="form-select" id="items_per_page" name="items_per_page">
+                            <option value="10" {% if settings.items_per_page == 10 %}selected{% endif %}>10</option>
+                            <option value="20" {% if settings.items_per_page == 20 %}selected{% endif %}>20</option>
+                            <option value="50" {% if settings.items_per_page == 50 %}selected{% endif %}>50</option>
+                            <option value="100" {% if settings.items_per_page == 100 %}selected{% endif %}>100</option>
+                        </select>
+                    </div>
+                    <div class="mb-3">
+                        <label for="default_view" class="form-label">默认视图</label>
+                        <select class="form-select" id="default_view" name="default_view">
+                            <option value="all" {% if settings.default_view == 'all' %}selected{% endif %}>全部物品</option>
+                            <option value="cold" {% if settings.default_view == 'cold' %}selected{% endif %}>冷藏</option>
+                            <option value="frozer" {% if settings.default_view == 'frozer' %}selected{% endif %}>冷冻</option>
+                        </select>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 隐私设置 -->
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="mb-0"><i class="fas fa-lock"></i> 隐私设置</h5>
+                </div>
+                <div class="card-body">
+                    <div class="form-check form-switch mb-3">
+                        <input class="form-check-input" type="checkbox" id="profile_public" 
+                               name="profile_public" {% if settings.profile_public %}checked{% endif %}>
+                        <label class="form-check-label" for="profile_public">
+                            公开个人资料
+                        </label>
+                        <div class="form-text">允许其他用户查看你的个人资料</div>
+                    </div>
+                </div>
+            </div>
+
+            <button type="submit" class="btn btn-primary btn-lg w-100" id="saveBtn">
+                <i class="fas fa-save"></i> 保存设置
+            </button>
+        </form>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/jquery@3.6.0/dist/jquery.min.js"></script>
+    <script>
+        function showAlert(message, type = 'success') {
+            const alertBox = $('#alertBox');
+            const alertMessage = $('#alertMessage');
+            
+            alertBox.removeClass('alert-success alert-danger')
+                    .addClass(`alert-${type}`)
+                    .removeClass('d-none');
+            alertMessage.text(message);
+            
+            setTimeout(() => {
+                alertBox.addClass('d-none');
+            }, 3000);
+        }
+
+        $('#settingsForm').on('submit', function(e) {
+            e.preventDefault();
+            
+            const saveBtn = $('#saveBtn');
+            saveBtn.prop('disabled', true).html('<i class="fas fa-spinner fa-spin"></i> 保存中...');
+            
+            $.ajax({
+                url: '/settings/update',
+                method: 'POST',
+                data: $(this).serialize(),
+                success: function(response) {
+                    showAlert('设置已保存', 'success');
+                    saveBtn.prop('disabled', false).html('<i class="fas fa-save"></i> 保存设置');
+                },
+                error: function(xhr) {
+                    const error = xhr.responseJSON?.error || '保存失败';
+                    showAlert(error, 'danger');
+                    saveBtn.prop('disabled', false).html('<i class="fas fa-save"></i> 保存设置');
+                }
+            });
+        });
+    </script>
+</body>
+</html>

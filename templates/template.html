@@ -27,8 +27,21 @@
              </div>
             <h1 class="title">冰箱管理大師</h1>
             <div class="user-info" style="position: absolute; top: 20px; right: 20px;">
-                <span style="color: white; margin-right: 15px;">👤 {{ username }}</span>
-                <a href="/logout" class="btn btn-sm btn-outline-light">登出</a>
+                <span style="color: white; margin-right: 10px;">👤 {{ username }}</span>
+                {% if session.get('is_admin') %}
+                <a href="/admin/dashboard" class="btn btn-sm btn-outline-light me-2">
+                    <i class="fas fa-shield-alt"></i> 管理后台
+                </a>
+                {% endif %}
+                <a href="/settings" class="btn btn-sm btn-outline-light me-2">
+                    <i class="fas fa-cog"></i> 设置
+                </a>
+                <a href="/auth/profile" class="btn btn-sm btn-outline-light me-2">
+                    <i class="fas fa-user-cog"></i> 个人资料
+                </a>
+                <a href="/auth/logout" class="btn btn-sm btn-outline-light">
+                    <i class="fas fa-sign-out-alt"></i> 登出
+                </a>
             </div>
         </div>
 
@@ -88,7 +101,7 @@
                         <div class="add-panel">
                             <h1 style="margin: 10px 0px; font-size: 20px; font-weight: 700;">新增商品</h1>
                             <div class="info-container">
-                                <form method="post" action={{ url_for('insert') }}>
+                                <form method="post" action="{{ url_for('item.insert') }}">
                                     <div class="mb-3">
                                         <label for="exampleFormControlInput1" class="form-label">名稱</label>
                                         <input type="text" class="itemName" id="exampleFormControlInput1" name="itemName">

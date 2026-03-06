@@ -37,10 +37,12 @@ def create_app(config_name: str = 'default') -> Flask:
     db_client = SQLiteMongoLikeClient(db_dir=db_dir)
     
     # 注册蓝图
-    from app.routes import auth_bp, item_bp, main_bp
+    from app.routes import auth_bp, item_bp, main_bp, admin_bp, settings_bp
     app.register_blueprint(main_bp)
     app.register_blueprint(auth_bp, url_prefix='/auth')
     app.register_blueprint(item_bp, url_prefix='/api')
+    app.register_blueprint(admin_bp, url_prefix='/admin')
+    app.register_blueprint(settings_bp, url_prefix='/settings')
     
     # 注册错误处理
     register_error_handlers(app)

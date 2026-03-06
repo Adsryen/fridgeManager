@@ -14,6 +14,8 @@ class User:
     salt: str
     _id: str = None
     created_at: str = None
+    is_admin: bool = False
+    is_active: bool = True
     
     def __post_init__(self):
         if self._id is None:
@@ -29,7 +31,9 @@ class User:
             'email': self.email,
             'password_hash': self.password_hash,
             'salt': self.salt,
-            'created_at': self.created_at
+            'created_at': self.created_at,
+            'is_admin': self.is_admin,
+            'is_active': self.is_active
         }
     
     @classmethod
@@ -41,5 +45,7 @@ class User:
             email=data['email'],
             password_hash=data['password_hash'],
             salt=data['salt'],
-            created_at=data.get('created_at')
+            created_at=data.get('created_at'),
+            is_admin=data.get('is_admin', False),
+            is_active=data.get('is_active', True)
         )

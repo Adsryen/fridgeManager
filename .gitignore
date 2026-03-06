@@ -76,3 +76,6 @@ static/uploads/
 # Temporary files
 *.tmp
 *.temp
+
+# Test scripts (optional)
+scripts/test_*.py

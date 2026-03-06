@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>登录 - 冰箱管理系统</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <style>
         body {
             background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
@@ -12,6 +13,7 @@
             display: flex;
             align-items: center;
             justify-content: center;
+            padding: 20px;
         }
         .login-container {
             background: white;
@@ -37,48 +39,168 @@
         .btn-login:hover {
             opacity: 0.9;
         }
+        .btn-login:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+        }
         .register-link {
             text-align: center;
             margin-top: 20px;
+        }
+        .input-group-text {
+            cursor: pointer;
+        }
+        .alert {
+            border-radius: 10px;
+            margin-bottom: 20px;
+        }
+        .form-control:focus {
+            border-color: #667eea;
+            box-shadow: 0 0 0 0.2rem rgba(102, 126, 234, 0.25);
         }
     </style>
 </head>
 <body>
     <div class="login-container">
         <h2 class="login-title">🧊 冰箱管理系统</h2>
+        
+        <div id="alertBox" class="alert alert-danger d-none" role="alert">
+            <i class="fas fa-exclamation-circle"></i>
+            <span id="alertMessage"></span>
+        </div>
+
         <form id="loginForm">
             <div class="mb-3">
                 <label for="username" class="form-label">用户名</label>
-                <input type="text" class="form-control" id="username" name="username" required>
+                <div class="input-group">
+                    <span class="input-group-text">
+                        <i class="fas fa-user"></i>
+                    </span>
+                    <input type="text" class="form-control" id="username" name="username" 
+                           placeholder="请输入用户名" required autofocus>
+                </div>
             </div>
             <div class="mb-3">
                 <label for="password" class="form-label">密码</label>
-                <input type="password" class="form-control" id="password" name="password" required>
+                <div class="input-group">
+                    <span class="input-group-text">
+                        <i class="fas fa-lock"></i>
+                    </span>
+                    <input type="password" class="form-control" id="password" name="password" 
+                           placeholder="请输入密码" required>
+                    <span class="input-group-text" id="togglePassword">
+                        <i class="fas fa-eye"></i>
+                    </span>
+                </div>
             </div>
-            <button type="submit" class="btn btn-primary btn-login">登录</button>
+            <div class="mb-3 form-check">
+                <input type="checkbox" class="form-check-input" id="rememberMe">
+                <label class="form-check-label" for="rememberMe">
+                    记住我
+                </label>
+            </div>
+            <button type="submit" class="btn btn-primary btn-login" id="submitBtn">
+                <i class="fas fa-sign-in-alt"></i> 登录
+            </button>
         </form>
+        
         <div class="register-link">
             <span>还没有账号？</span>
-            <a href="/register">立即注册</a>
+            <a href="/auth/register">立即注册</a>
         </div>
     </div>
 
     <script src="https://cdn.jsdelivr.net/npm/jquery@3.6.0/dist/jquery.min.js"></script>
     <script>
+        // 显示/隐藏密码
+        $('#togglePassword').on('click', function() {
+            const passwordInput = $('#password');
+            const icon = $(this).find('i');
+            if (passwordInput.attr('type') === 'password') {
+                passwordInput.attr('type', 'text');
+                icon.removeClass('fa-eye').addClass('fa-eye-slash');
+            } else {
+                passwordInput.attr('type', 'password');
+                icon.removeClass('fa-eye-slash').addClass('fa-eye');
+            }
+        });
+
+        // 从 localStorage 读取记住的用户名
+        $(document).ready(function() {
+            const rememberedUsername = localStorage.getItem('rememberedUsername');
+            if (rememberedUsername) {
+                $('#username').val(rememberedUsername);
+                $('#rememberMe').prop('checked', true);
+            }
+        });
+
+        // 显示错误消息
+        function showAlert(message, type = 'danger') {
+            const alertBox = $('#alertBox');
+            const alertMessage = $('#alertMessage');
+            
+            alertBox.removeClass('alert-danger alert-success alert-warning')
+                    .addClass(`alert-${type}`)
+                    .removeClass('d-none');
+            alertMessage.text(message);
+            
+            if (type === 'success') {
+                setTimeout(() => {
+                    alertBox.addClass('d-none');
+                }, 2000);
+            }
+        }
+
+        // 表单提交
         $('#loginForm').on('submit', function(e) {
             e.preventDefault();
+            
+            const username = $('#username').val().trim();
+            const password = $('#password').val();
+            const rememberMe = $('#rememberMe').is(':checked');
+            
+            if (!username || !password) {
+                showAlert('请输入用户名和密码', 'warning');
+                return;
+            }
+            
+            // 禁用提交按钮
+            const submitBtn = $('#submitBtn');
+            submitBtn.prop('disabled', true).html('<i class="fas fa-spinner fa-spin"></i> 登录中...');
+            
             $.ajax({
-                url: '/login',
+                url: '/auth/login',
                 method: 'POST',
                 data: $(this).serialize(),
                 success: function(response) {
-                    window.location.href = '/';
+                    // 记住用户名
+                    if (rememberMe) {
+                        localStorage.setItem('rememberedUsername', username);
+                    } else {
+                        localStorage.removeItem('rememberedUsername');
+                    }
+                    
+                    showAlert('登录成功！正在跳转...', 'success');
+                    setTimeout(() => {
+                        window.location.href = '/';
+                    }, 1000);
                 },
                 error: function(xhr) {
-                    const error = xhr.responseJSON?.error || '登录失败';
-                    alert(error);
+                    const error = xhr.responseJSON?.error || '登录失败，请检查用户名和密码';
+                    showAlert(error, 'danger');
+                    submitBtn.prop('disabled', false).html('<i class="fas fa-sign-in-alt"></i> 登录');
+                    
+                    // 清空密码
+                    $('#password').val('').focus();
                 }
             });
+        });
+
+        // 回车键提交
+        $('#username, #password').on('keypress', function(e) {
+            if (e.which === 13) {
+                $('#loginForm').submit();
+            }
         });
     </script>
 </body>

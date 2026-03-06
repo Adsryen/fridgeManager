@@ -30,7 +30,7 @@ $(document).ready(function () {
         $(`.table-responsive`).show();
         $.ajax({
             type: 'POST',
-            url: '/stateok/' + timeInMs,
+            url: '/item/stateok/' + timeInMs,
             success: function (res) {
                 console.log(res);
                 $.each(res, function(idx, v){
@@ -77,7 +77,7 @@ $(document).ready(function () {
         $(`.table-responsive`).show();
         $.ajax({
             type: 'POST',
-            url: '/statebad/' + timeInMs,
+            url: '/item/statebad/' + timeInMs,
             success: function (res) {
                 console.log(res);
                 $.each(res, function(idx, v){
@@ -123,7 +123,7 @@ $(document).ready(function () {
         $(`.table-responsive`).show();
         $.ajax({
             type: 'POST',
-            url: '/total',
+            url: '/item/total',
             success: function (res) {
                 console.log(res);
                 $.each(res, function(idx, v){
@@ -169,7 +169,7 @@ $(document).ready(function () {
         $(`.table-responsive`).show();
         $.ajax({
             type: 'POST',
-            url: '/cold',
+            url: '/item/cold',
             success: function (res) {
                 console.log(res);
                 $.each(res, function(idx, v){
@@ -215,7 +215,7 @@ $(document).ready(function () {
         $(`.table-responsive`).show();
         $.ajax({
             type: 'POST',
-            url: '/frozer',
+            url: '/item/frozer',
             success: function (res) {
                 console.log(res);
                 $.each(res, function(idx, v){
@@ -261,7 +261,7 @@ $(document).ready(function () {
         $(`.table-responsive`).show();
         $.ajax({
             type: 'POST',
-            url: '/search',
+            url: '/item/search',
             data: {text: $('.search-ipt').val()},
             success: function (res) {
                 console.log(res);
@@ -328,7 +328,7 @@ function deleteItem() {
 
         $.ajax({
             type: 'POST',
-            url: '/delete/' + remove.data('source'),
+            url: '/item/delete/' + remove.data('source'),
             success: function (res) {
                 console.log(res.response)
                 location.reload();
@@ -346,7 +346,7 @@ function editItem() {
         const tID = state.data('source');
         $.ajax({
             method: 'POST',
-            url: '/getone/'+ tID,
+            url: '/item/getone/'+ tID,
             success: function (res) {
                 $.each(res, function(idx, val) {
                     ms = Date.parse(val['ExpireDate']);
@@ -376,7 +376,7 @@ function editItem() {
                 console.log('Error');
             }
         });
-        $(`.edit-form`).attr('action', '/edit/'+tID)
+        $(`.edit-form`).attr('action', '/item/edit/'+tID)
     });
 }
 
@@ -387,7 +387,7 @@ function tagSearch(s) {
         $(`.table-responsive`).show();
         $.ajax({
             type: 'POST',
-            url: '/tag/' + tagName,
+            url: '/item/tag/' + tagName,
             success: function (res) {
                 console.log(res);
                 $.each(res, function(idx, v){
