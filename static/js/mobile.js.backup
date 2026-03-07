@@ -1,0 +1,1678 @@
+// 移动端专用JavaScript
+let allItems = [];
+let currentFilter = 'all';
+let currentPlace = 'all';
+let expiryWarningDays = 3;
+
+// ==================== 主题和深色模式功能 ====================
+
+// 根据时间自动判断是否应该使用深色模式
+function shouldUseDarkMode() {
+    const hour = new Date().getHours();
+    return hour >= 18 || hour < 6;
+}
+
+// 根据时间自动判断主题颜色
+function getAutoTheme() {
+    const hour = new Date().getHours();
+    if (hour >= 18 || hour < 6) {
+        return 'gray';
+    }
+    return 'pink';
+}
+
+// 切换主题
+function changeTheme(theme) {
+    console.log('切换主题到:', theme);
+    
+    // 移除所有主题类
+    $('body').removeClass('theme-pink theme-blue theme-purple theme-green theme-orange theme-gray');
+    
+    // 添加新主题类
+    if (theme && theme !== 'pink') {
+        $('body').addClass('theme-' + theme);
+    }
+    
+    // 保存用户偏好
+    try {
+        localStorage.setItem('theme', theme);
+        localStorage.setItem('themeAuto', 'false');
+    } catch (e) {
+        console.warn('无法保存主题设置:', e);
+    }
+    
+    // 更新主题选择器的激活状态
+    updateThemeSelector(theme);
+    
+    const themeNames = {
+        'pink': '粉色',
+        'blue': '蓝色',
+        'purple': '紫色',
+        'green': '绿色',
+        'orange': '橙色',
+        'gray': '灰色'
+    };
+    
+    showToast('已切换到' + themeNames[theme] + '主题', 'info');
+}
+
+// 更新主题选择器的激活状态
+function updateThemeSelector(theme) {
+    $('.theme-option').removeClass('active');
+    $(`.theme-option[data-theme="${theme}"]`).addClass('active');
+}
+
+// 重置为自动主题
+function resetThemeToAuto() {
+    console.log('重置为自动主题');
+    try {
+        localStorage.removeItem('theme');
+        localStorage.setItem('themeAuto', 'true');
+        localStorage.removeItem('darkMode');
+        localStorage.setItem('darkModeAuto', 'true');
+    } catch (e) {
+        console.warn('无法保存自动主题设置:', e);
+    }
+    initTheme();
+    initDarkMode();
+    showToast('已切换到自动主题（白天粉色，晚上灰色+深色）', 'info');
+}
+
+// 初始化主题
+function initTheme() {
+    console.log('initTheme 被调用用');
+    let themeSetting = null;
+    let isAutoMode = true;
+    
+    try {
+        themeSetting = localStorage.getItem('theme');
+        isAutoMode = localStorage.getItem('themeAuto') !== 'false';
+    } catch (e) {
+        console.warn('无法读取主题设置，使用自动模式', e);
+    }
+    
+    let theme = 'pink';
+    
+    if (isAutoMode) {
+        theme = getAutoTheme();
+        console.log('主题（自动）::', theme, '- 当前时间:', new Date().getHours() + '点');
+    } else {
+        theme = themeSetting || 'pink';
+        console.log('主题（手动）:::', theme);
+    }
+    
+    $('body').removeClass('theme-pink theme-blue theme-purple theme-green theme-orange theme-gray');
+    
+    if (theme && theme !== 'pink') {
+        $('body').addClass('theme-' + theme);
+    }
+    
+    updateThemeSelector(theme);
+}
+
+// 深色模式切换
+function toggleDarkMode() {
+    console.log('toggleDarkMode 被调用用');
+    $('body').toggleClass('dark-mode');
+    const isDark = $('body').hasClass('dark-mode');
+    
+    try {
+        localStorage.setItem('darkMode', isDark ? 'enabled' : 'disabled');
+        localStorage.setItem('darkModeAuto', 'false');
+    } catch (e) {
+        console.warn('无法保存深色模式设置:', e);
+    }
+    
+    updateDarkModeIcon(isDark);
+    showToast(isDark ? '已切换到深色模式' : '已切换到浅色模式', 'info');
+}
+
+// 更新深色模式图标
+function updateDarkModeIcon(isDark) {
+    const icon = $('#darkModeBtn i');
+    if (isDark) {
+        icon.removeClass('fa-moon').addClass('fa-sun');
+        $('#darkModeBtn').attr('title', '切换到浅色模�?);
+    } else {
+        icon.removeClass('fa-sun').addClass('fa-moon');
+        $('#darkModeBtn').attr('title', '切换到深色模�?);
+    }
+}
+
+// 重置为自动深色模�?
+function resetDarkModeToAuto() {
+    console.log('resetDarkModeToAuto 被调用�?);
+    try {
+        localStorage.removeItem('darkMode');
+        localStorage.setItem('darkModeAuto', 'true');
+    } catch (e) {
+        console.warn('无法保存自动模式设置:', e);
+    }
+    initDarkMode();
+    showToast('已切换到自动模式（根据时间自动调整）', 'info');
+}
+
+// 初始化深色模式�?
+function initDarkMode() {
+    console.log('initDarkMode 被调用�?);
+    let darkModeSetting = null;
+    let isAutoMode = true;
+    let themeAutoMode = true;
+    
+    try {
+        darkModeSetting = localStorage.getItem('darkMode');
+        isAutoMode = localStorage.getItem('darkModeAuto') !== 'false';
+        themeAutoMode = localStorage.getItem('themeAuto') !== 'false';
+    } catch (e) {
+        console.warn('无法读取深色模式设置，使用自动模式�?', e);
+    }
+    
+    let shouldBeDark = false;
+    
+    if (isAutoMode) {
+        shouldBeDark = shouldUseDarkMode();
+        console.log('深色模式（自动）:::', shouldBeDark ? '开�? : '关闭', '- 当前时间:', new Date().getHours() + '�?);
+    } else {
+        shouldBeDark = darkModeSetting === 'enabled';
+        console.log('深色模式（手动）:::', shouldBeDark ? '开�? : '关闭');
+    }
+    
+    if (shouldBeDark) {
+        $('body').addClass('dark-mode');
+    } else {
+        $('body').removeClass('dark-mode');
+    }
+    
+    updateDarkModeIcon(shouldBeDark);
+    
+    if (themeAutoMode) {
+        initTheme();
+    }
+}
+
+// 页面加载完成后初始化
+$(document).ready(function() {
+    loadSystemSettings();
+    initEventListeners();
+    loadAllItems();
+    initDarkMode();
+    
+    // 初始化时隐藏所有数量为0的气�?
+    $('.category-tag-count, .sidebar-badge').each(function() {
+        if ($(this).text() === '0') {
+            $(this).hide();
+        }
+    });
+});
+
+// 加载系统设置
+function loadSystemSettings() {
+    $.ajax({
+        type: 'GET',
+        url: '/item/get-system-settings',
+        success: function(settings) {
+            expiryWarningDays = settings.default_expiry_warning_days || 3;
+        },
+        error: function() {
+            expiryWarningDays = 3;
+        }
+    });
+}
+
+// 初始化事件监听器
+function initEventListeners() {
+    // 搜索功能
+    $('#mSearchInput').on('input', function() {
+        const searchText = $(this).val().toLowerCase();
+        if (searchText) {
+            $('#clearSearchBtn').show();
+        } else {
+            $('#clearSearchBtn').hide();
+        }
+        filterItems(searchText);
+    });
+
+    // 清除搜索
+    $('#clearSearchBtn').on('click', function() {
+        $('#mSearchInput').val('');
+        $(this).hide();
+        filterItems('');
+    });
+
+    // 添加物品表单
+    $('#mAddItemForm').on('submit', function(e) {
+        e.preventDefault();
+        addItem();
+    });
+
+    // 编辑物品表单
+    $('#mEditItemForm').on('submit', function(e) {
+        e.preventDefault();
+        updateItem();
+    });
+
+    // 类别选择 - 添加表单
+    $('#addItemDrawer .category-item').on('click', function() {
+        $(this).toggleClass('selected');
+        updateSelectedTypes('#mSelectedTypes', '#addItemDrawer');
+    });
+
+    // 类别选择 - 编辑表单
+    $('#editItemDrawer .category-item').on('click', function() {
+        $(this).toggleClass('selected');
+        updateSelectedTypes('#mEditSelectedTypes', '#editItemDrawer');
+    });
+
+    // 点击抽屉背景关闭
+    $('.drawer-overlay').on('click', function(e) {
+        if (e.target === this) {
+            closeDrawer($(this).attr('id'));
+        }
+    });
+}
+
+// 更新选中的类�?
+function updateSelectedTypes(inputId, drawerId) {
+    const selectedTypes = [];
+    $(`${drawerId} .category-item.selected`).each(function() {
+        selectedTypes.push($(this).data('type'));
+    });
+    $(inputId).val(selectedTypes.join(','));
+}
+
+// 打开抽屉
+function openDrawer(drawerId) {
+    $(`#${drawerId}`).addClass('active');
+    $('body').css('overflow', 'hidden');
+}
+
+// 关闭抽屉
+function closeDrawer(drawerId) {
+    $(`#${drawerId}`).removeClass('active');
+    $('body').css('overflow', '');
+    
+    // 重置表单
+    if (drawerId === 'addItemDrawer') {
+        $('#mAddItemForm')[0].reset();
+        $('#addItemDrawer .category-item').removeClass('selected');
+        $('#mSelectedTypes').val('');
+    }
+}
+
+// 打开添加物品抽屉
+function openAddDrawer() {
+    openDrawer('addItemDrawer');
+}
+
+// 切换视图
+function switchView(view) {
+    $('.nav-item').removeClass('active');
+    $(`.nav-item[data-view="${view}"]`).addClass('active');
+    
+    // 这里可以根据不同视图加载不同内容
+    if (view === 'home') {
+        showAllItems();
+    }
+}
+
+// 加载所有物�?
+function loadAllItems() {
+    $.ajax({
+        type: 'POST',
+        url: '/item/total',
+        success: function(items) {
+            allItems = items;
+            updateStatistics();
+            updatePlaceCounts();
+            displayItems(items);
+        },
+        error: function() {
+            showToast('加载失败', 'error');
+        }
+    });
+}
+
+// 更新统计信息
+function updateStatistics() {
+    const now = moment();
+    let expiringSoon = 0, expired = 0;
+
+    allItems.forEach(item => {
+        const expireDate = moment(item.ExpireDate);
+        const daysUntilExpire = expireDate.diff(now, 'days');
+
+        if (daysUntilExpire < 0) {
+            expired++;
+        } else if (daysUntilExpire <= expiryWarningDays) {
+            expiringSoon++;
+        }
+    });
+
+    $('#mTotalCount').text(allItems.length);
+    $('#mExpiringSoonCount').text(expiringSoon);
+    $('#mExpiredCount').text(expired);
+    
+    // 同时更新分类计数
+    updateCategoryCounts();
+}
+
+// 更新分区计数
+function updatePlaceCounts() {
+    const counts = { cold: 0, frozer: 0, room: 0 };
+    
+    allItems.forEach(item => {
+        if (counts.hasOwnProperty(item.Place)) {
+            counts[item.Place]++;
+        }
+    });
+
+    // 更新并隐藏为0的气�?
+    const placeElements = {
+        cold: $('#mColdCount'),
+        frozer: $('#mFrozerCount'),
+        room: $('#mRoomCount')
+    };
+    
+    Object.keys(counts).forEach(place => {
+        const element = placeElements[place];
+        const count = counts[place];
+        element.text(count);
+        
+        if (count === 0) {
+            element.hide();
+        } else {
+            element.show();
+        }
+    });
+}
+
+// 显示物品列表
+function displayItems(items) {
+    const container = $('#mItemsContainer');
+
+    if (items.length === 0) {
+        container.html(`
+            <div class="empty-state">
+                <i class="fas fa-inbox"></i>
+                <h4>暂无物品</h4>
+                <p>点击下方 + 按钮添加物品</p>
+            </div>
+        `);
+        return;
+    }
+
+    const now = moment();
+    let html = '';
+
+    items.forEach(item => {
+        const expireDate = moment(item.ExpireDate);
+        const daysUntilExpire = expireDate.diff(now, 'days');
+
+        let statusClass = '';
+        let statusText = '';
+        let statusBadgeClass = '';
+
+        if (daysUntilExpire < 0) {
+            statusClass = 'expired';
+            statusText = `${Math.abs(daysUntilExpire)}天`;
+            statusBadgeClass = 'danger';
+        } else if (daysUntilExpire === 0) {
+            statusClass = 'expiring-soon';
+            statusText = '今天';
+            statusBadgeClass = 'danger';
+        } else if (daysUntilExpire <= expiryWarningDays) {
+            statusClass = 'expiring-soon';
+            statusText = `${daysUntilExpire}天`;
+            statusBadgeClass = 'warning';
+        } else {
+            statusText = `${daysUntilExpire}天`;
+            statusBadgeClass = 'fresh';
+        }
+
+        const emoji = getTypeEmoji(item.Type);
+        const placeText = getPlaceText(item.Place);
+        const typeText = getTypeText(item.Type);
+
+        html += `
+            <div class="mobile-item-card ${statusClass}">
+                <div class="item-card-main">
+                    <div class="item-card-header">
+                        <div class="item-emoji">${emoji}</div>
+                        <div class="item-name-info">
+                            <h3>${item.Name}</h3>
+                        </div>
+                    </div>
+                    <div class="item-card-body">
+                        <div class="item-info-row-group">
+                            <span class="item-info-inline">
+                                <i class="fas fa-map-marker-alt"></i>
+                                ${placeText}
+                            </span>
+                            <span class="item-info-inline">
+                                <i class="fas fa-calendar-alt"></i>
+                                ${expireDate.format('MM-DD')}
+                            </span>
+                            <span class="item-info-inline">
+                                <i class="fas fa-boxes"></i>
+                                ×${item.Num}
+                            </span>
+                        </div>
+                        <div class="item-bottom-row">
+                            <div class="item-expiry-status ${statusBadgeClass}">
+                                <span>${statusText}</span>
+                            </div>
+                            <button class="item-action-btn take-out" onclick="takeOutItem('${item._id}', '${item.Name}', ${item.Num})" title="取出">
+                                <i class="fas fa-hand-holding"></i>
+                            </button>
+                            <button class="item-action-btn edit" onclick="editItem('${item._id}')" title="编辑">
+                                <i class="fas fa-edit"></i>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+                <div class="item-card-actions">
+                    <button class="item-action-btn delete" onclick="deleteItem('${item._id}', '${item.Name}')" title="删除">
+                        <i class="fas fa-trash"></i>
+                    </button>
+                </div>
+            </div>
+        `;
+    });
+
+    container.html(html);
+}
+
+// 筛选物�?
+function filterItems(searchText = '') {
+    let filtered = allItems;
+
+    // 按位置筛�?
+    if (currentPlace !== 'all') {
+        filtered = filtered.filter(item => item.Place === currentPlace);
+    }
+
+    // 按状态筛�?
+    const now = moment();
+    if (currentFilter === 'expiring') {
+        filtered = filtered.filter(item => {
+            const days = moment(item.ExpireDate).diff(now, 'days');
+            return days >= 0 && days <= expiryWarningDays;
+        });
+    } else if (currentFilter === 'expired') {
+        filtered = filtered.filter(item => {
+            return moment(item.ExpireDate).diff(now, 'days') < 0;
+        });
+    }
+
+    // 按搜索文本筛�?
+    if (searchText) {
+        filtered = filtered.filter(item => 
+            item.Name.toLowerCase().includes(searchText)
+        );
+    }
+
+    displayItems(filtered);
+}
+
+// 按位置筛�?
+function filterByPlace(place) {
+    currentPlace = place;
+    currentFilter = 'all';
+
+    // 更新UI
+    $('.sidebar-item').removeClass('active');
+    $(`.sidebar-item[data-place="${place}"]`).addClass('active');
+
+    filterItems($('#mSearchInput').val().toLowerCase());
+}
+
+// 显示全部物品
+function showAllItems() {
+    currentFilter = 'all';
+    currentPlace = 'all';
+    $('.sidebar-item').removeClass('active');
+    $('.sidebar-item[data-place="all"]').addClass('active');
+    $('#mSearchInput').val('');
+    $('#clearSearchBtn').hide();
+    displayItems(allItems);
+}
+
+// 显示即将过期
+function showExpiringSoon() {
+    currentFilter = 'expiring';
+    currentPlace = 'all';
+    $('.sidebar-item').removeClass('active');
+    $('.sidebar-item[data-place="all"]').addClass('active');
+    $('#mSearchInput').val('');
+    $('#clearSearchBtn').hide();
+    filterItems();
+}
+
+// 显示已过�?
+function showExpired() {
+    currentFilter = 'expired';
+    currentPlace = 'all';
+    $('.sidebar-item').removeClass('active');
+    $('.sidebar-item[data-place="all"]').addClass('active');
+    $('#mSearchInput').val('');
+    $('#clearSearchBtn').hide();
+    filterItems();
+}
+
+// 添加物品
+function addItem() {
+    const selectedTypes = $('#mSelectedTypes').val();
+    if (!selectedTypes) {
+        showToast('请至少选择一个类�?, 'warning');
+        return;
+    }
+
+    const formData = $('#mAddItemForm').serialize();
+
+    $.ajax({
+        type: 'POST',
+        url: '/item/insert',
+        data: formData,
+        success: function() {
+            closeDrawer('addItemDrawer');
+            showToast('添加成功', 'success');
+            loadAllItems();
+        },
+        error: function() {
+            showToast('添加失败，请重试', 'error');
+        }
+    });
+}
+
+// 编辑物品
+function editItem(itemId) {
+    $.ajax({
+        type: 'POST',
+        url: '/item/getone/' + itemId,
+        success: function(items) {
+            if (items.length > 0) {
+                const item = items[0];
+                const form = $('#mEditItemForm');
+
+                form.find('[name="itemId"]').val(item._id);
+                form.find('[name="itemName"]').val(item.Name);
+                form.find('[name="itemDate"]').val(moment(item.ExpireDate).format('YYYY-MM-DD'));
+                form.find('[name="itemNum"]').val(item.Num);
+                form.find(`[name="itemPlace"][value="${item.Place}"]`).prop('checked', true);
+
+                // 更新日期显示
+                $('#editItemDateDisplay').text(formatDateDisplay(moment(item.ExpireDate).format('YYYY-MM-DD'))).addClass('has-value');
+
+                // 处理类别选择
+                $('#editItemDrawer .category-item').removeClass('selected');
+                const types = item.Type.split(',');
+                types.forEach(type => {
+                    $(`#editItemDrawer .category-item[data-type="${type.trim()}"]`).addClass('selected');
+                });
+                $('#mEditSelectedTypes').val(item.Type);
+
+                openDrawer('editItemDrawer');
+            }
+        },
+        error: function() {
+            showToast('获取物品信息失败', 'error');
+        }
+    });
+}
+
+// 更新物品
+function updateItem() {
+    const selectedTypes = $('#mEditSelectedTypes').val();
+    if (!selectedTypes) {
+        showToast('请至少选择一个类�?, 'warning');
+        return;
+    }
+
+    const itemId = $('#mEditItemForm').find('[name="itemId"]').val();
+    const formData = $('#mEditItemForm').serialize();
+
+    $.ajax({
+        type: 'POST',
+        url: '/item/edit/' + itemId,
+        data: formData,
+        success: function() {
+            closeDrawer('editItemDrawer');
+            showToast('更新成功', 'success');
+            loadAllItems();
+        },
+        error: function() {
+            showToast('更新失败，请重试', 'error');
+        }
+    });
+}
+
+// 删除物品
+function deleteItem(itemId, itemName) {
+    if (!confirm(`确定要删�?"${itemName}" 吗？`)) {
+        return;
+    }
+
+    $.ajax({
+        type: 'POST',
+        url: '/item/delete/' + itemId,
+        success: function() {
+            showToast('删除成功', 'success');
+            loadAllItems();
+        },
+        error: function() {
+            showToast('删除失败，请重试', 'error');
+        }
+    });
+}
+
+// 获取类型Emoji
+function getTypeEmoji(typeString) {
+    const types = typeString.split(',');
+    const firstType = types[0].trim();
+    
+    const emojiMap = {
+        vegetable: '🥬',
+        fruit: '🍎',
+        seafood: '🐟',
+        meat: '🥩',
+        beverage: '🥤',
+        diary: '🥛',
+        egg: '🥚',
+        bread: '🍞',
+        frozen: '🍦',
+        sauce: '🍯',
+        snack: '🍿',
+        other: '📦'
+    };
+    
+    return emojiMap[firstType] || '📦';
+}
+
+// 获取位置文本
+function getPlaceText(place) {
+    const places = {
+        cold: '冷藏�?,
+        frozer: '冷冻�?,
+        room: '室温�?
+    };
+    return places[place] || place;
+}
+
+// 获取类型文本
+function getTypeText(type) {
+    const types = {
+        vegetable: '蔬菜',
+        fruit: '水果',
+        seafood: '海鲜',
+        meat: '肉类',
+        beverage: '饮料',
+        diary: '乳制�?,
+        egg: '蛋豆�?,
+        bread: '面包',
+        frozen: '冷冻食品',
+        sauce: '酱料',
+        snack: '零食',
+        other: '其他'
+    };
+    
+    const typeArray = type.split(',');
+    const typeTexts = typeArray.map(t => types[t.trim()] || t.trim());
+    return typeTexts.join('�?);
+}
+
+// 显示提示消息
+function showToast(message, type = 'info') {
+    // 简单的提示实现，可以后续优化为更好的UI
+    const bgColor = {
+        success: '#10b981',
+        error: '#ef4444',
+        warning: '#f59e0b',
+        info: '#3b82f6'
+    }[type] || '#3b82f6';
+
+    const toast = $(`
+        <div style="
+            position: fixed;
+            top: 80px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: ${bgColor};
+            color: white;
+            padding: 12px 24px;
+            border-radius: 8px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+            z-index: 9999;
+            animation: slideDown 0.3s;
+        ">${message}</div>
+    `);
+
+    $('body').append(toast);
+
+    setTimeout(() => {
+        toast.fadeOut(300, function() {
+            $(this).remove();
+        });
+    }, 2000);
+}
+
+// 添加滑动动画
+$('<style>@keyframes slideDown { from { transform: translate(-50%, -100%); opacity: 0; } to { transform: translate(-50%, 0); opacity: 1; } }</style>').appendTo('head');
+
+
+// ==================== 高级功能 ====================
+
+// 下拉刷新
+let pullStartY = 0;
+let isPulling = false;
+
+function initPullToRefresh() {
+    const content = $('.mobile-content');
+    
+    content.on('touchstart', function(e) {
+        if (content.scrollTop() === 0) {
+            pullStartY = e.touches[0].clientY;
+            isPulling = true;
+        }
+    });
+    
+    content.on('touchmove', function(e) {
+        if (!isPulling) return;
+        
+        const pullDistance = e.touches[0].clientY - pullStartY;
+        
+        if (pullDistance > 80) {
+            showPullToRefreshIndicator();
+        }
+    });
+    
+    content.on('touchend', function(e) {
+        if (!isPulling) return;
+        
+        const pullDistance = e.changedTouches[0].clientY - pullStartY;
+        
+        if (pullDistance > 80) {
+            refreshData();
+        }
+        
+        isPulling = false;
+        hidePullToRefreshIndicator();
+    });
+}
+
+function showPullToRefreshIndicator() {
+    if ($('.pull-to-refresh').length === 0) {
+        $('body').append(`
+            <div class="pull-to-refresh visible">
+                <i class="fas fa-sync-alt"></i>
+            </div>
+        `);
+    }
+}
+
+function hidePullToRefreshIndicator() {
+    $('.pull-to-refresh').removeClass('visible');
+    setTimeout(() => {
+        $('.pull-to-refresh').remove();
+    }, 300);
+}
+
+function refreshData() {
+    loadAllItems();
+    setTimeout(() => {
+        hidePullToRefreshIndicator();
+    }, 1000);
+}
+
+// 骨架屏加�?
+function showSkeletonLoading() {
+    const skeletonHTML = `
+        <div class="skeleton-card">
+            <div style="display: flex; gap: 12px; margin-bottom: 12px;">
+                <div class="skeleton-circle"></div>
+                <div style="flex: 1;">
+                    <div class="skeleton-line title"></div>
+                    <div class="skeleton-line short"></div>
+                </div>
+            </div>
+            <div class="skeleton-line"></div>
+            <div class="skeleton-line"></div>
+            <div class="skeleton-line short"></div>
+        </div>
+    `.repeat(3);
+    
+    $('#mItemsContainer').html(skeletonHTML);
+}
+
+// 改进的Toast提示
+function showToast(message, type = 'info') {
+    const icons = {
+        success: 'fa-check-circle',
+        error: 'fa-times-circle',
+        warning: 'fa-exclamation-triangle',
+        info: 'fa-info-circle'
+    };
+    
+    const icon = icons[type] || icons.info;
+    
+    // 创建toast容器（如果不存在�?
+    if ($('.toast-container').length === 0) {
+        $('body').append('<div class="toast-container"></div>');
+    }
+    
+    const toast = $(`
+        <div class="toast ${type}">
+            <i class="fas ${icon}"></i>
+            <span class="toast-message">${message}</span>
+        </div>
+    `);
+    
+    $('.toast-container').append(toast);
+    
+    setTimeout(() => {
+        toast.css('animation', 'toastSlideIn 0.3s ease-out reverse');
+        setTimeout(() => {
+            toast.remove();
+        }, 300);
+    }, 2500);
+}
+
+// 滑动删除功能
+let touchStartX = 0;
+let touchStartY = 0;
+let currentSwipeItem = null;
+
+function initSwipeToDelete() {
+    $(document).on('touchstart', '.mobile-item-card', function(e) {
+        touchStartX = e.touches[0].clientX;
+        touchStartY = e.touches[0].clientY;
+        currentSwipeItem = $(this);
+    });
+    
+    $(document).on('touchmove', '.mobile-item-card', function(e) {
+        if (!currentSwipeItem) return;
+        
+        const touchX = e.touches[0].clientX;
+        const touchY = e.touches[0].clientY;
+        const deltaX = touchStartX - touchX;
+        const deltaY = Math.abs(touchStartY - touchY);
+        
+        // 只有横向滑动才触�?
+        if (Math.abs(deltaX) > deltaY && deltaX > 50) {
+            e.preventDefault();
+            currentSwipeItem.addClass('swiped');
+        }
+    });
+    
+    $(document).on('touchend', function() {
+        currentSwipeItem = null;
+    });
+    
+    // 点击其他地方关闭滑动
+    $(document).on('click', function(e) {
+        if (!$(e.target).closest('.mobile-item-card').length) {
+            $('.mobile-item-card').removeClass('swiped');
+        }
+    });
+}
+
+// 长按菜单
+let longPressTimer;
+let longPressItem;
+
+function initLongPress() {
+    $(document).on('touchstart', '.mobile-item-card', function(e) {
+        longPressItem = $(this);
+        longPressTimer = setTimeout(() => {
+            showContextMenu(e.touches[0].clientX, e.touches[0].clientY, longPressItem);
+            navigator.vibrate && navigator.vibrate(50); // 震动反馈
+        }, 500);
+    });
+    
+    $(document).on('touchend touchmove', '.mobile-item-card', function() {
+        clearTimeout(longPressTimer);
+    });
+}
+
+function showContextMenu(x, y, item) {
+    const itemId = item.find('.item-action-btn.edit').attr('onclick').match(/'([^']+)'/)[1];
+    const itemName = item.find('.item-name-info h3').text();
+    
+    // 移除已存在的菜单
+    $('.context-menu').remove();
+    
+    const menu = $(`
+        <div class="context-menu active" style="left: ${x}px; top: ${y}px;">
+            <div class="context-menu-item" onclick="editItem('${itemId}'); $('.context-menu').remove();">
+                <i class="fas fa-edit"></i>
+                <span>编辑</span>
+            </div>
+            <div class="context-menu-item" onclick="duplicateItem('${itemId}'); $('.context-menu').remove();">
+                <i class="fas fa-copy"></i>
+                <span>复制</span>
+            </div>
+            <div class="context-menu-item danger" onclick="deleteItem('${itemId}', '${itemName}'); $('.context-menu').remove();">
+                <i class="fas fa-trash"></i>
+                <span>删除</span>
+            </div>
+        </div>
+    `);
+    
+    $('body').append(menu);
+    
+    // 调整位置防止超出屏幕
+    const menuWidth = menu.outerWidth();
+    const menuHeight = menu.outerHeight();
+    
+    if (x + menuWidth > window.innerWidth) {
+        menu.css('left', x - menuWidth);
+    }
+    
+    if (y + menuHeight > window.innerHeight) {
+        menu.css('top', y - menuHeight);
+    }
+    
+    // 点击其他地方关闭菜单
+    setTimeout(() => {
+        $(document).one('click', function() {
+            menu.remove();
+        });
+    }, 100);
+}
+
+// 复制物品功能
+function duplicateItem(itemId) {
+    $.ajax({
+        type: 'POST',
+        url: '/item/getone/' + itemId,
+        success: function(items) {
+            if (items.length > 0) {
+                const item = items[0];
+                
+                // 填充表单
+                $('#mAddItemForm [name="itemName"]').val(item.Name + ' (副本)');
+                $('#mAddItemForm [name="itemDate"]').val(moment(item.ExpireDate).format('YYYY-MM-DD'));
+                $('#mAddItemForm [name="itemNum"]').val(item.Num);
+                $('#mAddItemForm [name="itemPlace"][value="' + item.Place + '"]').prop('checked', true);
+                
+                // 选择类别
+                $('#addItemDrawer .category-item').removeClass('selected');
+                const types = item.Type.split(',');
+                types.forEach(type => {
+                    $('#addItemDrawer .category-item[data-type="' + type.trim() + '"]').addClass('selected');
+                });
+                updateSelectedTypes('#mSelectedTypes', '#addItemDrawer');
+                
+                openDrawer('addItemDrawer');
+                showToast('已复制物品信�?, 'success');
+            }
+        },
+        error: function() {
+            showToast('复制失败', 'error');
+        }
+    });
+}
+
+// 快速筛选标�?
+function initFilterChips() {
+    const filterChipsHTML = `
+        <div class="filter-chips">
+            <div class="filter-chip active" data-filter="all" onclick="quickFilter('all')">
+                <i class="fas fa-th"></i>
+                <span>全部</span>
+                <span class="count" id="filterAllCount">0</span>
+            </div>
+            <div class="filter-chip" data-filter="fresh" onclick="quickFilter('fresh')">
+                <i class="fas fa-check-circle"></i>
+                <span>新鲜</span>
+                <span class="count" id="filterFreshCount">0</span>
+            </div>
+            <div class="filter-chip" data-filter="expiring" onclick="quickFilter('expiring')">
+                <i class="fas fa-exclamation-triangle"></i>
+                <span>即将过期</span>
+                <span class="count" id="filterExpiringCount">0</span>
+            </div>
+            <div class="filter-chip" data-filter="expired" onclick="quickFilter('expired')">
+                <i class="fas fa-times-circle"></i>
+                <span>已过�?/span>
+                <span class="count" id="filterExpiredCount">0</span>
+            </div>
+        </div>
+    `;
+    
+    $('.place-tabs').after(filterChipsHTML);
+}
+
+function quickFilter(filter) {
+    $('.filter-chip').removeClass('active');
+    $(`.filter-chip[data-filter="${filter}"]`).addClass('active');
+    
+    if (filter === 'all') {
+        showAllItems();
+    } else if (filter === 'fresh') {
+        showFreshItems();
+    } else if (filter === 'expiring') {
+        showExpiringSoon();
+    } else if (filter === 'expired') {
+        showExpired();
+    }
+}
+
+function showFreshItems() {
+    currentFilter = 'fresh';
+    currentPlace = 'all';
+    $('.place-tab').removeClass('active');
+    $('.place-tab[data-place="all"]').addClass('active');
+    
+    const now = moment();
+    const filtered = allItems.filter(item => {
+        const days = moment(item.ExpireDate).diff(now, 'days');
+        return days > expiryWarningDays;
+    });
+    
+    displayItems(filtered);
+}
+
+function updateFilterCounts() {
+    const now = moment();
+    let fresh = 0, expiring = 0, expired = 0;
+    
+    allItems.forEach(item => {
+        const days = moment(item.ExpireDate).diff(now, 'days');
+        if (days < 0) {
+            expired++;
+        } else if (days <= expiryWarningDays) {
+            expiring++;
+        } else {
+            fresh++;
+        }
+    });
+    
+    $('#filterAllCount').text(allItems.length);
+    $('#filterFreshCount').text(fresh);
+    $('#filterExpiringCount').text(expiring);
+    $('#filterExpiredCount').text(expired);
+}
+
+// 优化加载函数
+const originalLoadAllItems = loadAllItems;
+loadAllItems = function() {
+    showSkeletonLoading();
+    originalLoadAllItems();
+};
+
+// 页面初始化时添加新功�?
+$(document).ready(function() {
+    initPullToRefresh();
+    initSwipeToDelete();
+    initLongPress();
+    
+    // 更新筛选计�?
+    const originalUpdateStatistics = updateStatistics;
+    updateStatistics = function() {
+        originalUpdateStatistics();
+        updateFilterCounts();
+    };
+});
+
+
+// ==================== 页面切换功能 ====================
+
+// 切换视图
+window.switchView = function(view) {
+    console.log('切换到视�?', view);
+    
+    // 更新底部导航�?
+    $('.nav-item').removeClass('active');
+    $(`.nav-item[data-view="${view}"]`).addClass('active');
+    
+    // 隐藏所有页�?
+    $('.mobile-content').hide();
+    $('.page-view').hide();
+    
+    // 控制分类横向栏的显示/隐藏
+    if (view === 'home') {
+        $('.category-tags-container').show();
+        $('.mobile-content').show();
+    } else if (view === 'category') {
+        $('.category-tags-container').hide();
+        $('#categoryPage').show();
+        updateCategoryCounts();
+    } else if (view === 'stats') {
+        $('.category-tags-container').hide();
+        $('#statsPage').show();
+        updateStatsPage();
+    } else if (view === 'settings') {
+        $('.category-tags-container').hide();
+        $('#settingsPage').show();
+        updateSettingsPage();
+    }
+}
+
+// ==================== 分类页面功能 ====================
+
+// 更新分类计数
+function updateCategoryCounts() {
+    const categoryCounts = { all: allItems.length };
+    
+    allItems.forEach(item => {
+        const types = item.Type.split(',');
+        types.forEach(type => {
+            const t = type.trim();
+            categoryCounts[t] = (categoryCounts[t] || 0) + 1;
+        });
+    });
+    
+    // 更新分类页面的计�?
+    Object.keys(categoryCounts).forEach(type => {
+        const capitalizedType = type.charAt(0).toUpperCase() + type.slice(1);
+        $(`#cat${capitalizedType}Count`).text(categoryCounts[type] || 0);
+    });
+    
+    // 更新横向标签的计�?
+    const allCount = categoryCounts.all || 0;
+    const tagAllCount = $('#tagAllCount');
+    tagAllCount.text(allCount);
+    if (allCount === 0) {
+        tagAllCount.hide();
+    } else {
+        tagAllCount.show();
+    }
+    
+    const allTypes = ['vegetable', 'fruit', 'meat', 'seafood', 'diary', 'beverage', 'egg', 'bread', 'frozen', 'sauce', 'snack', 'other'];
+    allTypes.forEach(type => {
+        const capitalizedType = type.charAt(0).toUpperCase() + type.slice(1);
+        const count = categoryCounts[type] || 0;
+        const countElement = $(`#tag${capitalizedType}Count`);
+        countElement.text(count);
+        // 如果数量�?，隐藏气�?
+        if (count === 0) {
+            countElement.hide();
+        } else {
+            countElement.show();
+        }
+    });
+}
+
+// 按类别筛选（用于横向标签�?
+window.filterByCategory = function(category) {
+    console.log('按类别筛�?', category);
+    
+    // 更新标签选中状�?
+    $('.category-tag').removeClass('active');
+    $(`.category-tag[data-type="${category}"]`).addClass('active');
+    
+    // 重置位置筛�?
+    currentPlace = 'all';
+    $('.sidebar-item').removeClass('active');
+    $('.sidebar-item[data-place="all"]').addClass('active');
+    
+    if (category === 'all') {
+        // 显示所有物�?
+        displayItems(allItems);
+    } else {
+        // 筛选该类别的物�?
+        const filtered = allItems.filter(item => {
+            const types = item.Type.split(',').map(t => t.trim());
+            return types.includes(category);
+        });
+        displayItems(filtered);
+    }
+}
+
+// 显示分类物品列表（使用相同的卡片样式�?
+function displayCategoryItems(items) {
+    const container = $('#categoryItemsList');
+    
+    if (items.length === 0) {
+        container.html(`
+            <div class="empty-state">
+                <i class="fas fa-inbox"></i>
+                <h4>暂无物品</h4>
+                <p>该类别下还没有物�?/p>
+            </div>
+        `);
+        return;
+    }
+    
+    const now = moment();
+    let html = '';
+    
+    items.forEach(item => {
+        const expireDate = moment(item.ExpireDate);
+        const daysUntilExpire = expireDate.diff(now, 'days');
+        
+        let statusClass = '';
+        let statusText = '';
+        let statusBadgeClass = '';
+        
+        if (daysUntilExpire < 0) {
+            statusClass = 'expired';
+            statusText = `${Math.abs(daysUntilExpire)}天`;
+            statusBadgeClass = 'danger';
+        } else if (daysUntilExpire === 0) {
+            statusClass = 'expiring-soon';
+            statusText = '今天';
+            statusBadgeClass = 'danger';
+        } else if (daysUntilExpire <= expiryWarningDays) {
+            statusClass = 'expiring-soon';
+            statusText = `${daysUntilExpire}天`;
+            statusBadgeClass = 'warning';
+        } else {
+            statusText = `${daysUntilExpire}天`;
+            statusBadgeClass = 'fresh';
+        }
+        
+        const emoji = getTypeEmoji(item.Type);
+        const placeText = getPlaceText(item.Place);
+        
+        html += `
+            <div class="mobile-item-card ${statusClass}">
+                <div class="item-card-main">
+                    <div class="item-card-header">
+                        <div class="item-emoji">${emoji}</div>
+                        <div class="item-name-info">
+                            <h3>${item.Name}</h3>
+                            <span class="item-place-badge clickable" onclick="event.stopPropagation(); filterByPlace('${item.Place}'); switchView('home');" title="点击筛�?{placeText}">
+                                <i class="fas fa-map-marker-alt"></i>
+                                ${placeText}
+                            </span>
+                        </div>
+                    </div>
+                    <div class="item-card-body">
+                        <div class="item-info-row">
+                            <i class="fas fa-calendar-alt"></i>
+                            <span>${expireDate.format('MM-DD')}</span>
+                        </div>
+                        <div class="item-info-row">
+                            <i class="fas fa-boxes"></i>
+                            <span>×${item.Num}</span>
+                        </div>
+                        <div class="item-expiry-status ${statusBadgeClass}">
+                            <span>${statusText}</span>
+                        </div>
+                    </div>
+                </div>
+                <div class="item-card-actions">
+                    <button class="item-action-btn edit" onclick="editItem('${item._id}')" title="编辑">
+                        <i class="fas fa-edit"></i>
+                    </button>
+                    <button class="item-action-btn delete" onclick="deleteItem('${item._id}', '${item.Name}')" title="删除">
+                        <i class="fas fa-trash"></i>
+                    </button>
+                </div>
+            </div>
+        `;
+    });
+    
+    container.html(html);
+}
+
+// 按类别筛选（旧函数，保留兼容性）
+window.showCategoryItems = function(category) {
+    console.log('显示分类物品:', category);
+    
+    // 筛选该类别的物�?
+    const filtered = allItems.filter(item => {
+        const types = item.Type.split(',').map(t => t.trim());
+        return types.includes(category);
+    });
+    
+    // 获取类别信息
+    const categoryInfo = {
+        vegetable: { emoji: '🥬', name: '蔬菜' },
+        fruit: { emoji: '🍎', name: '水果' },
+        meat: { emoji: '🥩', name: '肉类' },
+        seafood: { emoji: '🐟', name: '海鲜' },
+        diary: { emoji: '🥛', name: '乳制�? },
+        beverage: { emoji: '🥤', name: '饮料' },
+        egg: { emoji: '🥚', name: '蛋豆�? },
+        bread: { emoji: '🍞', name: '面包' },
+        frozen: { emoji: '🍦', name: '冷冻食品' },
+        sauce: { emoji: '🍯', name: '酱料' },
+        snack: { emoji: '🍿', name: '零食' },
+        other: { emoji: '📦', name: '其他' }
+    };
+    
+    const info = categoryInfo[category] || { emoji: '📦', name: '其他' };
+    
+    // 更新标题
+    $('#currentCategoryEmoji').text(info.emoji);
+    $('#currentCategoryName').text(info.name);
+    $('#currentCategoryCount').text(`${filtered.length} 件`);
+    
+    // 隐藏网格，显示列�?
+    $('#categoryGridView').hide();
+    $('#categoryItemsView').show();
+    
+    // 渲染物品列表
+    displayCategoryItems(filtered);
+}
+
+// 返回分类网格
+window.backToCategoryGrid = function() {
+    $('#categoryItemsView').hide();
+    $('#categoryGridView').show();
+}
+
+// ==================== 统计页面功能 ====================
+
+// 更新统计页面
+function updateStatsPage() {
+    const now = moment();
+    let fresh = 0, expiring = 0, expired = 0;
+    
+    allItems.forEach(item => {
+        const days = moment(item.ExpireDate).diff(now, 'days');
+        if (days < 0) {
+            expired++;
+        } else if (days <= expiryWarningDays) {
+            expiring++;
+        } else {
+            fresh++;
+        }
+    });
+    
+    // 更新总览卡片
+    $('#statsTotalCount').text(allItems.length);
+    $('#statsFreshCount').text(fresh);
+    
+    // 可以添加更多统计图表
+}
+
+// ==================== 设置页面功能 ====================
+
+// 更新设置页面
+function updateSettingsPage() {
+    const isDark = $('body').hasClass('dark-mode');
+    $('#darkModeStatus').text(isDark ? '开�? : '关闭');
+}
+
+// ==================== 日期快捷按钮功能 ====================
+
+// 格式化日期显�?
+function formatDateDisplay(dateString) {
+    if (!dateString) return '点击选择日期';
+    
+    const date = new Date(dateString);
+    const year = date.getFullYear();
+    const month = String(date.getMonth() + 1).padStart(2, '0');
+    const day = String(date.getDate()).padStart(2, '0');
+    
+    return `${year}�?{month}�?{day}日`;
+}
+
+// 设置日期快捷方式
+window.setDateShortcut = function(formType, days) {
+    const today = new Date();
+    const targetDate = new Date(today);
+    targetDate.setDate(today.getDate() + days);
+    
+    // 格式化为 YYYY-MM-DD
+    const year = targetDate.getFullYear();
+    const month = String(targetDate.getMonth() + 1).padStart(2, '0');
+    const day = String(targetDate.getDate()).padStart(2, '0');
+    const dateString = `${year}-${month}-${day}`;
+    
+    // 根据表单类型设置对应的日期输入框
+    if (formType === 'add') {
+        $('#addItemDate').val(dateString);
+        $('#addItemDateDisplay').text(formatDateDisplay(dateString)).addClass('has-value');
+    } else if (formType === 'edit') {
+        $('#editItemDate').val(dateString);
+        $('#editItemDateDisplay').text(formatDateDisplay(dateString)).addClass('has-value');
+    }
+    
+    showToast(`已设置为${days}天后`, 'success');
+}
+
+// 监听日期输入框的变化
+$(document).on('change', '#addItemDate', function() {
+    const dateValue = $(this).val();
+    $('#addItemDateDisplay').text(formatDateDisplay(dateValue)).addClass('has-value');
+});
+
+$(document).on('change', '#editItemDate', function() {
+    const dateValue = $(this).val();
+    $('#editItemDateDisplay').text(formatDateDisplay(dateValue)).addClass('has-value');
+});
+
+// 导出数据
+window.exportData = function() {
+    const dataStr = JSON.stringify(allItems, null, 2);
+    const dataBlob = new Blob([dataStr], {type: 'application/json'});
+    const url = URL.createObjectURL(dataBlob);
+    const link = document.createElement('a');
+    link.href = url;
+    link.download = `fridge-data-${moment().format('YYYY-MM-DD')}.json`;
+    link.click();
+    showToast('数据已导�?, 'success');
+}
+
+// 清理已过期物�?
+window.clearExpiredItems = function() {
+    const now = moment();
+    const expiredItems = allItems.filter(item => {
+        return moment(item.ExpireDate).diff(now, 'days') < 0;
+    });
+    
+    if (expiredItems.length === 0) {
+        showToast('没有已过期的物品', 'info');
+        return;
+    }
+    
+    if (!confirm(`确定要删�?${expiredItems.length} 个已过期物品吗？`)) {
+        return;
+    }
+    
+    let deleted = 0;
+    expiredItems.forEach(item => {
+        $.ajax({
+            type: 'POST',
+            url: '/item/delete/' + item._id,
+            success: function() {
+                deleted++;
+                if (deleted === expiredItems.length) {
+                    showToast(`已清�?${deleted} 个过期物品`, 'success');
+                    loadAllItems();
+                }
+            }
+        });
+    });
+}
+
+
+// ==================== 冰箱管理功能 ====================
+
+// 当前选中的冰�?
+let currentFridge = 'public';
+
+// 切换冰箱
+function switchFridge(fridgeId) {
+    console.log('切换到冰�?', fridgeId);
+    currentFridge = fridgeId;
+    
+    // 更新UI
+    $('.fridge-tab').removeClass('active');
+    $(`.fridge-tab[data-fridge="${fridgeId}"]`).addClass('active');
+    
+    // 重新加载物品列表
+    loadAllItems();
+    
+    // 显示提示
+    const fridgeNames = {
+        'public': '公共冰箱',
+        'private-1': '我的冰箱'
+    };
+    showToast(fridgeNames[fridgeId] || '冰箱', 'info');
+}
+
+// 打开添加冰箱抽屉
+function openAddFridgeDrawer() {
+    showToast('添加冰箱功能开发中...', 'info');
+    // TODO: 实现添加冰箱的抽屉界�?
+}
+
+// 打开管理冰箱抽屉
+function openManageFridgeDrawer() {
+    showToast('管理冰箱功能开发中...', 'info');
+    // TODO: 实现管理冰箱的抽屉界�?
+    // 可以显示所有冰箱列表，支持编辑、删除、重命名等操�?
+}
+
+
+// ==================== 取出物品功能 ====================
+
+// 取出物品
+function takeOutItem(itemId, itemName, currentNum) {
+    console.log('取出物品:', itemId, itemName, currentNum);
+    
+    // 总是弹出数量选择�?
+    showTakeOutDrawer(itemId, itemName, currentNum);
+}
+
+// 显示取出数量选择抽屉
+function showTakeOutDrawer(itemId, itemName, currentNum) {
+    const drawerHtml = `
+        <div class="drawer-overlay active" id="takeOutDrawer">
+            <div class="drawer-content">
+                <div class="drawer-header">
+                    <h5><i class="fas fa-hand-holding"></i> 取出物品</h5>
+                    <button class="close-btn" onclick="closeDrawer('takeOutDrawer')">
+                        <i class="fas fa-times"></i>
+                    </button>
+                </div>
+                <div class="drawer-body">
+                    <div class="take-out-info">
+                        <h4>${itemName}</h4>
+                        <p>当前数量�?{currentNum}</p>
+                    </div>
+                    <div class="form-group">
+                        <label><i class="fas fa-boxes"></i> 取出数量</label>
+                        <div class="quantity-selector">
+                            <button type="button" class="qty-btn minus" onclick="adjustTakeOutQty(-1)">
+                                <i class="fas fa-minus"></i>
+                            </button>
+                            <input type="number" id="takeOutQty" class="qty-input" value="1" min="1" max="${currentNum}">
+                            <button type="button" class="qty-btn plus" onclick="adjustTakeOutQty(1)">
+                                <i class="fas fa-plus"></i>
+                            </button>
+                        </div>
+                        <div class="qty-shortcuts">
+                            <button type="button" class="qty-shortcut-btn" onclick="setTakeOutQty(1)">1�?/button>
+                            ${currentNum >= 2 ? `<button type="button" class="qty-shortcut-btn" onclick="setTakeOutQty(${Math.floor(currentNum/2)})">${Math.floor(currentNum/2)}�?/button>` : ''}
+                            <button type="button" class="qty-shortcut-btn" onclick="setTakeOutQty(${currentNum})">全部</button>
+                        </div>
+                    </div>
+                    <div class="form-actions">
+                        <button type="button" class="btn-secondary" onclick="closeDrawer('takeOutDrawer')">取消</button>
+                        <button type="button" class="btn-primary" onclick="confirmTakeOut('${itemId}', ${currentNum})">
+                            <i class="fas fa-check"></i> 确认取出
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    `;
+    
+    // 移除旧的抽屉（如果存在）
+    $('#takeOutDrawer').remove();
+    
+    // 添加新抽�?
+    $('body').append(drawerHtml);
+}
+
+// 调整取出数量
+function adjustTakeOutQty(delta) {
+    const input = $('#takeOutQty');
+    const currentVal = parseInt(input.val()) || 1;
+    const min = parseInt(input.attr('min'));
+    const max = parseInt(input.attr('max'));
+    const newVal = Math.max(min, Math.min(max, currentVal + delta));
+    input.val(newVal);
+}
+
+// 设置取出数量
+function setTakeOutQty(qty) {
+    $('#takeOutQty').val(qty);
+}
+
+// 确认取出
+function confirmTakeOut(itemId, currentNum) {
+    const takeOutQty = parseInt($('#takeOutQty').val());
+    
+    if (!takeOutQty || takeOutQty < 1) {
+        showToast('请输入有效的数量', 'error');
+        return;
+    }
+    
+    if (takeOutQty > currentNum) {
+        showToast('取出数量不能超过当前数量', 'error');
+        return;
+    }
+    
+    const remainingQty = currentNum - takeOutQty;
+    
+    closeDrawer('takeOutDrawer');
+    
+    if (remainingQty === 0) {
+        // 数量变为0，二次确认是否删�?
+        if (confirm('取出后数量为0，是否删除该物品卡片？\n\n点击"确定"删除卡片\n点击"取消"保留卡片（数量为0�?)) {
+            deleteItemById(itemId);
+        } else {
+            // 保留卡片，更新数量为0
+            updateItemQuantity(itemId, 0, takeOutQty);
+        }
+    } else {
+        // 部分取出，更新数�?
+        updateItemQuantity(itemId, remainingQty, takeOutQty);
+    }
+}
+
+// 更新物品数量
+function updateItemQuantity(itemId, newQty, takeOutQty) {
+    $.ajax({
+        url: '/item/update',
+        method: 'POST',
+        contentType: 'application/json',
+        data: JSON.stringify({
+            itemId: itemId,
+            itemNum: newQty
+        }),
+        success: function(response) {
+            if (response.success) {
+                if (newQty === 0) {
+                    showToast(`已取�?${takeOutQty} 个，卡片已保留`, 'success');
+                } else {
+                    showToast(`已取�?${takeOutQty} 个，剩余 ${newQty} 个`, 'success');
+                }
+                loadAllItems();
+            } else {
+                showToast(response.message || '更新失败', 'error');
+            }
+        },
+        error: function() {
+            showToast('网络错误，请重试', 'error');
+        }
+    });
+}
+
+// 通过ID删除物品（不弹确认框�?
+function deleteItemById(itemId) {
+    $.ajax({
+        url: '/item/delete',
+        method: 'POST',
+        contentType: 'application/json',
+        data: JSON.stringify({ itemId: itemId }),
+        success: function(response) {
+            if (response.success) {
+                showToast('已取出并移除', 'success');
+                loadAllItems();
+            } else {
+                showToast(response.message || '删除失败', 'error');
+            }
+        },
+        error: function() {
+            showToast('网络错误，请重试', 'error');
+        }
+    });
+}

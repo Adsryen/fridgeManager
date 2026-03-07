@@ -1,0 +1,914 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <link rel="icon" type="image/png" href="{{ url_for('static', filename='images/ice-box.png') }}">
+    <title>{{ system_name or '冰箱里面还有啥' }}</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <!-- 使用模块化CSS -->
+    <link rel="stylesheet" href="{{ url_for('static', filename='style/mobile-modular.css') }}">
+</head>
+<body>
+    <!-- 顶部导航栏 -->
+    <div class="mobile-header">
+        <div class="header-content">
+            <div class="header-left">
+                <div class="header-icon">
+                    <img src="{{ url_for('static', filename='images/ice-box.png') }}" alt="冰箱图标">
+                </div>
+                <div class="app-name">{{ system_name or '冰箱里面还有啥' }}</div>
+            </div>
+            <div class="header-right">
+                <button class="icon-btn" id="darkModeBtn" onclick="toggleDarkMode()" title="切换深色模式">
+                    <i class="fas fa-moon"></i>
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- 用户菜单抽屉 -->
+    <div class="drawer-overlay" id="userMenuDrawer">
+        <div class="drawer-content">
+            <div class="drawer-header">
+                <h5>个人中心</h5>
+                <button class="close-btn" onclick="closeDrawer('userMenuDrawer')">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            <div class="drawer-body">
+                <div class="user-info-card">
+                    <div class="user-avatar">
+                        <i class="fas fa-user"></i>
+                    </div>
+                    <div class="user-details">
+                        <div class="user-name-large">{{ username }}</div>
+                        {% if is_logged_in %}
+                        <div class="user-status">已登录</div>
+                        {% else %}
+                        <div class="user-status">游客模式</div>
+                        {% endif %}
+                    </div>
+                </div>
+                
+                <div class="menu-list">
+                    {% if is_logged_in %}
+                    {% if session.get('is_admin') %}
+                    <a href="/admin/dashboard" class="menu-item">
+                        <i class="fas fa-shield-alt"></i>
+                        <span>管理后台</span>
+                        <i class="fas fa-chevron-right"></i>
+                    </a>
+                    {% endif %}
+                    <a href="/auth/profile" class="menu-item">
+                        <i class="fas fa-user-cog"></i>
+                        <span>个人资料</span>
+                        <i class="fas fa-chevron-right"></i>
+                    </a>
+                    <a href="/settings" class="menu-item">
+                        <i class="fas fa-cog"></i>
+                        <span>设置</span>
+                        <i class="fas fa-chevron-right"></i>
+                    </a>
+                    <div class="menu-item" onclick="toggleDarkMode(); closeDrawer('userMenuDrawer');">
+                        <i class="fas fa-adjust"></i>
+                        <span>切换深色模式</span>
+                        <i class="fas fa-chevron-right"></i>
+                    </div>
+                    <div class="menu-item" onclick="resetDarkModeToAuto(); closeDrawer('userMenuDrawer');">
+                        <i class="fas fa-clock"></i>
+                        <span>自动模式（根据时间）</span>
+                        <i class="fas fa-chevron-right"></i>
+                    </div>
+                    <a href="/" class="menu-item">
+                        <i class="fas fa-desktop"></i>
+                        <span>切换到桌面版</span>
+                        <i class="fas fa-chevron-right"></i>
+                    </a>
+                    <a href="/auth/logout" class="menu-item danger">
+                        <i class="fas fa-sign-out-alt"></i>
+                        <span>退出登录</span>
+                        <i class="fas fa-chevron-right"></i>
+                    </a>
+                    {% else %}
+                    <a href="/auth/login" class="menu-item">
+                        <i class="fas fa-sign-in-alt"></i>
+                        <span>登录</span>
+                        <i class="fas fa-chevron-right"></i>
+                    </a>
+                    <a href="/auth/register" class="menu-item">
+                        <i class="fas fa-user-plus"></i>
+                        <span>注册</span>
+                        <i class="fas fa-chevron-right"></i>
+                    </a>
+                    <div class="menu-item" onclick="toggleDarkMode(); closeDrawer('userMenuDrawer');">
+                        <i class="fas fa-adjust"></i>
+                        <span>切换深色模式</span>
+                        <i class="fas fa-chevron-right"></i>
+                    </div>
+                    <div class="menu-item" onclick="resetDarkModeToAuto(); closeDrawer('userMenuDrawer');">
+                        <i class="fas fa-clock"></i>
+                        <span>自动模式（根据时间）</span>
+                        <i class="fas fa-chevron-right"></i>
+                    </div>
+                    <a href="/" class="menu-item">
+                        <i class="fas fa-desktop"></i>
+                        <span>切换到桌面版</span>
+                        <i class="fas fa-chevron-right"></i>
+                    </a>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 主内容区 -->
+    <div class="mobile-content">
+        <!-- 统计卡片 -->
+        <div class="stats-container">
+            <div class="stat-card" onclick="showAllItems()">
+                <div class="stat-icon total">
+                    <i class="fas fa-box"></i>
+                </div>
+                <div class="stat-info">
+                    <div class="stat-value" id="mTotalCount">0</div>
+                    <div class="stat-label">全部</div>
+                </div>
+            </div>
+            <div class="stat-card" onclick="showExpiringSoon()">
+                <div class="stat-icon warning">
+                    <i class="fas fa-exclamation-triangle"></i>
+                </div>
+                <div class="stat-info">
+                    <div class="stat-value" id="mExpiringSoonCount">0</div>
+                    <div class="stat-label">即将过期</div>
+                </div>
+            </div>
+            <div class="stat-card" onclick="showExpired()">
+                <div class="stat-icon danger">
+                    <i class="fas fa-times-circle"></i>
+                </div>
+                <div class="stat-info">
+                    <div class="stat-value" id="mExpiredCount">0</div>
+                    <div class="stat-label">已过期</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 冰箱选择器 -->
+        <div class="fridge-selector-container">
+            <div class="fridge-selector-scroll">
+                <div class="fridge-tab active" data-fridge="public" onclick="switchFridge('public')">
+                    <i class="fas fa-users"></i>
+                    <span>公共冰箱</span>
+                </div>
+                {% if is_logged_in %}
+                <div class="fridge-tab" data-fridge="private-1" onclick="switchFridge('private-1')">
+                    <i class="fas fa-home"></i>
+                    <span>我的冰箱</span>
+                </div>
+                <!-- 更多私人冰箱会动态添加 -->
+                <div class="fridge-tab add-fridge" onclick="openAddFridgeDrawer()">
+                    <i class="fas fa-plus-circle"></i>
+                    <span>添加冰箱</span>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+
+        <!-- 搜索栏 -->
+        <div class="mobile-search">
+            <div class="search-input-wrapper">
+                <i class="fas fa-search"></i>
+                <input type="text" id="mSearchInput" placeholder="搜索物品...">
+                <button class="clear-btn" id="clearSearchBtn" style="display: none;">
+                    <i class="fas fa-times-circle"></i>
+                </button>
+            </div>
+        </div>
+
+        <!-- 分区快速切换 -->
+        <!-- 主体内容区域：左侧边栏 + 右侧列表 -->
+        <div class="content-with-sidebar">
+            <!-- 左侧边栏 -->
+            <div class="sidebar">
+                <button class="sidebar-item active" data-place="all" onclick="filterByPlace('all')">
+                    <i class="fas fa-th"></i>
+                    <span>全部</span>
+                </button>
+                <button class="sidebar-item" data-place="cold" onclick="filterByPlace('cold')">
+                    <i class="fas fa-temperature-low"></i>
+                    <span>冷藏</span>
+                    <span class="sidebar-badge" id="mColdCount">0</span>
+                </button>
+                <button class="sidebar-item" data-place="frozer" onclick="filterByPlace('frozer')">
+                    <i class="fas fa-snowflake"></i>
+                    <span>冷冻</span>
+                    <span class="sidebar-badge" id="mFrozerCount">0</span>
+                </button>
+                <button class="sidebar-item" data-place="room" onclick="filterByPlace('room')">
+                    <i class="fas fa-home"></i>
+                    <span>室温</span>
+                    <span class="sidebar-badge" id="mRoomCount">0</span>
+                </button>
+            </div>
+
+            <!-- 右侧物品列表 -->
+            <div class="main-list-area">
+                <div class="mobile-items-container" id="mItemsContainer">
+                    <div class="loading-state">
+                        <div class="spinner"></div>
+                        <p>加载中...</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 分类页面 -->
+    <div class="page-view" id="categoryPage" style="display: none;">
+        <div class="page-header">
+            <h2><i class="fas fa-th-large"></i> 按类别浏览</h2>
+        </div>
+        
+        <!-- 分类网格视图 -->
+        <div class="category-grid-view" id="categoryGridView">
+            <div class="category-card" data-type="vegetable" onclick="showCategoryItems('vegetable')">
+                <div class="category-icon">🥬</div>
+                <div class="category-name">蔬菜</div>
+                <div class="category-count" id="catVegetableCount">0</div>
+            </div>
+            <div class="category-card" data-type="fruit" onclick="showCategoryItems('fruit')">
+                <div class="category-icon">🍎</div>
+                <div class="category-name">水果</div>
+                <div class="category-count" id="catFruitCount">0</div>
+            </div>
+            <div class="category-card" data-type="meat" onclick="showCategoryItems('meat')">
+                <div class="category-icon">🥩</div>
+                <div class="category-name">肉类</div>
+                <div class="category-count" id="catMeatCount">0</div>
+            </div>
+            <div class="category-card" data-type="seafood" onclick="showCategoryItems('seafood')">
+                <div class="category-icon">🐟</div>
+                <div class="category-name">海鲜</div>
+                <div class="category-count" id="catSeafoodCount">0</div>
+            </div>
+            <div class="category-card" data-type="diary" onclick="showCategoryItems('diary')">
+                <div class="category-icon">🥛</div>
+                <div class="category-name">乳制品</div>
+                <div class="category-count" id="catDiaryCount">0</div>
+            </div>
+            <div class="category-card" data-type="beverage" onclick="showCategoryItems('beverage')">
+                <div class="category-icon">🥤</div>
+                <div class="category-name">饮料</div>
+                <div class="category-count" id="catBeverageCount">0</div>
+            </div>
+            <div class="category-card" data-type="egg" onclick="showCategoryItems('egg')">
+                <div class="category-icon">🥚</div>
+                <div class="category-name">蛋豆类</div>
+                <div class="category-count" id="catEggCount">0</div>
+            </div>
+            <div class="category-card" data-type="bread" onclick="showCategoryItems('bread')">
+                <div class="category-icon">🍞</div>
+                <div class="category-name">面包</div>
+                <div class="category-count" id="catBreadCount">0</div>
+            </div>
+            <div class="category-card" data-type="frozen" onclick="showCategoryItems('frozen')">
+                <div class="category-icon">🍦</div>
+                <div class="category-name">冷冻食品</div>
+                <div class="category-count" id="catFrozenCount">0</div>
+            </div>
+            <div class="category-card" data-type="sauce" onclick="showCategoryItems('sauce')">
+                <div class="category-icon">🍯</div>
+                <div class="category-name">酱料</div>
+                <div class="category-count" id="catSauceCount">0</div>
+            </div>
+            <div class="category-card" data-type="snack" onclick="showCategoryItems('snack')">
+                <div class="category-icon">🍿</div>
+                <div class="category-name">零食</div>
+                <div class="category-count" id="catSnackCount">0</div>
+            </div>
+            <div class="category-card" data-type="other" onclick="showCategoryItems('other')">
+                <div class="category-icon">📦</div>
+                <div class="category-name">其他</div>
+                <div class="category-count" id="catOtherCount">0</div>
+            </div>
+        </div>
+        
+        <!-- 分类物品列表视图 -->
+        <div class="category-items-view" id="categoryItemsView" style="display: none;">
+            <div class="category-items-header">
+                <button class="back-btn" onclick="backToCategoryGrid()">
+                    <i class="fas fa-arrow-left"></i>
+                </button>
+                <div class="category-items-title">
+                    <span class="category-emoji" id="currentCategoryEmoji">🥬</span>
+                    <span class="category-title-text" id="currentCategoryName">蔬菜</span>
+                </div>
+                <div class="category-items-count" id="currentCategoryCount">0 件</div>
+            </div>
+            <div class="category-items-list" id="categoryItemsList">
+                <!-- 物品列表将在这里动态生成 -->
+            </div>
+        </div>
+    </div>
+
+    <!-- 统计页面 -->
+    <div class="page-view" id="statsPage" style="display: none;">
+        <div class="page-header">
+            <h2><i class="fas fa-chart-pie"></i> 数据统计</h2>
+        </div>
+        <div class="stats-page-content">
+            <div class="stats-overview">
+                <div class="overview-card">
+                    <div class="overview-icon total"><i class="fas fa-box"></i></div>
+                    <div class="overview-info">
+                        <div class="overview-label">总物品数</div>
+                        <div class="overview-value" id="statsTotalCount">0</div>
+                    </div>
+                </div>
+                <div class="overview-card">
+                    <div class="overview-icon fresh"><i class="fas fa-check-circle"></i></div>
+                    <div class="overview-info">
+                        <div class="overview-label">新鲜</div>
+                        <div class="overview-value" id="statsFreshCount">0</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 设置页面 -->
+    <div class="page-view" id="settingsPage" style="display: none;">
+        <div class="settings-page-content">
+            <!-- 用户信息卡片 -->
+            <div class="user-profile-card">
+                {% if is_logged_in %}
+                <div class="profile-avatar">
+                    <i class="fas fa-user-circle"></i>
+                </div>
+                <div class="profile-info">
+                    <div class="profile-name">{{ username }}</div>
+                    <div class="profile-status">
+                        {% if session.get('is_admin') %}
+                        <span class="badge-admin"><i class="fas fa-crown"></i> 管理员</span>
+                        {% else %}
+                        <span class="badge-user"><i class="fas fa-check-circle"></i> 已登录</span>
+                        {% endif %}
+                    </div>
+                </div>
+                {% else %}
+                <div class="profile-avatar guest">
+                    <i class="fas fa-user"></i>
+                </div>
+                <div class="profile-info">
+                    <div class="profile-name">游客模式</div>
+                    <div class="profile-hint">登录后享受更多功能</div>
+                </div>
+                <div class="guest-actions">
+                    <a href="/auth/login" class="btn-login-small">
+                        <i class="fas fa-sign-in-alt"></i> 登录
+                    </a>
+                    <a href="/auth/register" class="btn-register-small">
+                        <i class="fas fa-user-plus"></i> 注册
+                    </a>
+                </div>
+                {% endif %}
+            </div>
+
+            {% if is_logged_in %}
+            <!-- 快捷操作 -->
+            <div class="settings-section">
+                <h3>快捷操作</h3>
+                <div class="quick-actions">
+                    {% if session.get('is_admin') %}
+                    <a href="/admin/dashboard" class="quick-action-item">
+                        <div class="quick-action-icon admin">
+                            <i class="fas fa-shield-alt"></i>
+                        </div>
+                        <span>管理后台</span>
+                    </a>
+                    {% endif %}
+                    <div class="quick-action-item" onclick="openManageFridgeDrawer()">
+                        <div class="quick-action-icon fridge">
+                            <i class="fas fa-snowflake"></i>
+                        </div>
+                        <span>管理冰箱</span>
+                    </div>
+                    <a href="/auth/profile" class="quick-action-item">
+                        <div class="quick-action-icon profile">
+                            <i class="fas fa-user-cog"></i>
+                        </div>
+                        <span>个人资料</span>
+                    </a>
+                </div>
+            </div>
+            {% else %}
+            {% endif %}
+
+            <!-- 外观设置 -->
+            <div class="settings-section">
+                <h3>外观设置</h3>
+                
+                <!-- 自动日夜切换 -->
+                <div class="settings-item-toggle">
+                    <div class="settings-item-left">
+                        <i class="fas fa-adjust"></i>
+                        <span>自动日夜切换</span>
+                        <button class="help-icon" onclick="showDarkModeHelp(event)" title="查看规则">
+                            <i class="fas fa-question-circle"></i>
+                        </button>
+                    </div>
+                    <label class="toggle-switch">
+                        <input type="checkbox" id="autoDarkModeToggle" onchange="toggleAutoDarkMode()" checked>
+                        <span class="toggle-slider"></span>
+                    </label>
+                </div>
+            </div>
+
+            <!-- 主题选择 -->
+            <div class="settings-section">
+                <h3>主题颜色</h3>
+                <div class="theme-selector">
+                    <div class="theme-option" onclick="selectTheme('pink')" data-theme="pink">
+                        <div class="theme-color" style="background: linear-gradient(135deg, #ffc0cb, #ffb6c1);"></div>
+                        <span>粉色</span>
+                    </div>
+                    <div class="theme-option" onclick="selectTheme('blue')" data-theme="blue">
+                        <div class="theme-color" style="background: linear-gradient(135deg, #60a5fa, #3b82f6);"></div>
+                        <span>蓝色</span>
+                    </div>
+                    <div class="theme-option" onclick="selectTheme('purple')" data-theme="purple">
+                        <div class="theme-color" style="background: linear-gradient(135deg, #a78bfa, #8b5cf6);"></div>
+                        <span>紫色</span>
+                    </div>
+                    <div class="theme-option" onclick="selectTheme('green')" data-theme="green">
+                        <div class="theme-color" style="background: linear-gradient(135deg, #6ee7b7, #34d399);"></div>
+                        <span>绿色</span>
+                    </div>
+                    <div class="theme-option" onclick="selectTheme('orange')" data-theme="orange">
+                        <div class="theme-color" style="background: linear-gradient(135deg, #fdba74, #fb923c);"></div>
+                        <span>橙色</span>
+                    </div>
+                    <div class="theme-option" onclick="selectTheme('gray')" data-theme="gray">
+                        <div class="theme-color" style="background: linear-gradient(135deg, #9ca3af, #6b7280);"></div>
+                        <span>灰色</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 系统设置 -->
+            <div class="settings-section">
+                <h3>系统</h3>
+                {% if is_logged_in %}
+                <a href="/settings" class="settings-item">
+                    <div class="settings-item-left">
+                        <i class="fas fa-cog"></i>
+                        <span>系统设置</span>
+                    </div>
+                    <div class="settings-item-right">
+                        <i class="fas fa-chevron-right"></i>
+                    </div>
+                </a>
+                {% endif %}
+            </div>
+
+            <!-- 数据管理 -->
+            <div class="settings-section">
+                <h3>数据管理</h3>
+                <div class="settings-item" onclick="exportData()">
+                    <div class="settings-item-left">
+                        <i class="fas fa-download"></i>
+                        <span>导出数据</span>
+                    </div>
+                    <div class="settings-item-right">
+                        <i class="fas fa-chevron-right"></i>
+                    </div>
+                </div>
+                <div class="settings-item" onclick="clearExpiredItems()">
+                    <div class="settings-item-left">
+                        <i class="fas fa-trash-alt"></i>
+                        <span>清理过期物品</span>
+                    </div>
+                    <div class="settings-item-right">
+                        <i class="fas fa-chevron-right"></i>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 关于 -->
+            <div class="settings-section">
+                <h3>关于</h3>
+                <div class="settings-item">
+                    <div class="settings-item-left">
+                        <i class="fas fa-info-circle"></i>
+                        <span>版本信息</span>
+                    </div>
+                    <div class="settings-item-right">
+                        <span class="settings-value">v1.0.0</span>
+                    </div>
+                </div>
+            </div>
+
+            {% if is_logged_in %}
+            <!-- 退出登录 -->
+            <div class="settings-section">
+                <a href="/auth/logout" class="settings-item danger-item">
+                    <div class="settings-item-left">
+                        <i class="fas fa-sign-out-alt"></i>
+                        <span>退出登录</span>
+                    </div>
+                    <div class="settings-item-right">
+                        <i class="fas fa-chevron-right"></i>
+                    </div>
+                </a>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+
+    <!-- 分类标签横向滑动 - 固定在底部导航上方 -->
+    <div class="category-tags-container">
+        <div class="category-tags-scroll">
+            <div class="category-tag active" data-type="all" onclick="filterByCategory('all')">
+                <span class="category-tag-icon">📦</span>
+                <span class="category-tag-name">全部</span>
+                <span class="category-tag-count" id="tagAllCount">0</span>
+            </div>
+            <div class="category-tag" data-type="vegetable" onclick="filterByCategory('vegetable')">
+                <span class="category-tag-icon">🥬</span>
+                <span class="category-tag-name">蔬菜</span>
+                <span class="category-tag-count" id="tagVegetableCount">0</span>
+            </div>
+            <div class="category-tag" data-type="fruit" onclick="filterByCategory('fruit')">
+                <span class="category-tag-icon">🍎</span>
+                <span class="category-tag-name">水果</span>
+                <span class="category-tag-count" id="tagFruitCount">0</span>
+            </div>
+            <div class="category-tag" data-type="meat" onclick="filterByCategory('meat')">
+                <span class="category-tag-icon">🥩</span>
+                <span class="category-tag-name">肉类</span>
+                <span class="category-tag-count" id="tagMeatCount">0</span>
+            </div>
+            <div class="category-tag" data-type="seafood" onclick="filterByCategory('seafood')">
+                <span class="category-tag-icon">🐟</span>
+                <span class="category-tag-name">海鲜</span>
+                <span class="category-tag-count" id="tagSeafoodCount">0</span>
+            </div>
+            <div class="category-tag" data-type="diary" onclick="filterByCategory('diary')">
+                <span class="category-tag-icon">🥛</span>
+                <span class="category-tag-name">乳制品</span>
+                <span class="category-tag-count" id="tagDiaryCount">0</span>
+            </div>
+            <div class="category-tag" data-type="beverage" onclick="filterByCategory('beverage')">
+                <span class="category-tag-icon">🥤</span>
+                <span class="category-tag-name">饮料</span>
+                <span class="category-tag-count" id="tagBeverageCount">0</span>
+            </div>
+            <div class="category-tag" data-type="egg" onclick="filterByCategory('egg')">
+                <span class="category-tag-icon">🥚</span>
+                <span class="category-tag-name">蛋豆类</span>
+                <span class="category-tag-count" id="tagEggCount">0</span>
+            </div>
+            <div class="category-tag" data-type="bread" onclick="filterByCategory('bread')">
+                <span class="category-tag-icon">🍞</span>
+                <span class="category-tag-name">面包</span>
+                <span class="category-tag-count" id="tagBreadCount">0</span>
+            </div>
+            <div class="category-tag" data-type="frozen" onclick="filterByCategory('frozen')">
+                <span class="category-tag-icon">🍦</span>
+                <span class="category-tag-name">冷冻</span>
+                <span class="category-tag-count" id="tagFrozenCount">0</span>
+            </div>
+            <div class="category-tag" data-type="sauce" onclick="filterByCategory('sauce')">
+                <span class="category-tag-icon">🍯</span>
+                <span class="category-tag-name">酱料</span>
+                <span class="category-tag-count" id="tagSauceCount">0</span>
+            </div>
+            <div class="category-tag" data-type="snack" onclick="filterByCategory('snack')">
+                <span class="category-tag-icon">🍿</span>
+                <span class="category-tag-name">零食</span>
+                <span class="category-tag-count" id="tagSnackCount">0</span>
+            </div>
+            <div class="category-tag" data-type="other" onclick="filterByCategory('other')">
+                <span class="category-tag-icon">📦</span>
+                <span class="category-tag-name">其他</span>
+                <span class="category-tag-count" id="tagOtherCount">0</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- 底部导航栏 -->
+    <div class="mobile-bottom-nav">
+        <button class="nav-item active" data-view="home" onclick="switchView('home')">
+            <i class="fas fa-snowflake"></i>
+            <span>冰箱</span>
+        </button>
+        <button class="nav-item add-btn" onclick="openAddDrawer()">
+            <div class="add-icon">
+                <i class="fas fa-plus"></i>
+            </div>
+        </button>
+        <button class="nav-item" data-view="settings" onclick="switchView('settings')">
+            <i class="fas fa-user"></i>
+            <span>我的</span>
+            {% if is_logged_in %}
+                {% if session.get('is_admin') %}
+                <span class="nav-badge admin">管理员</span>
+                {% else %}
+                <span class="nav-badge user">私人</span>
+                {% endif %}
+            {% else %}
+            <span class="nav-badge guest">游客</span>
+            {% endif %}
+        </button>
+    </div>
+
+    <!-- 添加物品抽屉 -->
+    <div class="drawer-overlay" id="addItemDrawer">
+        <div class="drawer-content full-height">
+            <div class="drawer-header">
+                <h5><i class="fas fa-plus-circle"></i> 添加物品</h5>
+                <button class="close-btn" onclick="closeDrawer('addItemDrawer')">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            <div class="drawer-body">
+                <form id="mAddItemForm">
+                    <div class="form-group">
+                        <label><i class="fas fa-tag"></i> 物品名称</label>
+                        <input type="text" name="itemName" class="mobile-input" placeholder="例如：牛奶、苹果..." required>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label><i class="fas fa-calendar-alt"></i> 到期日期</label>
+                        <div class="date-picker-custom">
+                            <input type="date" name="itemDate" id="addItemDate" class="date-input-hidden" required>
+                            <div class="date-display-area" onclick="$('#addItemDate').focus().click();">
+                                <i class="fas fa-calendar-alt date-display-icon"></i>
+                                <span class="date-display-text" id="addItemDateDisplay">点击选择日期</span>
+                            </div>
+                        </div>
+                        <div class="date-shortcuts">
+                            <button type="button" class="date-shortcut-btn" onclick="setDateShortcut('add', 3)">3天后</button>
+                            <button type="button" class="date-shortcut-btn" onclick="setDateShortcut('add', 7)">1周后</button>
+                            <button type="button" class="date-shortcut-btn" onclick="setDateShortcut('add', 14)">2周后</button>
+                        </div>
+                        <div class="date-shortcuts">
+                            <button type="button" class="date-shortcut-btn" onclick="setDateShortcut('add', 30)">1月后</button>
+                            <button type="button" class="date-shortcut-btn" onclick="setDateShortcut('add', 60)">2月后</button>
+                            <button type="button" class="date-shortcut-btn" onclick="setDateShortcut('add', 90)">3月后</button>
+                        </div>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label><i class="fas fa-boxes"></i> 数量</label>
+                        <input type="number" name="itemNum" class="mobile-input" min="1" value="1" required>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label><i class="fas fa-map-marker-alt"></i> 存放位置</label>
+                        <div class="place-selector">
+                            <label class="place-option">
+                                <input type="radio" name="itemPlace" value="cold" checked>
+                                <div class="place-card">
+                                    <i class="fas fa-temperature-low"></i>
+                                    <span>冷藏室</span>
+                                </div>
+                            </label>
+                            <label class="place-option">
+                                <input type="radio" name="itemPlace" value="frozer">
+                                <div class="place-card">
+                                    <i class="fas fa-snowflake"></i>
+                                    <span>冷冻室</span>
+                                </div>
+                            </label>
+                            <label class="place-option">
+                                <input type="radio" name="itemPlace" value="room">
+                                <div class="place-card">
+                                    <i class="fas fa-home"></i>
+                                    <span>室温区</span>
+                                </div>
+                            </label>
+                        </div>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label><i class="fas fa-layer-group"></i> 类别 <span class="text-muted">(可多选)</span></label>
+                        <input type="hidden" name="itemType" id="mSelectedTypes" required>
+                        <div class="category-grid">
+                            <div class="category-item" data-type="vegetable">
+                                <span class="emoji">🥬</span>
+                                <span class="text">蔬菜</span>
+                            </div>
+                            <div class="category-item" data-type="fruit">
+                                <span class="emoji">🍎</span>
+                                <span class="text">水果</span>
+                            </div>
+                            <div class="category-item" data-type="seafood">
+                                <span class="emoji">🐟</span>
+                                <span class="text">海鲜</span>
+                            </div>
+                            <div class="category-item" data-type="meat">
+                                <span class="emoji">🥩</span>
+                                <span class="text">肉类</span>
+                            </div>
+                            <div class="category-item" data-type="beverage">
+                                <span class="emoji">🥤</span>
+                                <span class="text">饮料</span>
+                            </div>
+                            <div class="category-item" data-type="diary">
+                                <span class="emoji">🥛</span>
+                                <span class="text">乳制品</span>
+                            </div>
+                            <div class="category-item" data-type="egg">
+                                <span class="emoji">🥚</span>
+                                <span class="text">蛋豆类</span>
+                            </div>
+                            <div class="category-item" data-type="bread">
+                                <span class="emoji">🍞</span>
+                                <span class="text">面包</span>
+                            </div>
+                            <div class="category-item" data-type="frozen">
+                                <span class="emoji">🍦</span>
+                                <span class="text">冷冻食品</span>
+                            </div>
+                            <div class="category-item" data-type="sauce">
+                                <span class="emoji">🍯</span>
+                                <span class="text">酱料</span>
+                            </div>
+                            <div class="category-item" data-type="snack">
+                                <span class="emoji">🍿</span>
+                                <span class="text">零食</span>
+                            </div>
+                            <div class="category-item" data-type="other">
+                                <span class="emoji">📦</span>
+                                <span class="text">其他</span>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="form-actions">
+                        <button type="button" class="btn-secondary" onclick="closeDrawer('addItemDrawer')">取消</button>
+                        <button type="submit" class="btn-primary">
+                            <i class="fas fa-check"></i> 添加
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- 编辑物品抽屉 -->
+    <div class="drawer-overlay" id="editItemDrawer">
+        <div class="drawer-content full-height">
+            <div class="drawer-header">
+                <h5><i class="fas fa-edit"></i> 编辑物品</h5>
+                <button class="close-btn" onclick="closeDrawer('editItemDrawer')">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            <div class="drawer-body">
+                <form id="mEditItemForm">
+                    <input type="hidden" name="itemId">
+                    <div class="form-group">
+                        <label><i class="fas fa-tag"></i> 物品名称</label>
+                        <input type="text" name="itemName" class="mobile-input" required>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label><i class="fas fa-calendar-alt"></i> 到期日期</label>
+                        <div class="date-picker-custom">
+                            <input type="date" name="itemDate" id="editItemDate" class="date-input-hidden" required>
+                            <div class="date-display-area" onclick="$('#editItemDate').focus().click();">
+                                <i class="fas fa-calendar-alt date-display-icon"></i>
+                                <span class="date-display-text" id="editItemDateDisplay">点击选择日期</span>
+                            </div>
+                        </div>
+                        <div class="date-shortcuts">
+                            <button type="button" class="date-shortcut-btn" onclick="setDateShortcut('edit', 3)">3天后</button>
+                            <button type="button" class="date-shortcut-btn" onclick="setDateShortcut('edit', 7)">1周后</button>
+                            <button type="button" class="date-shortcut-btn" onclick="setDateShortcut('edit', 14)">2周后</button>
+                        </div>
+                        <div class="date-shortcuts">
+                            <button type="button" class="date-shortcut-btn" onclick="setDateShortcut('edit', 30)">1月后</button>
+                            <button type="button" class="date-shortcut-btn" onclick="setDateShortcut('edit', 60)">2月后</button>
+                            <button type="button" class="date-shortcut-btn" onclick="setDateShortcut('edit', 90)">3月后</button>
+                        </div>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label><i class="fas fa-boxes"></i> 数量</label>
+                        <input type="number" name="itemNum" class="mobile-input" min="1" required>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label><i class="fas fa-map-marker-alt"></i> 存放位置</label>
+                        <div class="place-selector">
+                            <label class="place-option">
+                                <input type="radio" name="itemPlace" value="cold">
+                                <div class="place-card">
+                                    <i class="fas fa-temperature-low"></i>
+                                    <span>冷藏室</span>
+                                </div>
+                            </label>
+                            <label class="place-option">
+                                <input type="radio" name="itemPlace" value="frozer">
+                                <div class="place-card">
+                                    <i class="fas fa-snowflake"></i>
+                                    <span>冷冻室</span>
+                                </div>
+                            </label>
+                            <label class="place-option">
+                                <input type="radio" name="itemPlace" value="room">
+                                <div class="place-card">
+                                    <i class="fas fa-home"></i>
+                                    <span>室温区</span>
+                                </div>
+                            </label>
+                        </div>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label><i class="fas fa-layer-group"></i> 类别 <span class="text-muted">(可多选)</span></label>
+                        <input type="hidden" name="itemType" id="mEditSelectedTypes" required>
+                        <div class="category-grid" id="editCategoryGrid">
+                            <div class="category-item" data-type="vegetable">
+                                <span class="emoji">🥬</span>
+                                <span class="text">蔬菜</span>
+                            </div>
+                            <div class="category-item" data-type="fruit">
+                                <span class="emoji">🍎</span>
+                                <span class="text">水果</span>
+                            </div>
+                            <div class="category-item" data-type="seafood">
+                                <span class="emoji">🐟</span>
+                                <span class="text">海鲜</span>
+                            </div>
+                            <div class="category-item" data-type="meat">
+                                <span class="emoji">🥩</span>
+                                <span class="text">肉类</span>
+                            </div>
+                            <div class="category-item" data-type="beverage">
+                                <span class="emoji">🥤</span>
+                                <span class="text">饮料</span>
+                            </div>
+                            <div class="category-item" data-type="diary">
+                                <span class="emoji">🥛</span>
+                                <span class="text">乳制品</span>
+                            </div>
+                            <div class="category-item" data-type="egg">
+                                <span class="emoji">🥚</span>
+                                <span class="text">蛋豆类</span>
+                            </div>
+                            <div class="category-item" data-type="bread">
+                                <span class="emoji">🍞</span>
+                                <span class="text">面包</span>
+                            </div>
+                            <div class="category-item" data-type="frozen">
+                                <span class="emoji">🍦</span>
+                                <span class="text">冷冻食品</span>
+                            </div>
+                            <div class="category-item" data-type="sauce">
+                                <span class="emoji">🍯</span>
+                                <span class="text">酱料</span>
+                            </div>
+                            <div class="category-item" data-type="snack">
+                                <span class="emoji">🍿</span>
+                                <span class="text">零食</span>
+                            </div>
+                            <div class="category-item" data-type="other">
+                                <span class="emoji">📦</span>
+                                <span class="text">其他</span>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="form-actions">
+                        <button type="button" class="btn-secondary" onclick="closeDrawer('editItemDrawer')">取消</button>
+                        <button type="submit" class="btn-primary">
+                            <i class="fas fa-save"></i> 保存
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/jquery@3.6.0/dist/jquery.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/moment@2.29.4/moment.min.js"></script>
+    
+    <!-- 新模块化JS - 按依赖顺序加载 -->
+    <script src="{{ url_for('static', filename='js/mobile/utils.js') }}"></script>
+    <script src="{{ url_for('static', filename='js/mobile/ui.js') }}"></script>
+    <script src="{{ url_for('static', filename='js/mobile/theme.js') }}"></script>
+    <script src="{{ url_for('static', filename='js/mobile/fridge.js') }}"></script>
+    <script src="{{ url_for('static', filename='js/mobile/items.js') }}"></script>
+    <script src="{{ url_for('static', filename='js/mobile/forms.js') }}"></script>
+    <script src="{{ url_for('static', filename='js/mobile/main.js') }}"></script>
+</body>
+</html>
