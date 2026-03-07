@@ -40,14 +40,59 @@ def create_app(config_name: str = 'default') -> Flask:
     from app.routes import auth_bp, item_bp, main_bp, admin_bp, settings_bp
     app.register_blueprint(main_bp)
     app.register_blueprint(auth_bp, url_prefix='/auth')
-    app.register_blueprint(item_bp, url_prefix='/api')
+    app.register_blueprint(item_bp, url_prefix='/item')
     app.register_blueprint(admin_bp, url_prefix='/admin')
     app.register_blueprint(settings_bp, url_prefix='/settings')
     
     # 注册错误处理
     register_error_handlers(app)
     
+    # 注册会话超时检查
+    register_session_timeout(app)
+    
+    # 启动定时任务调度器
+    from app.tasks import start_scheduler
+    start_scheduler(db_client.fridge)
+    
     return app
+
+
+def register_session_timeout(app: Flask):
+    """注册会话超时检查"""
+    from flask import session, request, redirect, url_for
+    from datetime import datetime, timedelta
+    
+    @app.before_request
+    def check_session_timeout():
+        """检查会话是否超时"""
+        # 排除不需要检查的路径
+        if request.endpoint in ['auth.login', 'auth.register', 'static', 'main.index']:
+            return
+        
+        # 只检查已登录用户
+        if 'user_id' not in session:
+            return
+        
+        # 获取系统设置
+        from app.models.system_settings import SystemSettings
+        system_settings = SystemSettings(db_client.fridge)
+        settings = system_settings.get_all_settings()
+        session_timeout = settings.get('session_timeout', 60)  # 分钟
+        
+        # 检查最后活动时间
+        last_activity = session.get('last_activity')
+        if last_activity:
+            last_activity_time = datetime.fromisoformat(last_activity)
+            if datetime.now() - last_activity_time > timedelta(minutes=session_timeout):
+                # 会话超时，清除session
+                session.clear()
+                if request.is_json:
+                    from flask import jsonify
+                    return jsonify({'error': '会话已超时，请重新登录'}), 401
+                return redirect(url_for('auth.login'))
+        
+        # 更新最后活动时间
+        session['last_activity'] = datetime.now().isoformat()
 
 
 def register_error_handlers(app: Flask):
