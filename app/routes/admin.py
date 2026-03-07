@@ -1,9 +1,13 @@
 # -*- coding: utf-8 -*-
 """管理员路由"""
-from flask import Blueprint, render_template, jsonify, request
+from flask import Blueprint, render_template, jsonify, request, send_file
 from app import db_client
 from app.services.admin_service import AdminService
+from app.models.system_settings import SystemSettings
 from app.utils.auth import admin_required
+import sys
+import os
+from datetime import datetime
 
 admin_bp = Blueprint('admin', __name__)
 
@@ -82,3 +86,91 @@ def stats():
     admin_service = AdminService(db_client.fridge)
     stats = admin_service.get_statistics()
     return jsonify(stats)
+
+
+@admin_bp.route('/settings')
+@admin_required
+def settings():
+    """系统设置页面"""
+    system_settings = SystemSettings(db_client.fridge)
+    settings_data = system_settings.get_all_settings()
+    
+    # 获取系统信息
+    python_version = f"{sys.version_info.major}.{sys.version_info.minor}.{sys.version_info.micro}"
+    
+    # 获取数据库大小
+    try:
+        db_path = 'data/fridge.db'
+        if os.path.exists(db_path):
+            db_size = os.path.getsize(db_path)
+            db_size_mb = round(db_size / (1024 * 1024), 2)
+            db_size_str = f"{db_size_mb} MB"
+        else:
+            db_size_str = "未知"
+    except:
+        db_size_str = "未知"
+    
+    return render_template('admin/settings.html', 
+                         settings=settings_data,
+                         python_version=python_version,
+                         db_size=db_size_str,
+                         last_update=settings_data.get('updated_at', '未知'))
+
+
+@admin_bp.route('/settings/save', methods=['POST'])
+@admin_required
+def save_settings():
+    """保存系统设置"""
+    try:
+        data = request.get_json()
+        category = data.get('category')
+        settings = data.get('settings')
+        
+        system_settings = SystemSettings(db_client.fridge)
+        success = system_settings.update_settings(settings)
+        
+        if success:
+            return jsonify({'success': True, 'message': '设置已保存'})
+        return jsonify({'error': '保存失败'}), 400
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+
+
+@admin_bp.route('/maintenance/clean-expired', methods=['POST'])
+@admin_required
+def clean_expired_items():
+    """清理过期物品"""
+    try:
+        admin_service = AdminService(db_client.fridge)
+        count = admin_service.clean_expired_items()
+        return jsonify({'success': True, 'count': count})
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+
+
+@admin_bp.route('/maintenance/backup')
+@admin_required
+def backup_database():
+    """备份数据库"""
+    try:
+        db_path = 'data/fridge.db'
+        if os.path.exists(db_path):
+            timestamp = datetime.now().strftime('%Y%m%d_%H%M%S')
+            return send_file(db_path, 
+                           as_attachment=True,
+                           download_name=f'fridge_backup_{timestamp}.db')
+        return jsonify({'error': '数据库文件不存在'}), 404
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+
+
+@admin_bp.route('/maintenance/logs')
+@admin_required
+def view_logs():
+    """查看系统日志"""
+    try:
+        admin_service = AdminService(db_client.fridge)
+        logs = admin_service.get_system_logs()
+        return render_template('admin/logs.html', logs=logs)
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500

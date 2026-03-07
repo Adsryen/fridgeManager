@@ -110,3 +110,29 @@ class AdminService:
         # 删除用户
         result = self.db.user.delete_one({'_id': user_id})
         return result.deleted_count > 0
+    
+    def clean_expired_items(self) -> int:
+        """清理所有过期物品"""
+        from datetime import datetime
+        now = datetime.now().strftime('%Y-%m-%dT%H:%M:%S.000Z')
+        
+        # 查找所有过期物品
+        expired_items = self.db.item.find({'ExpireDate': {'$lt': now}})
+        count = len(expired_items)
+        
+        # 删除过期物品
+        if count > 0:
+            expired_ids = [item['_id'] for item in expired_items]
+            self.db.item.delete_many({'_id': {'$in': expired_ids}})
+        
+        return count
+    
+    def get_system_logs(self, limit: int = 100) -> list[dict]:
+        """获取系统日志"""
+        from app.models.login_log import LoginLog
+        
+        # 获取登录日志
+        login_log = LoginLog(self.db)
+        logs = login_log.get_all_logs(limit)
+        
+        return logs
