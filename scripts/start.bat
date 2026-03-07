@@ -1,6 +1,6 @@
 @echo off
 chcp 65001 >nul
-echo 启动冰箱管理系统...
+echo 启动冰箱里面还有啥...
 echo.
 
 REM 检查虚拟环境

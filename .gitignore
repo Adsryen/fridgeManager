@@ -80,3 +80,9 @@ static/uploads/
 # Test scripts (optional)
 scripts/test_*.py
 scripts/run_tests.py
+
+
+# IDE
+.vscode/
+.idea/
+.kiro/
