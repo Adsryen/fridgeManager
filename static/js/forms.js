@@ -48,35 +48,36 @@ function updateSelectedTypes(containerSelector, inputSelector) {
 function submitAddItemForm(e) {
     e.preventDefault();
     
-    const formData = {
-        itemName: $('#mAddItemForm input[name="itemName"]').val(),
-        itemDate: $('#mAddItemForm input[name="itemDate"]').val(),
-        itemNum: parseInt($('#mAddItemForm input[name="itemNum"]').val()),
-        itemPlace: $('#mAddItemForm input[name="itemPlace"]:checked').val(),
-        itemType: $('#mSelectedTypes').val()
-    };
+    const formData = new FormData();
+    formData.append('itemName', $('#mAddItemForm input[name="itemName"]').val());
+    formData.append('itemDate', $('#mAddItemForm input[name="itemDate"]').val().replace(/-/g, ''));
+    formData.append('itemNum', $('#mAddItemForm input[name="itemNum"]').val());
+    formData.append('itemPlace', $('#mAddItemForm input[name="itemPlace"]:checked').val());
+    formData.append('itemType', $('#mSelectedTypes').val());
     
-    if (!formData.itemType) {
+    if (!$('#mSelectedTypes').val()) {
         showToast('请选择至少一个类别', 'warning');
         return;
     }
     
     $.ajax({
-        url: '/item/add',
+        url: '/item/insert',
         method: 'POST',
-        contentType: 'application/json',
-        data: JSON.stringify(formData),
+        data: formData,
+        processData: false,
+        contentType: false,
         success: function(response) {
             if (response.success) {
                 showToast('添加成功', 'success');
                 closeDrawer('addItemDrawer');
                 loadAllItems();
             } else {
-                showToast(response.message || '添加失败', 'error');
+                showToast(response.error || '添加失败', 'error');
             }
         },
-        error: function() {
-            showToast('网络错误，请重试', 'error');
+        error: function(xhr) {
+            const response = xhr.responseJSON;
+            showToast(response?.error || '网络错误，请重试', 'error');
         }
     });
 }

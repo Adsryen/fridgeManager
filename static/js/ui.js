@@ -39,7 +39,14 @@ function openDrawer(drawerId) {
 
 // 关闭抽屉
 function closeDrawer(drawerId) {
-    $(`#${drawerId}`).removeClass('active');
+    const drawer = document.getElementById(drawerId);
+    if (drawer) {
+        drawer.classList.remove('active');
+        // 等待动画结束后删除元素
+        setTimeout(() => {
+            drawer.remove();
+        }, 300);
+    }
 }
 
 // 显示加载状态
