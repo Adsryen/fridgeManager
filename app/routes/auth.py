@@ -262,19 +262,40 @@ def change_password():
 def update_profile():
     """更新个人资料"""
     user_id = get_current_user_id()
-    email = request.form.get('email', '').strip()
+    data = request.get_json() if request.is_json else request.form
     
-    if not email:
-        return jsonify({'error': '邮箱不能为空'}), 400
+    email = data.get('email', '').strip()
+    username = data.get('username', '').strip()
     
-    if not re.match(r'^[^\s@]+@[^\s@]+\.[^\s@]+$', email):
-        return jsonify({'error': '邮箱格式不正确'}), 400
+    update_data = {}
+    
+    # 验证邮箱
+    if email:
+        if not re.match(r'^[^\s@]+@[^\s@]+\.[^\s@]+$', email):
+            return jsonify({'error': '邮箱格式不正确'}), 400
+        update_data['email'] = email
+    
+    # 验证用户名
+    if username:
+        if not re.match(r'^[a-zA-Z0-9_\u4e00-\u9fa5]{3,20}$', username):
+            return jsonify({'error': '用户名格式不正确(3-20个字符,支持中英文、数字、下划线)'}), 400
+        update_data['username'] = username
+    
+    if not update_data:
+        return jsonify({'error': '没有需要更新的内容'}), 400
     
     try:
         user_service = UserService(db_client.fridge)
-        user_service.update_user(user_id, email=email)
+        success = user_service.update_user(user_id, **update_data)
         
-        return jsonify({'success': True, 'message': '资料更新成功'}), 200
+        if success or update_data:
+            # 如果更新了用户名,更新session
+            if 'username' in update_data:
+                session['username'] = username
+            
+            return jsonify({'success': True, 'message': '资料更新成功'}), 200
+        else:
+            return jsonify({'error': '没有内容被更新'}), 400
     except ValueError as e:
         return jsonify({'error': str(e)}), 400
     except Exception as e:

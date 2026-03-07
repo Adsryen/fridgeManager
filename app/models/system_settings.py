@@ -13,10 +13,17 @@ class SystemSettings:
     
     def _ensure_defaults(self):
         """确保默认设置存在"""
-        existing = self.collection.find_one({'_id': 'system'})
-        if not existing:
-            defaults = self.get_default_settings()
-            self.collection.insert_one(defaults)
+        try:
+            existing = self.collection.find_one({'_id': 'system'})
+            if not existing:
+                defaults = self.get_default_settings()
+                try:
+                    self.collection.insert_one(defaults)
+                except Exception as e:
+                    # 如果插入失败(可能是并发导致),忽略错误
+                    print(f"插入默认设置失败(可能已存在): {e}")
+        except Exception as e:
+            print(f"检查默认设置失败: {e}")
     
     @staticmethod
     def get_default_settings() -> dict:
@@ -63,8 +70,8 @@ class SystemSettings:
         """获取所有设置"""
         settings = self.collection.find_one({'_id': 'system'})
         if not settings:
+            # 使用默认设置,但不插入(由_ensure_defaults处理)
             settings = self.get_default_settings()
-            self.collection.insert_one(settings)
         
         # 转换整数为布尔值以便在模板中使用
         bool_fields = [
