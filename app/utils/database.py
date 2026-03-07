@@ -207,6 +207,7 @@ class SQLiteDatabase:
         self.user = SQLiteCollection(conn, 'user')
         self.settings = SQLiteCollection(conn, 'settings')
         self.system_settings = SQLiteCollection(conn, 'system_settings')
+        self.login_logs = SQLiteCollection(conn, 'login_logs')
 
 
 class SQLiteMongoLikeClient:
@@ -296,12 +297,28 @@ class SQLiteMongoLikeClient:
             ")"
         )
         
+        # 创建 login_logs 表
+        conn.execute(
+            "CREATE TABLE IF NOT EXISTS login_logs ("
+            "_id TEXT PRIMARY KEY, "
+            "user_id TEXT, "
+            "username TEXT NOT NULL, "
+            "success INTEGER NOT NULL, "
+            "ip_address TEXT, "
+            "user_agent TEXT, "
+            "error_message TEXT, "
+            "login_time TEXT NOT NULL"
+            ")"
+        )
+        
         # 创建索引
         conn.execute("CREATE INDEX IF NOT EXISTS idx_item_user_id ON item(user_id)")
         conn.execute("CREATE INDEX IF NOT EXISTS idx_item_expire ON item(ExpireDate)")
         conn.execute("CREATE INDEX IF NOT EXISTS idx_user_username ON user(username)")
         conn.execute("CREATE INDEX IF NOT EXISTS idx_user_email ON user(email)")
         conn.execute("CREATE INDEX IF NOT EXISTS idx_settings_user_id ON settings(user_id)")
+        conn.execute("CREATE INDEX IF NOT EXISTS idx_login_logs_username ON login_logs(username)")
+        conn.execute("CREATE INDEX IF NOT EXISTS idx_login_logs_time ON login_logs(login_time)")
         
         conn.commit()
         self._connections[path] = conn

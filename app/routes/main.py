@@ -10,7 +10,7 @@ main_bp = Blueprint('main', __name__)
 
 @main_bp.route('/')
 def index():
-    """主页 - 允许匿名访问"""
+    """主页 - 移动端优化版本 - 允许匿名访问"""
     username = get_current_username() or '游客'
     is_logged_in = 'user_id' in session
     
@@ -19,7 +19,13 @@ def index():
     settings = system_settings.get_all_settings()
     system_name = settings.get('system_name', '冰箱里面还有啥')
     
-    return render_template('index.html', 
+    return render_template('mobile.html', 
                          username=username, 
                          is_logged_in=is_logged_in,
                          system_name=system_name)
+
+
+@main_bp.route('/mobile')
+def mobile():
+    """移动端页面（重定向到主页以保持兼容性）"""
+    return index()

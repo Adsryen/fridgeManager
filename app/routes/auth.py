@@ -154,7 +154,8 @@ def login():
 def logout():
     """用户登出"""
     session.clear()
-    return redirect(url_for('auth.login'))
+    # 退出后跳转到首页，用户可以在"我的"页面看到游客状态
+    return redirect(url_for('main.index'))
 
 
 @auth_bp.route('/profile')

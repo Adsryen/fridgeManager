@@ -3,6 +3,7 @@
 import os
 import secrets
 from flask import Flask
+from flask_session import Session
 from app.utils.database import SQLiteMongoLikeClient
 
 
@@ -29,6 +30,14 @@ def create_app(config_name: str = 'default') -> Flask:
     
     # 设置密钥
     app.secret_key = app.config.get('SECRET_KEY') or secrets.token_hex(32)
+    
+    # 确保session目录存在
+    session_dir = app.config.get('SESSION_FILE_DIR')
+    if session_dir and not os.path.exists(session_dir):
+        os.makedirs(session_dir, exist_ok=True)
+    
+    # 初始化Flask-Session（必须在设置secret_key之后）
+    Session(app)
     
     # 初始化数据库
     global db_client

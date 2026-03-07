@@ -12,7 +12,11 @@ class Config:
     JSON_AS_ASCII = False
     JSON_SORT_KEYS = False
     
-    # 会话配置
+    # 会话配置 - 使用文件系统存储，重启后不丢失
+    SESSION_TYPE = 'filesystem'  # 使用文件系统存储session
+    SESSION_FILE_DIR = os.path.join(DATABASE_DIR, 'flask_session')  # session文件存储目录
+    SESSION_PERMANENT = True  # 设置为永久会话
+    SESSION_USE_SIGNER = True  # 对session cookie进行签名
     SESSION_COOKIE_HTTPONLY = True
     SESSION_COOKIE_SAMESITE = 'Lax'
     PERMANENT_SESSION_LIFETIME = 86400  # 24 小时

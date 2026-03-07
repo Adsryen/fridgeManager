@@ -30,7 +30,7 @@ class LoginLog:
             'ip_address': ip_address,
             'user_agent': user_agent,
             'error_message': error_message,
-            'timestamp': datetime.now().isoformat()
+            'login_time': datetime.now().isoformat()
         }
         
         self.collection.insert_one(log_entry)
@@ -40,14 +40,14 @@ class LoginLog:
         """获取用户的登录日志"""
         logs = self.collection.find({'user_id': user_id})
         # 按时间倒序
-        logs = sorted(logs, key=lambda x: x.get('timestamp', ''), reverse=True)
+        logs = sorted(logs, key=lambda x: x.get('login_time', ''), reverse=True)
         return logs[:limit]
     
     def get_all_logs(self, limit: int = 100) -> list[dict]:
         """获取所有登录日志"""
         logs = self.collection.find()
         # 按时间倒序
-        logs = sorted(logs, key=lambda x: x.get('timestamp', ''), reverse=True)
+        logs = sorted(logs, key=lambda x: x.get('login_time', ''), reverse=True)
         return logs[:limit]
     
     def get_failed_attempts(self, username: str, minutes: int = 30) -> int:
@@ -58,7 +58,7 @@ class LoginLog:
         logs = self.collection.find({
             'username': username,
             'success': False,
-            'timestamp': {'$gte': cutoff_time}
+            'login_time': {'$gte': cutoff_time}
         })
         return len(logs)
     
@@ -68,6 +68,6 @@ class LoginLog:
         
         cutoff_time = (datetime.now() - timedelta(days=days)).isoformat()
         result = self.collection.delete_many({
-            'timestamp': {'$lt': cutoff_time}
+            'login_time': {'$lt': cutoff_time}
         })
         return result.deleted_count
