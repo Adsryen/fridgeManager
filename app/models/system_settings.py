@@ -41,6 +41,14 @@ class SystemSettings:
             'enable_login_log': 1,
             'max_login_attempts': 5,
             
+            # 邮件服务器设置
+            'smtp_server': '',
+            'smtp_port': 587,
+            'smtp_username': '',
+            'smtp_password': '',
+            'from_email': '',
+            'from_name': '冰箱管理系统',
+            
             # 通知设置
             'enable_email_notification': 0,
             'daily_summary_email': 0,
@@ -110,3 +118,16 @@ class SystemSettings:
         except Exception as e:
             print(f"重置设置失败: {e}")
             return False
+    
+    @staticmethod
+    def get_settings(db_client):
+        """静态方法：获取系统设置（供其他模块使用）"""
+        try:
+            settings = db_client.find_one('system_settings', {'_id': 'system'})
+            if not settings:
+                # 如果没有设置，返回默认值
+                return SystemSettings.get_default_settings()
+            return settings
+        except Exception as e:
+            print(f"获取系统设置失败: {e}")
+            return SystemSettings.get_default_settings()
