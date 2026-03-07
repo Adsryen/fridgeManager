@@ -1,0 +1,44 @@
+/* 管理后台移动端 - 仪表板页面样式 */
+
+.dashboard-stats {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: var(--spacing-md);
+    margin-bottom: var(--spacing-lg);
+}
+
+.dashboard-detail-section {
+    margin-bottom: var(--spacing-lg);
+}
+
+.dashboard-detail-table {
+    width: 100%;
+}
+
+.dashboard-detail-table tr {
+    display: flex;
+    justify-content: space-between;
+    padding: var(--spacing-sm) 0;
+    border-bottom: 1px solid var(--divider-color);
+}
+
+.dashboard-detail-table tr:last-child {
+    border-bottom: none;
+}
+
+.dashboard-detail-table td:first-child {
+    color: var(--text-secondary);
+}
+
+.dashboard-detail-table td:last-child {
+    font-weight: 600;
+}
+
+.dashboard-actions {
+    display: flex;
+    gap: var(--spacing-md);
+}
+
+.dashboard-actions .btn {
+    flex: 1;
+}

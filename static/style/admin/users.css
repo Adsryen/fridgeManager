@@ -1,0 +1,90 @@
+/* 管理后台移动端 - 用户管理页面样式 */
+
+.user-card {
+    background: var(--card-background);
+    border-radius: var(--border-radius-lg);
+    padding: var(--spacing-md);
+    margin-bottom: var(--spacing-md);
+    box-shadow: var(--shadow-sm);
+}
+
+.user-card-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: var(--spacing-sm);
+}
+
+.user-card-name {
+    font-size: var(--font-size-h3);
+    font-weight: 600;
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-sm);
+}
+
+.user-card-email {
+    color: var(--text-secondary);
+    font-size: var(--font-size-small);
+    margin-bottom: var(--spacing-sm);
+}
+
+.user-card-meta {
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-md);
+    margin-bottom: var(--spacing-md);
+    font-size: var(--font-size-small);
+    color: var(--text-secondary);
+}
+
+.user-card-actions {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: var(--spacing-sm);
+}
+
+.user-card-actions .btn {
+    font-size: var(--font-size-small);
+    padding: var(--spacing-sm) var(--spacing-xs);
+}
+
+.user-card-actions .btn i {
+    margin-right: var(--spacing-xs);
+}
+
+/* 用户统计 */
+.user-stats {
+    background: var(--card-background);
+    border-radius: var(--border-radius-lg);
+    padding: var(--spacing-md);
+    margin-bottom: var(--spacing-md);
+    box-shadow: var(--shadow-sm);
+}
+
+.user-stats-title {
+    font-weight: 600;
+    margin-bottom: var(--spacing-md);
+}
+
+.user-stats-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: var(--spacing-md);
+}
+
+.user-stat-item {
+    text-align: center;
+}
+
+.user-stat-value {
+    font-size: var(--font-size-h2);
+    font-weight: 700;
+    color: var(--primary-color);
+}
+
+.user-stat-label {
+    font-size: var(--font-size-small);
+    color: var(--text-secondary);
+    margin-top: var(--spacing-xs);
+}

@@ -1,0 +1,64 @@
+/* 管理后台移动端 - CSS变量定义 */
+
+:root {
+    /* 主色调 */
+    --primary-color: #667eea;
+    --primary-dark: #5568d3;
+    --primary-light: #8b9ef5;
+    
+    /* 辅助色 */
+    --secondary-color: #764ba2;
+    --accent-color: #FF9800;
+    --danger-color: #F44336;
+    --warning-color: #FFC107;
+    --success-color: #4CAF50;
+    --info-color: #2196F3;
+    
+    /* 中性色 */
+    --text-primary: #212121;
+    --text-secondary: #757575;
+    --divider-color: #BDBDBD;
+    --background-color: #FAFAFA;
+    --card-background: #FFFFFF;
+    
+    /* 字体大小 */
+    --font-size-h1: 24px;
+    --font-size-h2: 20px;
+    --font-size-h3: 18px;
+    --font-size-body: 16px;
+    --font-size-small: 14px;
+    --font-size-tiny: 12px;
+    
+    /* 行高 */
+    --line-height-normal: 1.5;
+    --line-height-relaxed: 1.8;
+    
+    /* 间距 */
+    --spacing-xs: 4px;
+    --spacing-sm: 8px;
+    --spacing-md: 16px;
+    --spacing-lg: 24px;
+    --spacing-xl: 32px;
+    
+    /* 圆角 */
+    --border-radius-sm: 4px;
+    --border-radius-md: 8px;
+    --border-radius-lg: 12px;
+    --border-radius-xl: 16px;
+    --border-radius-round: 50%;
+    
+    /* 阴影 */
+    --shadow-sm: 0 1px 3px rgba(0,0,0,0.12);
+    --shadow-md: 0 2px 8px rgba(0,0,0,0.15);
+    --shadow-lg: 0 4px 16px rgba(0,0,0,0.18);
+    
+    /* 触摸目标尺寸 */
+    --touch-target-min: 44px;
+    --touch-target-recommended: 48px;
+    
+    /* 渐变色 */
+    --gradient-primary: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    --gradient-success: linear-gradient(135deg, #11998e 0%, #38ef7d 100%);
+    --gradient-warning: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+    --gradient-info: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+}

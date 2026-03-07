@@ -1,0 +1,94 @@
+/* 管理后台移动端 - 布局样式 */
+
+/* 容器 */
+.admin-container {
+    min-height: 100vh;
+    padding-bottom: 70px;
+}
+
+/* 顶部导航栏 */
+.admin-header {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 56px;
+    background: var(--gradient-primary);
+    color: white;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0 var(--spacing-md);
+    box-shadow: var(--shadow-md);
+    z-index: 1000;
+}
+
+.admin-header-title {
+    font-size: var(--font-size-h3);
+    font-weight: 600;
+}
+
+.admin-header-back {
+    width: var(--touch-target-recommended);
+    height: var(--touch-target-recommended);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    font-size: 20px;
+}
+
+.admin-header-action {
+    width: var(--touch-target-recommended);
+    height: var(--touch-target-recommended);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    font-size: 18px;
+}
+
+/* 主内容区 */
+.admin-content {
+    padding: calc(56px + var(--spacing-md)) var(--spacing-md) var(--spacing-md);
+}
+
+/* 底部导航栏 */
+.admin-nav {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    height: 60px;
+    background: white;
+    display: flex;
+    justify-content: space-around;
+    align-items: center;
+    box-shadow: 0 -2px 8px rgba(0,0,0,0.1);
+    z-index: 1000;
+}
+
+.admin-nav-item {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    color: var(--text-secondary);
+    font-size: var(--font-size-tiny);
+    padding: var(--spacing-sm);
+    transition: all 0.3s;
+}
+
+.admin-nav-item i {
+    font-size: 22px;
+    margin-bottom: var(--spacing-xs);
+}
+
+.admin-nav-item.active {
+    color: var(--primary-color);
+}
+
+.admin-nav-item:active {
+    background-color: rgba(0,0,0,0.05);
+}
