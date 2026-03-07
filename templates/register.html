@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>注册 - 冰箱管理系统</title>
+    <title>注册 - 冰箱里面还有啥</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <style>
@@ -111,6 +111,18 @@
             <span id="alertMessage"></span>
         </div>
 
+        {% if registration_disabled %}
+        <div class="alert alert-warning" role="alert">
+            <i class="fas fa-exclamation-triangle"></i>
+            <strong>注册已关闭</strong>
+            <p class="mb-0 mt-2">系统当前不允许新用户注册，请联系管理员获取账号。</p>
+        </div>
+        <div class="login-link">
+            <a href="/auth/login" class="text-decoration-none">
+                <i class="fas fa-arrow-left"></i> 返回登录
+            </a>
+        </div>
+        {% else %}
         <form id="registerForm" novalidate>
             <div class="mb-3">
                 <label for="username" class="form-label">用户名 <span class="text-danger">*</span></label>
@@ -177,6 +189,7 @@
             <span>已有账号？</span>
             <a href="/auth/login">立即登录</a>
         </div>
+        {% endif %}
     </div>
 
     <script src="https://cdn.jsdelivr.net/npm/jquery@3.6.0/dist/jquery.min.js"></script>

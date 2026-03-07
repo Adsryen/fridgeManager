@@ -117,3 +117,7 @@ class UserService:
             }}
         )
         return result.modified_count > 0
+    
+    def get_all_users(self) -> list[dict]:
+        """获取所有用户（管理员功能）"""
+        return list(self.db.user.find({}))

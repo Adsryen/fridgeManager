@@ -72,6 +72,39 @@ def get_current_user_id() -> str | None:
     return session.get('user_id')
 
 
+def get_effective_user_id() -> str:
+    """获取有效的用户 ID（用于物品查询）
+    
+    如果用户已登录且选择了私人冰箱，返回用户 ID
+    否则返回 'public' 表示公共冰箱
+    """
+    # 如果用户选择查看公共冰箱
+    if session.get('view_mode') == 'public':
+        return 'public'
+    
+    # 如果管理员选择查看特定用户的冰箱
+    if session.get('is_admin') and session.get('view_user_id'):
+        return session.get('view_user_id')
+    
+    # 如果用户已登录，返回用户 ID
+    user_id = session.get('user_id')
+    if user_id:
+        return user_id
+    
+    # 未登录用户默认使用公共冰箱
+    return 'public'
+
+
+def is_viewing_public() -> bool:
+    """检查当前是否在查看公共冰箱"""
+    return get_effective_user_id() == 'public'
+
+
+def get_current_username() -> str | None:
+    """获取当前登录用户名"""
+    return session.get('username')
+
+
 def get_current_username() -> str | None:
     """获取当前登录用户名"""
     return session.get('username')

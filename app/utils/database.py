@@ -206,6 +206,7 @@ class SQLiteDatabase:
         self.item = SQLiteCollection(conn, 'item')
         self.user = SQLiteCollection(conn, 'user')
         self.settings = SQLiteCollection(conn, 'settings')
+        self.system_settings = SQLiteCollection(conn, 'system_settings')
 
 
 class SQLiteMongoLikeClient:
@@ -268,6 +269,30 @@ class SQLiteMongoLikeClient:
             "items_per_page INTEGER DEFAULT 20, "
             "default_view TEXT DEFAULT 'all', "
             "profile_public INTEGER DEFAULT 0"
+            ")"
+        )
+        
+        # 创建 system_settings 表
+        conn.execute(
+            "CREATE TABLE IF NOT EXISTS system_settings ("
+            "_id TEXT PRIMARY KEY, "
+            "system_name TEXT, "
+            "system_description TEXT, "
+            "allow_registration INTEGER DEFAULT 1, "
+            "require_email_verification INTEGER DEFAULT 0, "
+            "default_expiry_warning_days INTEGER DEFAULT 3, "
+            "auto_delete_expired INTEGER DEFAULT 0, "
+            "auto_delete_days INTEGER DEFAULT 7, "
+            "max_items_per_user INTEGER DEFAULT 0, "
+            "min_password_length INTEGER DEFAULT 6, "
+            "session_timeout INTEGER DEFAULT 60, "
+            "enable_login_log INTEGER DEFAULT 1, "
+            "max_login_attempts INTEGER DEFAULT 5, "
+            "enable_email_notification INTEGER DEFAULT 0, "
+            "daily_summary_email INTEGER DEFAULT 0, "
+            "summary_email_time TEXT DEFAULT '09:00', "
+            "created_at TEXT, "
+            "updated_at TEXT"
             ")"
         )
         

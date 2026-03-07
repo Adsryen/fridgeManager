@@ -4,6 +4,7 @@ from flask import Blueprint, render_template, request, redirect, url_for, sessio
 from app import db_client
 from app.services.user_service import UserService
 from app.utils.auth import login_required, get_current_user_id
+from datetime import datetime
 import re
 
 auth_bp = Blueprint('auth', __name__)
@@ -12,6 +13,17 @@ auth_bp = Blueprint('auth', __name__)
 @auth_bp.route('/register', methods=['GET', 'POST'])
 def register():
     """用户注册"""
+    from app.models.system_settings import SystemSettings
+    
+    # 检查是否允许注册
+    system_settings = SystemSettings(db_client.fridge)
+    settings = system_settings.get_all_settings()
+    
+    if not settings.get('allow_registration', True):
+        if request.method == 'POST':
+            return jsonify({'error': '系统当前不允许新用户注册'}), 403
+        return render_template('register.html', registration_disabled=True)
+    
     if request.method == 'GET':
         return render_template('register.html')
     
@@ -31,9 +43,12 @@ def register():
     if not re.match(r'^[^\s@]+@[^\s@]+\.[^\s@]+$', email):
         return jsonify({'error': '邮箱格式不正确'}), 400
     
+    # 从设置中获取密码最小长度
+    min_password_length = settings.get('min_password_length', 6)
+    
     # 验证密码强度
-    if len(password) < 6:
-        return jsonify({'error': '密码至少需要 6 个字符'}), 400
+    if len(password) < min_password_length:
+        return jsonify({'error': f'密码至少需要 {min_password_length} 个字符'}), 400
     
     if not re.search(r'[a-zA-Z]', password):
         return jsonify({'error': '密码必须包含字母'}), 400
@@ -63,21 +78,74 @@ def login():
     if request.method == 'GET':
         return render_template('login.html')
     
+    from app.models.system_settings import SystemSettings
+    from app.models.login_log import LoginLog
+    
     username = request.form.get('username', '').strip()
     password = request.form.get('password', '')
     
+    print(f'[登录调试] 收到登录请求 - 用户名: {username}, 密码长度: {len(password)}')
+    
     if not username or not password:
+        print('[登录调试] 用户名或密码为空')
         return jsonify({'error': '用户名和密码不能为空'}), 400
+    
+    # 获取系统设置
+    system_settings = SystemSettings(db_client.fridge)
+    settings = system_settings.get_all_settings()
+    
+    # 获取IP地址和User-Agent
+    ip_address = request.remote_addr
+    user_agent = request.headers.get('User-Agent', '')
+    
+    # 检查是否启用登录日志
+    enable_login_log = settings.get('enable_login_log', True)
+    
+    # 检查登录尝试次数限制
+    if enable_login_log:
+        login_log = LoginLog(db_client.fridge)
+        max_attempts = settings.get('max_login_attempts', 5)
+        failed_attempts = login_log.get_failed_attempts(username, minutes=30)
+        
+        if failed_attempts >= max_attempts:
+            error_msg = f'登录尝试次数过多，请30分钟后再试'
+            if enable_login_log:
+                login_log.log_login(None, username, False, ip_address, user_agent, error_msg)
+            return jsonify({'error': error_msg}), 429
     
     user_service = UserService(db_client.fridge)
     user = user_service.authenticate(username, password)
     
-    if not user:
-        return jsonify({'error': '用户名或密码错误'}), 401
+    print(f'[登录调试] 认证结果: {"成功" if user else "失败"}')
     
+    if not user:
+        error_msg = '用户名或密码错误'
+        if enable_login_log:
+            login_log = LoginLog(db_client.fridge)
+            login_log.log_login(None, username, False, ip_address, user_agent, error_msg)
+        return jsonify({'error': error_msg}), 401
+    
+    # 检查账号是否被禁用
+    if not user.is_active:
+        print(f'[登录调试] 账号已被禁用')
+        error_msg = '账号已被禁用'
+        if enable_login_log:
+            login_log = LoginLog(db_client.fridge)
+            login_log.log_login(user._id, username, False, ip_address, user_agent, error_msg)
+        return jsonify({'error': error_msg}), 403
+    
+    # 登录成功
     session['user_id'] = user._id
     session['username'] = user.username
     session['is_admin'] = user.is_admin
+    session['last_activity'] = datetime.now().isoformat()  # 初始化最后活动时间
+    
+    # 记录成功登录
+    if enable_login_log:
+        login_log = LoginLog(db_client.fridge)
+        login_log.log_login(user._id, username, True, ip_address, user_agent)
+    
+    print(f'[登录调试] 登录成功 - 用户ID: {user._id}, 是否管理员: {user.is_admin}')
     
     return jsonify({'success': True, 'message': '登录成功'}), 200
 
@@ -150,6 +218,8 @@ def change_password():
     if request.method == 'GET':
         return render_template('change_password.html')
     
+    from app.models.system_settings import SystemSettings
+    
     user_id = get_current_user_id()
     old_password = request.form.get('old_password', '')
     new_password = request.form.get('new_password', '')
@@ -157,9 +227,14 @@ def change_password():
     if not old_password or not new_password:
         return jsonify({'error': '请填写所有字段'}), 400
     
+    # 从设置中获取密码最小长度
+    system_settings = SystemSettings(db_client.fridge)
+    settings = system_settings.get_all_settings()
+    min_password_length = settings.get('min_password_length', 6)
+    
     # 验证新密码强度
-    if len(new_password) < 6:
-        return jsonify({'error': '新密码至少需要 6 个字符'}), 400
+    if len(new_password) < min_password_length:
+        return jsonify({'error': f'新密码至少需要 {min_password_length} 个字符'}), 400
     
     if not re.search(r'[a-zA-Z]', new_password):
         return jsonify({'error': '新密码必须包含字母'}), 400
