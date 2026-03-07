@@ -16,19 +16,42 @@ def get_fridge_service():
 @fridge_bp.route('/list', methods=['GET'])
 @login_required
 def list_fridges():
-    """获取用户的所有冰箱"""
+    """获取用户的所有冰箱（包括家庭共享冰箱）"""
     try:
-        fridge_service = get_fridge_service()
-        user_id = get_current_user_id()
-        fridges = fridge_service.get_user_fridges(user_id)
+        from app.services.family_service import FamilyService
         
-        # 为每个冰箱添加物品数量
-        for fridge in fridges:
+        fridge_service = get_fridge_service()
+        family_service = FamilyService(db_client.fridge)
+        user_id = get_current_user_id()
+        
+        # 获取用户自己的冰箱
+        my_fridges = fridge_service.get_user_fridges(user_id)
+        
+        # 为每个冰箱添加物品数量和权限信息
+        for fridge in my_fridges:
             fridge['item_count'] = fridge_service.get_fridge_item_count(fridge['_id'])
+            fridge['is_owner'] = True
+            permission = family_service.get_fridge_permission(fridge['_id'])
+            fridge['permission'] = permission
+        
+        # 获取家庭共享的冰箱
+        families = family_service.get_user_families(user_id)
+        shared_fridges = []
+        
+        for family in families:
+            family_fridges = family_service.get_family_shared_fridges(family['_id'])
+            for fridge in family_fridges:
+                # 排除自己的冰箱
+                if fridge['user_id'] != user_id:
+                    fridge['item_count'] = fridge_service.get_fridge_item_count(fridge['_id'])
+                    fridge['is_owner'] = False
+                    fridge['family_name'] = family['name']
+                    shared_fridges.append(fridge)
         
         return jsonify({
             'success': True,
-            'fridges': fridges
+            'my_fridges': my_fridges,
+            'shared_fridges': shared_fridges
         })
     except Exception as e:
         return jsonify({
