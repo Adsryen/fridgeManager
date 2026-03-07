@@ -6,6 +6,7 @@
     <title>系统设置 - 冰箱里面还有啥</title>
     <link rel="icon" type="image/png" href="{{ url_for('static', filename='images/ice-box.png') }}">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <link rel="stylesheet" href="{{ url_for('static', filename='style/variables.css') }}">
     <link rel="stylesheet" href="{{ url_for('static', filename='style/admin/variables.css') }}">
     <link rel="stylesheet" href="{{ url_for('static', filename='style/admin/base.css') }}">
     <link rel="stylesheet" href="{{ url_for('static', filename='style/admin/layout.css') }}">
@@ -350,6 +351,8 @@
         </a>
     </nav>
 
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="{{ url_for('static', filename='js/theme.js') }}"></script>
     <script src="{{ url_for('static', filename='js/admin/utils.js') }}"></script>
     <script>
         // 保存基本设置
