@@ -209,6 +209,9 @@ class SQLiteDatabase:
         self.system_settings = SQLiteCollection(conn, 'system_settings')
         self.login_logs = SQLiteCollection(conn, 'login_logs')
         self.fridge = SQLiteCollection(conn, 'fridge')
+        self.family = SQLiteCollection(conn, 'family')
+        self.family_member = SQLiteCollection(conn, 'family_member')
+        self.fridge_permission = SQLiteCollection(conn, 'fridge_permission')
 
 
 class SQLiteMongoLikeClient:
@@ -291,6 +294,12 @@ class SQLiteMongoLikeClient:
             "session_timeout INTEGER DEFAULT 60, "
             "enable_login_log INTEGER DEFAULT 1, "
             "max_login_attempts INTEGER DEFAULT 5, "
+            "smtp_server TEXT, "
+            "smtp_port INTEGER DEFAULT 587, "
+            "smtp_username TEXT, "
+            "smtp_password TEXT, "
+            "from_email TEXT, "
+            "from_name TEXT, "
             "enable_email_notification INTEGER DEFAULT 0, "
             "daily_summary_email INTEGER DEFAULT 0, "
             "summary_email_time TEXT DEFAULT '09:00', "
@@ -324,6 +333,41 @@ class SQLiteMongoLikeClient:
             ")"
         )
         
+        # 创建 family 表
+        conn.execute(
+            "CREATE TABLE IF NOT EXISTS family ("
+            "_id TEXT PRIMARY KEY, "
+            "name TEXT NOT NULL, "
+            "creator_id TEXT NOT NULL, "
+            "family_code TEXT UNIQUE NOT NULL, "
+            "created_at TEXT NOT NULL, "
+            "updated_at TEXT NOT NULL"
+            ")"
+        )
+        
+        # 创建 family_member 表
+        conn.execute(
+            "CREATE TABLE IF NOT EXISTS family_member ("
+            "_id TEXT PRIMARY KEY, "
+            "family_id TEXT NOT NULL, "
+            "user_id TEXT NOT NULL, "
+            "role TEXT NOT NULL, "
+            "joined_at TEXT NOT NULL"
+            ")"
+        )
+        
+        # 创建 fridge_permission 表
+        conn.execute(
+            "CREATE TABLE IF NOT EXISTS fridge_permission ("
+            "_id TEXT PRIMARY KEY, "
+            "fridge_id TEXT UNIQUE NOT NULL, "
+            "is_family_shared INTEGER DEFAULT 0, "
+            "is_editable_by_family INTEGER DEFAULT 0, "
+            "created_at TEXT NOT NULL, "
+            "updated_at TEXT NOT NULL"
+            ")"
+        )
+        
         # 创建索引
         conn.execute("CREATE INDEX IF NOT EXISTS idx_item_user_id ON item(user_id)")
         conn.execute("CREATE INDEX IF NOT EXISTS idx_item_expire ON item(ExpireDate)")
@@ -334,6 +378,10 @@ class SQLiteMongoLikeClient:
         conn.execute("CREATE INDEX IF NOT EXISTS idx_login_logs_username ON login_logs(username)")
         conn.execute("CREATE INDEX IF NOT EXISTS idx_login_logs_time ON login_logs(login_time)")
         conn.execute("CREATE INDEX IF NOT EXISTS idx_fridge_user_id ON fridge(user_id)")
+        conn.execute("CREATE INDEX IF NOT EXISTS idx_family_code ON family(family_code)")
+        conn.execute("CREATE INDEX IF NOT EXISTS idx_family_member_family_id ON family_member(family_id)")
+        conn.execute("CREATE INDEX IF NOT EXISTS idx_family_member_user_id ON family_member(user_id)")
+        conn.execute("CREATE INDEX IF NOT EXISTS idx_fridge_permission_fridge_id ON fridge_permission(fridge_id)")
         
         conn.commit()
         self._connections[path] = conn
