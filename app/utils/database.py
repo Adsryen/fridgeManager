@@ -208,6 +208,7 @@ class SQLiteDatabase:
         self.settings = SQLiteCollection(conn, 'settings')
         self.system_settings = SQLiteCollection(conn, 'system_settings')
         self.login_logs = SQLiteCollection(conn, 'login_logs')
+        self.fridge = SQLiteCollection(conn, 'fridge')
 
 
 class SQLiteMongoLikeClient:
@@ -242,7 +243,8 @@ class SQLiteMongoLikeClient:
             "ExpireDate TEXT, "
             "Place TEXT, "
             "Num INTEGER, "
-            "Type TEXT"
+            "Type TEXT, "
+            "fridge_id TEXT"
             ")"
         )
         
@@ -311,14 +313,27 @@ class SQLiteMongoLikeClient:
             ")"
         )
         
+        # 创建 fridge 表
+        conn.execute(
+            "CREATE TABLE IF NOT EXISTS fridge ("
+            "_id TEXT PRIMARY KEY, "
+            "user_id TEXT NOT NULL, "
+            "name TEXT NOT NULL, "
+            "created_at TEXT NOT NULL, "
+            "updated_at TEXT NOT NULL"
+            ")"
+        )
+        
         # 创建索引
         conn.execute("CREATE INDEX IF NOT EXISTS idx_item_user_id ON item(user_id)")
         conn.execute("CREATE INDEX IF NOT EXISTS idx_item_expire ON item(ExpireDate)")
+        conn.execute("CREATE INDEX IF NOT EXISTS idx_item_fridge_id ON item(fridge_id)")
         conn.execute("CREATE INDEX IF NOT EXISTS idx_user_username ON user(username)")
         conn.execute("CREATE INDEX IF NOT EXISTS idx_user_email ON user(email)")
         conn.execute("CREATE INDEX IF NOT EXISTS idx_settings_user_id ON settings(user_id)")
         conn.execute("CREATE INDEX IF NOT EXISTS idx_login_logs_username ON login_logs(username)")
         conn.execute("CREATE INDEX IF NOT EXISTS idx_login_logs_time ON login_logs(login_time)")
+        conn.execute("CREATE INDEX IF NOT EXISTS idx_fridge_user_id ON fridge(user_id)")
         
         conn.commit()
         self._connections[path] = conn

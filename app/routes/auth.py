@@ -65,6 +65,7 @@ def register():
         session['username'] = username
         session['is_admin'] = user.is_admin
         session['last_activity'] = datetime.now().isoformat()  # 初始化最后活动时间
+        session['current_fridge_id'] = 'public'  # 默认使用公共冰箱
         
         return jsonify({'success': True, 'message': '注册成功'}), 200
     except ValueError as e:
@@ -140,6 +141,7 @@ def login():
     session['username'] = user.username
     session['is_admin'] = user.is_admin
     session['last_activity'] = datetime.now().isoformat()  # 初始化最后活动时间
+    session['current_fridge_id'] = 'public'  # 默认使用公共冰箱
     
     # 记录成功登录
     if enable_login_log:
