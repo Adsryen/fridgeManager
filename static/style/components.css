@@ -559,3 +559,88 @@
         opacity: 1;
     }
 }
+
+/* 冰箱管理样式 */
+.fridge-manage-list {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.fridge-manage-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 16px;
+    background: var(--bg-color);
+    border-radius: 12px;
+    border: 1px solid var(--border-color);
+}
+
+.fridge-info {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    flex: 1;
+}
+
+.fridge-info > i {
+    font-size: 24px;
+    color: var(--primary-color);
+}
+
+.fridge-details {
+    flex: 1;
+}
+
+.fridge-name {
+    font-size: 16px;
+    font-weight: 600;
+    color: var(--text-primary);
+    margin-bottom: 4px;
+}
+
+.fridge-count {
+    font-size: 13px;
+    color: var(--text-secondary);
+}
+
+.fridge-actions {
+    display: flex;
+    gap: 8px;
+}
+
+.icon-btn {
+    width: 36px;
+    height: 36px;
+    border-radius: 8px;
+    background: var(--card-bg);
+    border: 1px solid var(--border-color);
+    color: var(--text-primary);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.icon-btn:hover {
+    background: var(--bg-color);
+    transform: scale(1.05);
+}
+
+.icon-btn.danger {
+    color: var(--danger-color);
+}
+
+.icon-btn.danger:hover {
+    background: var(--danger-color);
+    color: white;
+}
+
+.empty-state {
+    text-align: center;
+    padding: 40px 20px;
+    color: var(--text-secondary);
+    font-size: 14px;
+}

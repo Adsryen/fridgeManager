@@ -773,3 +773,30 @@ body.dark-mode .toggle-slider {
 body.dark-mode .toggle-slider:before {
     background-color: #f0f0f0;
 }
+
+/* 用户信息卡片上的退出登录按钮 */
+.profile-logout-btn {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    background: rgba(255, 255, 255, 0.2);
+    color: white;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 18px;
+    text-decoration: none;
+    transition: all 0.3s;
+    flex-shrink: 0;
+    border: 2px solid rgba(255, 255, 255, 0.3);
+}
+
+.profile-logout-btn:hover {
+    background: rgba(255, 255, 255, 0.3);
+    transform: scale(1.05);
+    color: white;
+}
+
+.profile-logout-btn:active {
+    transform: scale(0.95);
+}
