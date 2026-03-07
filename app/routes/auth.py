@@ -64,6 +64,7 @@ def register():
         session['user_id'] = user._id
         session['username'] = username
         session['is_admin'] = user.is_admin
+        session['last_activity'] = datetime.now().isoformat()  # 初始化最后活动时间
         
         return jsonify({'success': True, 'message': '注册成功'}), 200
     except ValueError as e:
@@ -154,8 +155,8 @@ def login():
 def logout():
     """用户登出"""
     session.clear()
-    # 退出后跳转到首页，用户可以在"我的"页面看到游客状态
-    return redirect(url_for('main.index'))
+    # 退出后跳转到首页的"我的"页面锚点
+    return redirect(url_for('main.index') + '#profile')
 
 
 @auth_bp.route('/profile')

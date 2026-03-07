@@ -19,7 +19,7 @@ def index():
     settings = system_settings.get_all_settings()
     system_name = settings.get('system_name', '冰箱里面还有啥')
     
-    return render_template('mobile.html', 
+    return render_template('index.html', 
                          username=username, 
                          is_logged_in=is_logged_in,
                          system_name=system_name)

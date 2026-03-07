@@ -111,6 +111,28 @@ class AdminService:
         result = self.db.user.delete_one({'_id': user_id})
         return result.deleted_count > 0
     
+    def reset_user_password(self, user_id: str, new_password: str) -> bool:
+        """重置用户密码"""
+        from app.utils.auth import hash_password
+        
+        user = self.db.user.find_one({'_id': user_id})
+        if not user:
+            return False
+        
+        # 使用与注册相同的加密方式
+        password_hash, salt = hash_password(new_password)
+        
+        # 更新密码
+        result = self.db.user.update_one(
+            {'_id': user_id},
+            {'$set': {
+                'password_hash': password_hash,
+                'salt': salt,
+                'updated_at': datetime.now().strftime('%Y-%m-%d %H:%M:%S')
+            }}
+        )
+        return result.modified_count > 0
+    
     def clean_expired_items(self) -> int:
         """清理所有过期物品"""
         from datetime import datetime

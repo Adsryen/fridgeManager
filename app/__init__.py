@@ -86,22 +86,34 @@ def register_session_timeout(app: Flask):
         from app.models.system_settings import SystemSettings
         system_settings = SystemSettings(db_client.fridge)
         settings = system_settings.get_all_settings()
-        session_timeout = settings.get('session_timeout', 60)  # 分钟
+        session_timeout = settings.get('session_timeout')
+        
+        # 确保session_timeout是有效的数字
+        if session_timeout is None or not isinstance(session_timeout, (int, float)):
+            session_timeout = 60  # 默认60分钟
+        else:
+            session_timeout = int(session_timeout)
         
         # 检查最后活动时间
         last_activity = session.get('last_activity')
         if last_activity:
-            last_activity_time = datetime.fromisoformat(last_activity)
-            if datetime.now() - last_activity_time > timedelta(minutes=session_timeout):
-                # 会话超时，清除session
-                session.clear()
-                if request.is_json:
-                    from flask import jsonify
-                    return jsonify({'error': '会话已超时，请重新登录'}), 401
-                return redirect(url_for('auth.login'))
+            try:
+                last_activity_time = datetime.fromisoformat(last_activity)
+                if datetime.now() - last_activity_time > timedelta(minutes=session_timeout):
+                    # 会话超时，清除session
+                    session.clear()
+                    if request.is_json:
+                        from flask import jsonify
+                        return jsonify({'error': '会话已超时，请重新登录'}), 401
+                    return redirect(url_for('auth.login'))
+            except (ValueError, TypeError):
+                # 如果时间格式错误,重新设置
+                pass
         
         # 更新最后活动时间
         session['last_activity'] = datetime.now().isoformat()
+        # 确保session被标记为已修改
+        session.modified = True
 
 
 def register_error_handlers(app: Flask):

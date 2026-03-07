@@ -79,6 +79,30 @@ def delete_user(user_id):
     return jsonify({'error': '删除失败'}), 400
 
 
+@admin_bp.route('/user/<user_id>/reset-password', methods=['POST'])
+@admin_required
+def reset_user_password(user_id):
+    """重置用户密码"""
+    try:
+        data = request.get_json()
+        new_password = data.get('password')
+        
+        if not new_password:
+            return jsonify({'error': '密码不能为空'}), 400
+        
+        if len(new_password) < 6:
+            return jsonify({'error': '密码长度至少6位'}), 400
+        
+        admin_service = AdminService(db_client.fridge)
+        success = admin_service.reset_user_password(user_id, new_password)
+        
+        if success:
+            return jsonify({'success': True, 'message': '密码已重置'})
+        return jsonify({'error': '重置失败'}), 400
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+
+
 @admin_bp.route('/stats')
 @admin_required
 def stats():
