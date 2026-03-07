@@ -78,7 +78,7 @@ class UserService:
     def update_user(self, user_id: str, **kwargs) -> bool:
         """更新用户信息"""
         # 过滤掉不允许更新的字段
-        allowed_fields = {'email'}
+        allowed_fields = {'email', 'username'}
         update_data = {k: v for k, v in kwargs.items() if k in allowed_fields}
         
         if not update_data:
@@ -89,6 +89,12 @@ class UserService:
             existing = self.db.user.find_one({'email': update_data['email']})
             if existing and existing['_id'] != user_id:
                 raise ValueError('邮箱已被其他用户使用')
+        
+        # 如果更新用户名，检查是否已被使用
+        if 'username' in update_data:
+            existing = self.db.user.find_one({'username': update_data['username']})
+            if existing and existing['_id'] != user_id:
+                raise ValueError('用户名已被其他用户使用')
         
         result = self.db.user.update_one(
             {'_id': user_id},
