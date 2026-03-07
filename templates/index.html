@@ -18,7 +18,7 @@
     <link rel="stylesheet" href="{{ url_for('static', filename='style/pages.css') }}">
     <link rel="stylesheet" href="{{ url_for('static', filename='style/advanced.css') }}">
 </head>
-<body>
+<body data-logged-in="{% if is_logged_in %}true{% else %}false{% endif %}">
     <!-- 顶部导航栏 -->
     <div class="mobile-header">
         <div class="header-content">
@@ -366,6 +366,9 @@
                         {% endif %}
                     </div>
                 </div>
+                <a href="/auth/logout" class="profile-logout-btn" title="退出登录">
+                    <i class="fas fa-sign-out-alt"></i>
+                </a>
                 {% else %}
                 <div class="profile-avatar guest">
                     <i class="fas fa-user"></i>
@@ -931,6 +934,7 @@
     <script src="{{ url_for('static', filename='js/utils.js') }}"></script>
     <script src="{{ url_for('static', filename='js/ui.js') }}"></script>
     <script src="{{ url_for('static', filename='js/theme.js') }}"></script>
+    <script src="{{ url_for('static', filename='js/fridge.js') }}"></script>
     <script src="{{ url_for('static', filename='js/fridge-main.js') }}"></script>
     <script src="{{ url_for('static', filename='js/items.js') }}"></script>
     <script src="{{ url_for('static', filename='js/forms.js') }}"></script>
