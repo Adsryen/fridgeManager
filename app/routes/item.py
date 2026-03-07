@@ -16,6 +16,9 @@ def insert():
     
     user_id = get_effective_user_id()
     
+    # 获取当前冰箱ID
+    fridge_id = session.get('current_fridge_id', 'public')
+    
     # 检查用户物品数量限制
     if user_id != 'public':  # 只对私人冰箱检查限制
         system_settings = SystemSettings(db_client.fridge)
@@ -32,7 +35,7 @@ def insert():
         date = request.values['itemDate'].replace('-', '')
         item_service = ItemService(db_client.fridge)
         
-        item_service.create_item(
+        item = item_service.create_item(
             user_id=user_id,
             name=request.values['itemName'],
             expire_date=datetime.strptime(date, "%Y%m%d"),
@@ -40,10 +43,14 @@ def insert():
             num=int(request.values['itemNum']),
             item_type=request.values['itemType']
         )
-    except Exception:
-        pass
-    
-    return redirect(url_for('main.index'))
+        
+        # 设置fridge_id
+        item_service.update_item(user_id, item._id, fridge_id=fridge_id)
+        
+        return jsonify({'success': True, 'message': '添加成功'}), 200
+    except Exception as e:
+        print(f'添加物品失败: {e}')
+        return jsonify({'success': False, 'error': '添加失败'}), 500
 
 
 @item_bp.route('/search', methods=['GET', 'POST'])
@@ -51,9 +58,17 @@ def search():
     """搜索物品"""
     searchbox = request.form.get('text')
     user_id = get_effective_user_id()
+    fridge_id = session.get('current_fridge_id', 'public')
     
     item_service = ItemService(db_client.fridge)
-    items = item_service.search_items(user_id, searchbox)
+    
+    # 如果是公共冰箱,只搜索公共物品
+    if fridge_id == 'public':
+        items = item_service.search_items('public', searchbox)
+    else:
+        # 搜索指定冰箱的物品
+        all_items = item_service.search_items(user_id, searchbox)
+        items = [item for item in all_items if item.get('fridge_id') == fridge_id]
     
     return jsonify(list(items))
 
@@ -64,10 +79,18 @@ def search():
 def statebad(time):
     """获取已过期物品"""
     user_id = get_effective_user_id()
+    fridge_id = session.get('current_fridge_id', 'public')
     date = datetime.fromtimestamp(int(time)/1000.0)
     
     item_service = ItemService(db_client.fridge)
-    items = item_service.get_items_by_status(user_id, True, datetime(date.year, date.month, date.day))
+    
+    # 如果是公共冰箱,只查询公共物品
+    if fridge_id == 'public':
+        items = item_service.get_items_by_status('public', True, datetime(date.year, date.month, date.day))
+    else:
+        # 查询指定冰箱的物品
+        all_items = item_service.get_items_by_status(user_id, True, datetime(date.year, date.month, date.day))
+        items = [item for item in all_items if item.get('fridge_id') == fridge_id]
     
     return jsonify(list(items))
 
@@ -82,9 +105,17 @@ def statebad(time):
 def total():
     """获取所有物品"""
     user_id = get_effective_user_id()
+    fridge_id = session.get('current_fridge_id', 'public')
     
     item_service = ItemService(db_client.fridge)
-    items = item_service.get_user_items(user_id)
+    
+    # 如果是公共冰箱,只查询公共物品
+    if fridge_id == 'public':
+        items = item_service.get_user_items('public')
+    else:
+        # 查询指定冰箱的物品
+        items = [item for item in item_service.get_user_items(user_id) 
+                if item.get('fridge_id') == fridge_id]
     
     return jsonify(list(items))
 
