@@ -58,16 +58,6 @@ def search():
     return jsonify(list(items))
 
 
-@item_bp.route('/stateok/<time>', methods=['GET', 'POST'])
-def stateok(time):
-    """获取未过期物品"""
-    user_id = get_effective_user_id()
-    date = datetime.fromtimestamp(int(time)/1000.0)
-    
-    item_service = ItemService(db_client.fridge)
-    items = item_service.get_items_by_status(user_id, False, datetime(date.year, date.month, date.day))
-    
-    return jsonify(list(items))
 
 
 @item_bp.route('/statebad/<time>', methods=['GET', 'POST'])
@@ -82,37 +72,10 @@ def statebad(time):
     return jsonify(list(items))
 
 
-@item_bp.route('/cold', methods=['GET', 'POST'])
-def cold():
-    """获取冷藏物品"""
-    user_id = get_effective_user_id()
-    
-    item_service = ItemService(db_client.fridge)
-    items = item_service.get_items_by_place(user_id, 'cold')
-    
-    return jsonify(list(items))
 
 
-@item_bp.route('/frozer', methods=['GET', 'POST'])
-def frozer():
-    """获取冷冻物品"""
-    user_id = get_effective_user_id()
-    
-    item_service = ItemService(db_client.fridge)
-    items = item_service.get_items_by_place(user_id, 'frozer')
-    
-    return jsonify(list(items))
 
 
-@item_bp.route('/tag/<tagName>', methods=['GET', 'POST'])
-def tag(tagName):
-    """按类别获取物品"""
-    user_id = get_effective_user_id()
-    
-    item_service = ItemService(db_client.fridge)
-    items = item_service.get_items_by_type(user_id, tagName)
-    
-    return jsonify(list(items))
 
 
 @item_bp.route('/total', methods=['GET', 'POST'])
@@ -126,17 +89,6 @@ def total():
     return jsonify(list(items))
 
 
-@item_bp.route('/delete/<_id>', methods=['POST'])
-def delete(_id):
-    """删除物品"""
-    user_id = get_effective_user_id()
-    
-    item_service = ItemService(db_client.fridge)
-    item_service.delete_item(user_id, _id)
-    
-    return '', 200
-
-
 @item_bp.route('/getone/<_id>', methods=['GET', 'POST'])
 def getone(_id):
     """获取单个物品"""
@@ -148,28 +100,6 @@ def getone(_id):
     return jsonify([item] if item else [])
 
 
-@item_bp.route('/edit/<_id>', methods=['POST'])
-def edit(_id):
-    """编辑物品"""
-    user_id = get_effective_user_id()
-    
-    try:
-        date = request.values['itemDate'].replace('-', '')
-        
-        item_service = ItemService(db_client.fridge)
-        item_service.update_item(
-            user_id=user_id,
-            item_id=_id,
-            Name=request.values['itemName'],
-            ExpireDate=datetime.strptime(date, "%Y%m%d"),
-            Place=request.values['itemPlace'],
-            Num=int(request.values['itemNum']),
-            Type=request.values['itemType']
-        )
-    except Exception:
-        pass
-    
-    return redirect(url_for('main.index'))
 
 
 @item_bp.route('/switch-mode', methods=['POST'])
@@ -263,3 +193,67 @@ def get_system_settings():
         'default_expiry_warning_days': settings.get('default_expiry_warning_days', 3),
         'max_items_per_user': settings.get('max_items_per_user', 0)
     })
+
+
+@item_bp.route('/update', methods=['POST'])
+def update():
+    """更新物品（JSON格式）"""
+    user_id = get_effective_user_id()
+    
+    try:
+        data = request.get_json()
+        item_id = data.get('itemId')
+        
+        if not item_id:
+            return jsonify({'success': False, 'message': '缺少物品ID'}), 400
+        
+        # 准备更新数据
+        update_data = {}
+        
+        if 'itemName' in data:
+            update_data['Name'] = data['itemName']
+        
+        if 'itemDate' in data:
+            date_str = data['itemDate'].replace('-', '')
+            update_data['ExpireDate'] = datetime.strptime(date_str, "%Y%m%d")
+        
+        if 'itemPlace' in data:
+            update_data['Place'] = data['itemPlace']
+        
+        if 'itemNum' in data:
+            update_data['Num'] = int(data['itemNum'])
+        
+        if 'itemType' in data:
+            update_data['Type'] = data['itemType']
+        
+        # 执行更新
+        item_service = ItemService(db_client.fridge)
+        item_service.update_item(user_id=user_id, item_id=item_id, **update_data)
+        
+        return jsonify({'success': True, 'message': '更新成功'}), 200
+    
+    except Exception as e:
+        print(f'更新物品失败: {e}')
+        return jsonify({'success': False, 'message': '更新失败'}), 500
+
+
+@item_bp.route('/delete', methods=['POST'])
+def delete_item():
+    """删除物品（JSON格式）"""
+    user_id = get_effective_user_id()
+    
+    try:
+        data = request.get_json()
+        item_id = data.get('itemId')
+        
+        if not item_id:
+            return jsonify({'success': False, 'message': '缺少物品ID'}), 400
+        
+        item_service = ItemService(db_client.fridge)
+        item_service.delete_item(user_id, item_id)
+        
+        return jsonify({'success': True, 'message': '删除成功'}), 200
+    
+    except Exception as e:
+        print(f'删除物品失败: {e}')
+        return jsonify({'success': False, 'message': '删除失败'}), 500
