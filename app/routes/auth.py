@@ -276,3 +276,98 @@ def update_profile():
         return jsonify({'error': str(e)}), 400
     except Exception as e:
         return jsonify({'error': '资料更新失败，请稍后重试'}), 500
+
+
+@auth_bp.route('/forgot-password', methods=['POST'])
+def forgot_password():
+    """忘记密码 - 发送重置邮件"""
+    from app.models.password_reset import PasswordResetToken
+    from app.utils.email import send_password_reset_email
+    
+    data = request.get_json()
+    email = data.get('email', '').strip()
+    
+    if not email:
+        return jsonify({'error': '请输入邮箱地址'}), 400
+    
+    # 验证邮箱格式
+    if not re.match(r'^[^\s@]+@[^\s@]+\.[^\s@]+$', email):
+        return jsonify({'error': '邮箱格式不正确'}), 400
+    
+    try:
+        # 查找用户
+        user_service = UserService(db_client.fridge)
+        user = db_client.find_one('users', {'email': email})
+        
+        if not user:
+            # 为了安全，即使用户不存在也返回成功
+            return jsonify({'success': True, 'message': '如果该邮箱已注册，重置链接将发送到您的邮箱'}), 200
+        
+        # 创建重置令牌
+        token = PasswordResetToken.create_token(db_client, str(user['_id']), email)
+        
+        # 发送重置邮件
+        if send_password_reset_email(email, token, user['username']):
+            return jsonify({'success': True, 'message': '重置链接已发送到您的邮箱'}), 200
+        else:
+            return jsonify({'error': '邮件发送失败，请检查邮箱配置或稍后重试'}), 500
+    
+    except Exception as e:
+        print(f'忘记密码处理失败: {e}')
+        return jsonify({'error': '处理失败，请稍后重试'}), 500
+
+
+@auth_bp.route('/reset-password', methods=['GET', 'POST'])
+def reset_password():
+    """重置密码页面和处理"""
+    from app.models.password_reset import PasswordResetToken
+    
+    if request.method == 'GET':
+        token = request.args.get('token', '')
+        
+        if not token:
+            return render_template('error.html', message='无效的重置链接'), 400
+        
+        # 验证令牌
+        token_data = PasswordResetToken.verify_token(db_client, token)
+        if not token_data:
+            return render_template('error.html', message='重置链接已失效或已使用'), 400
+        
+        return render_template('reset_password.html', token=token)
+    
+    # POST 请求 - 处理密码重置
+    data = request.get_json()
+    token = data.get('token', '')
+    new_password = data.get('password', '')
+    
+    if not token or not new_password:
+        return jsonify({'error': '缺少必要参数'}), 400
+    
+    # 验证令牌
+    token_data = PasswordResetToken.verify_token(db_client, token)
+    if not token_data:
+        return jsonify({'error': '重置链接已失效或已使用'}), 400
+    
+    # 验证密码强度
+    if len(new_password) < 6:
+        return jsonify({'error': '密码长度至少为6个字符'}), 400
+    
+    if not re.search(r'[a-zA-Z]', new_password):
+        return jsonify({'error': '密码必须包含字母'}), 400
+    
+    if not re.search(r'\d', new_password):
+        return jsonify({'error': '密码必须包含数字'}), 400
+    
+    try:
+        # 更新密码
+        user_service = UserService(db_client.fridge)
+        user_service.update_password(token_data['user_id'], new_password)
+        
+        # 标记令牌为已使用
+        PasswordResetToken.mark_as_used(db_client, token)
+        
+        return jsonify({'success': True, 'message': '密码重置成功，请使用新密码登录'}), 200
+    
+    except Exception as e:
+        print(f'密码重置失败: {e}')
+        return jsonify({'error': '密码重置失败，请稍后重试'}), 500
