@@ -48,12 +48,14 @@ def create_app(config_name: str = 'default') -> Flask:
     # 注册蓝图
     from app.routes import auth_bp, item_bp, main_bp, admin_bp, settings_bp
     from app.routes.fridge import fridge_bp
+    from app.routes.family import family_bp
     app.register_blueprint(main_bp)
     app.register_blueprint(auth_bp, url_prefix='/auth')
     app.register_blueprint(item_bp, url_prefix='/item')
     app.register_blueprint(admin_bp, url_prefix='/admin')
     app.register_blueprint(settings_bp, url_prefix='/settings')
     app.register_blueprint(fridge_bp, url_prefix='/fridge')
+    app.register_blueprint(family_bp, url_prefix='/family')
     
     # 注册错误处理
     register_error_handlers(app)
