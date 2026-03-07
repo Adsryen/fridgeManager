@@ -78,3 +78,16 @@ function getExpiryStatus(expireDate) {
     
     return { statusClass, statusBadgeClass, statusText, daysUntilExpire };
 }
+
+// HTML转义函数,防止XSS攻击
+function escapeHtml(text) {
+    if (!text) return '';
+    const map = {
+        '&': '&amp;',
+        '<': '&lt;',
+        '>': '&gt;',
+        '"': '&quot;',
+        "'": '&#039;'
+    };
+    return text.toString().replace(/[&<>"']/g, function(m) { return map[m]; });
+}
