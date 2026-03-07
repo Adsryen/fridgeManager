@@ -1,0 +1,561 @@
+/* 通用组件样式：抽屉、表单、卡片、按钮等 */
+
+/* 抽屉组件 */
+.drawer-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0,0,0,0.5);
+    z-index: 2000;
+    display: none;
+    animation: fadeIn 0.3s;
+}
+
+.drawer-overlay.active {
+    display: block;
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; }
+    to { opacity: 1; }
+}
+
+.drawer-content {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    background: var(--card-bg);
+    border-radius: 20px 20px 0 0;
+    height: 75vh;
+    overflow: hidden;
+    animation: slideUp 0.3s;
+    display: flex;
+    flex-direction: column;
+}
+
+.drawer-content.full-height {
+    height: 85vh;
+}
+
+/* 针对小屏幕设备优化 */
+@media (max-height: 667px) {
+    .drawer-content {
+        height: 85vh;
+    }
+    
+    .drawer-content.full-height {
+        height: 92vh;
+    }
+}
+
+/* 针对大屏幕设备优化 */
+@media (min-height: 900px) {
+    .drawer-content {
+        height: 70vh;
+    }
+    
+    .drawer-content.full-height {
+        height: 80vh;
+    }
+}
+
+@keyframes slideUp {
+    from { transform: translateY(100%); }
+    to { transform: translateY(0); }
+}
+
+.drawer-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 20px;
+    border-bottom: 1px solid var(--border-color);
+    position: sticky;
+    top: 0;
+    background: var(--card-bg);
+    z-index: 10;
+}
+
+.drawer-header h5 {
+    font-size: 18px;
+    font-weight: 600;
+    margin: 0;
+}
+
+.close-btn {
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    background: var(--bg-color);
+    border: none;
+    color: var(--text-primary);
+    font-size: 18px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+}
+
+.drawer-body {
+    padding: 20px;
+    flex: 1;
+    overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
+}
+
+/* 用户信息卡片 */
+.user-info-card {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    padding: 20px;
+    background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+    border-radius: 16px;
+    color: white;
+    margin-bottom: 20px;
+}
+
+.user-avatar {
+    width: 60px;
+    height: 60px;
+    border-radius: 50%;
+    background: rgba(255,255,255,0.2);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 28px;
+}
+
+.user-details {
+    flex: 1;
+}
+
+.user-name-large {
+    font-size: 20px;
+    font-weight: 600;
+    margin-bottom: 4px;
+}
+
+.user-status {
+    font-size: 14px;
+    opacity: 0.9;
+}
+
+/* 菜单列表 */
+.menu-list {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.menu-item {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 16px;
+    background: var(--bg-color);
+    border-radius: 12px;
+    color: var(--text-primary);
+    text-decoration: none;
+    transition: all 0.3s;
+}
+
+.menu-item:active {
+    transform: scale(0.98);
+    background: var(--border-color);
+}
+
+.menu-item i:first-child {
+    width: 24px;
+    text-align: center;
+    font-size: 18px;
+}
+
+.menu-item span {
+    flex: 1;
+    font-size: 16px;
+}
+
+.menu-item i:last-child {
+    font-size: 14px;
+    color: var(--text-secondary);
+}
+
+.menu-item.danger {
+    color: var(--danger-color);
+}
+
+/* 表单样式 */
+.form-group {
+    margin-bottom: 20px;
+}
+
+.form-group label {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--text-primary);
+    margin-bottom: 8px;
+}
+
+.mobile-input {
+    width: 100%;
+    padding: 14px 16px;
+    border: 2px solid var(--border-color);
+    border-radius: 12px;
+    font-size: 16px;
+    background: var(--card-bg);
+    transition: all 0.3s;
+}
+
+.mobile-input:focus {
+    outline: none;
+    border-color: var(--primary-color);
+    box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+}
+
+/* 自定义日期选择器 */
+.date-picker-custom {
+    position: relative;
+    margin-bottom: 8px;
+}
+
+.date-input-hidden {
+    position: absolute;
+    opacity: 0;
+    pointer-events: none;
+    width: 0;
+    height: 0;
+}
+
+.date-display-area {
+    width: 100%;
+    padding: 14px 16px;
+    border: 2px solid var(--border-color);
+    border-radius: 12px;
+    font-size: 16px;
+    background: var(--card-bg);
+    transition: all 0.3s;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.date-display-area:active {
+    transform: scale(0.98);
+    border-color: var(--primary-color);
+}
+
+.date-display-icon {
+    color: var(--primary-color);
+    font-size: 18px;
+}
+
+.date-display-text {
+    flex: 1;
+    color: var(--text-secondary);
+}
+
+.date-display-text.has-value {
+    color: var(--text-primary);
+    font-weight: 500;
+}
+
+.date-shortcuts {
+    display: flex;
+    gap: 8px;
+    margin-top: 8px;
+}
+
+.date-shortcuts:last-of-type {
+    margin-bottom: 0;
+}
+
+.date-shortcut-btn {
+    flex: 1;
+    padding: 8px 12px;
+    background: var(--bg-color);
+    border: 1px solid var(--border-color);
+    border-radius: 8px;
+    font-size: 13px;
+    color: var(--text-primary);
+    cursor: pointer;
+    transition: all 0.3s;
+}
+
+.date-shortcut-btn:hover {
+    background: var(--primary-color);
+    color: white;
+    border-color: var(--primary-color);
+}
+
+.date-shortcut-btn:active {
+    transform: scale(0.95);
+}
+
+/* 位置选择器 */
+.place-selector {
+    display: flex;
+    gap: 12px;
+}
+
+.place-option {
+    flex: 1;
+    cursor: pointer;
+}
+
+.place-option input {
+    display: none;
+}
+
+.place-card {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 8px;
+    padding: 16px;
+    background: var(--bg-color);
+    border: 2px solid var(--border-color);
+    border-radius: 12px;
+    transition: all 0.3s;
+}
+
+.place-option input:checked + .place-card {
+    background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+    color: white;
+    border-color: transparent;
+}
+
+.place-card i {
+    font-size: 24px;
+}
+
+.place-card span {
+    font-size: 13px;
+    font-weight: 500;
+}
+
+/* 类别网格 */
+.category-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 12px;
+}
+
+.category-item {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 8px;
+    padding: 16px 8px;
+    background: var(--bg-color);
+    border: 2px solid var(--border-color);
+    border-radius: 12px;
+    cursor: pointer;
+    transition: all 0.3s;
+}
+
+.category-item:active {
+    transform: scale(0.95);
+}
+
+.category-item.selected {
+    background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+    color: white;
+    border-color: transparent;
+}
+
+.category-item .emoji {
+    font-size: 32px;
+}
+
+.category-item .text {
+    font-size: 12px;
+    font-weight: 500;
+    text-align: center;
+}
+
+/* 表单操作按钮 */
+.form-actions {
+    display: flex;
+    gap: 12px;
+    margin-top: 24px;
+}
+
+.btn-primary, .btn-secondary {
+    flex: 1;
+    padding: 14px;
+    border: none;
+    border-radius: 12px;
+    font-size: 16px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+}
+
+.btn-primary {
+    background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+    color: white;
+}
+
+.btn-primary:active {
+    transform: scale(0.98);
+}
+
+.btn-secondary {
+    background: var(--bg-color);
+    color: var(--text-primary);
+}
+
+.btn-secondary:active {
+    transform: scale(0.98);
+    background: var(--border-color);
+}
+
+/* 文本辅助类 */
+.text-muted {
+    color: var(--text-secondary);
+    font-size: 12px;
+}
+
+/* 滚动条优化 */
+::-webkit-scrollbar {
+    width: 4px;
+    height: 4px;
+}
+
+::-webkit-scrollbar-track {
+    background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+    background: var(--border-color);
+    border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+    background: var(--text-secondary);
+}
+
+/* 触摸反馈优化 */
+@media (hover: none) {
+    .stat-card:hover,
+    .place-tab:hover,
+    .mobile-item-card:hover,
+    .item-action-btn:hover,
+    .menu-item:hover,
+    .category-item:hover {
+        transform: none;
+    }
+}
+
+/* 安全区域适配 */
+@supports (padding: max(0px)) {
+    .mobile-header {
+        padding-top: max(0px, env(safe-area-inset-top));
+        height: max(48px, calc(48px + env(safe-area-inset-top)));
+    }
+    
+    .mobile-content {
+        top: max(48px, calc(48px + env(safe-area-inset-top)));
+    }
+    
+    .page-view {
+        top: max(48px, calc(48px + env(safe-area-inset-top)));
+    }
+    
+    .mobile-bottom-nav {
+        padding-bottom: max(6px, env(safe-area-inset-bottom));
+    }
+    
+    .page-view {
+        bottom: max(110px, calc(110px + env(safe-area-inset-bottom)));
+    }
+}
+
+
+
+/* 自定义提示框 */
+.custom-alert-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0, 0, 0, 0.5);
+    z-index: 10000;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+    animation: fadeIn 0.2s;
+}
+
+.custom-alert-box {
+    background: var(--card-bg);
+    border-radius: 16px;
+    padding: 24px;
+    max-width: 400px;
+    width: 100%;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
+    animation: slideUp 0.3s;
+}
+
+.custom-alert-content {
+    color: var(--text-primary);
+    font-size: 14px;
+    margin-bottom: 20px;
+}
+
+.custom-alert-content h4 {
+    font-size: 16px;
+    font-weight: 600;
+}
+
+.custom-alert-content ul {
+    list-style: none;
+    padding-left: 0;
+}
+
+.custom-alert-content li {
+    padding: 4px 0;
+    color: var(--text-secondary);
+}
+
+.custom-alert-btn {
+    width: 100%;
+    padding: 12px;
+    background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+    color: white;
+    border: none;
+    border-radius: 8px;
+    font-size: 15px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s;
+}
+
+.custom-alert-btn:active {
+    transform: scale(0.98);
+}
+
+@keyframes slideUp {
+    from {
+        transform: translateY(20px);
+        opacity: 0;
+    }
+    to {
+        transform: translateY(0);
+        opacity: 1;
+    }
+}
