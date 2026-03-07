@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 """主页路由"""
 from flask import Blueprint, render_template, session
-from app.utils.auth import get_current_username
+from app.utils.auth import get_current_username, login_required
 from app import db_client
 from app.models.system_settings import SystemSettings
 
@@ -29,3 +29,11 @@ def index():
 def mobile():
     """移动端页面（重定向到主页以保持兼容性）"""
     return index()
+
+
+@main_bp.route('/family')
+@login_required
+def family():
+    """家庭管理页面"""
+    username = get_current_username()
+    return render_template('family.html', username=username)

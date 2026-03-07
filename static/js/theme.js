@@ -222,3 +222,30 @@ function toggleDarkMode() {
         }, 600);
     }, 100);
 }
+
+// 重置深色模式为自动模式
+function resetDarkModeToAuto() {
+    console.log('重置深色模式为自动模式');
+    
+    try {
+        localStorage.setItem('darkModeAuto', 'true');
+        localStorage.removeItem('darkMode');
+    } catch (e) {
+        console.warn('无法保存设置:', e);
+    }
+    
+    initDarkMode();
+    showToast('已重置为自动日夜切换', 'success');
+}
+
+// 统一的初始化函数（供其他页面调用）
+function initializeTheme() {
+    console.log('初始化主题系统');
+    initTheme();
+    initDarkMode();
+}
+
+// 页面加载时自动初始化
+$(document).ready(function() {
+    initializeTheme();
+});
