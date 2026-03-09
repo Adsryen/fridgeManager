@@ -15,15 +15,21 @@ export interface User {
 export interface Item {
   _id: string
   user_id: string
-  fridge_id: string
+  fridge_id?: string
   name: string
+  Name?: string // 后端返回的字段（兼容）
   num: number
+  Num?: number // 后端返回的字段（兼容）
   unit?: string
   expire_date: string
-  place: 'cold' | 'frozen' | 'normal' // 冷藏、冷冻、常温
+  ExpireDate?: string // 后端返回的字段（兼容）
+  place: 'cold' | 'frozen' | 'frozer' | 'room' | 'normal' // 冷藏、冷冻、常温
+  Place?: string // 后端返回的字段（兼容）
   type: string // 蔬菜、水果、肉类、饮料、调味品、面包糕点、乳制品等
-  created_at: string
-  updated_at: string
+  Type?: string // 后端返回的字段（兼容）
+  category?: string // 兼容字段
+  created_at?: string
+  updated_at?: string
 }
 
 // 冰箱模型

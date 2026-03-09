@@ -21,6 +21,12 @@ const routes: RouteRecordRaw[] = [
     meta: { requiresAuth: false, title: '首页' }
   },
   {
+    path: '/fridge',
+    name: 'Fridge',
+    component: () => import(/* webpackChunkName: "fridge" */ '../views/Fridge.vue'),
+    meta: { requiresAuth: false, title: '冰箱管理' }
+  },
+  {
     path: '/profile',
     name: 'Profile',
     component: () => import(/* webpackChunkName: "user" */ '../views/Profile.vue'),
