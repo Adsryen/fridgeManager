@@ -23,6 +23,9 @@ class UserSettings:
     # 隐私设置
     profile_public: bool = False  # 个人资料是否公开
     
+    # 冰箱设置
+    current_fridge_id: str = 'public'  # 当前选中的冰箱ID
+    
     _id: str = None
     
     def to_dict(self) -> dict:
@@ -36,7 +39,8 @@ class UserSettings:
             'default_view': self.default_view,
             'theme_color': self.theme_color,
             'dark_mode': self.dark_mode,
-            'profile_public': self.profile_public
+            'profile_public': self.profile_public,
+            'current_fridge_id': self.current_fridge_id
         }
     
     @classmethod
@@ -51,5 +55,6 @@ class UserSettings:
             default_view=data.get('default_view', 'all'),
             theme_color=data.get('theme_color', 'pink'),
             dark_mode=data.get('dark_mode', 'auto'),
-            profile_public=data.get('profile_public', False)
+            profile_public=data.get('profile_public', False),
+            current_fridge_id=data.get('current_fridge_id', 'public')
         )

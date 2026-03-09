@@ -26,7 +26,8 @@ class SettingsService:
         # 过滤允许更新的字段
         allowed_fields = {
             'notify_expiring', 'notify_days', 'items_per_page', 
-            'default_view', 'profile_public', 'theme_color', 'dark_mode'
+            'default_view', 'profile_public', 'theme_color', 'dark_mode',
+            'current_fridge_id'
         }
         update_data = {k: v for k, v in kwargs.items() if k in allowed_fields}
         
@@ -48,3 +49,7 @@ class SettingsService:
             {'$set': update_data}
         )
         return result.modified_count > 0 or len(update_data) > 0
+    
+    def update_current_fridge(self, user_id: str, fridge_id: str) -> bool:
+        """更新用户当前选中的冰箱"""
+        return self.update_settings(user_id, current_fridge_id=fridge_id)

@@ -44,6 +44,11 @@ class FridgeService:
         result = self.db.fridge.delete_one({'_id': fridge_id, 'user_id': user_id})
         return result.deleted_count > 0
     
+    def delete_fridge_items(self, fridge_id: str) -> int:
+        """删除冰箱中的所有物品，返回删除的物品数量"""
+        result = self.db.item.delete_many({'fridge_id': fridge_id})
+        return result.deleted_count
+    
     def get_fridge_item_count(self, fridge_id: str) -> int:
         """获取冰箱中的物品数量"""
         items = self.db.item.find({'fridge_id': fridge_id})
