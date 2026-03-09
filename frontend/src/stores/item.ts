@@ -129,6 +129,26 @@ export const useItemStore = defineStore('item', () => {
   // 操作方法
   
   /**
+   * 标准化物品数据
+   * 将后端返回的大写字段名转换为小写
+   */
+  function normalizeItem(item: any): Item {
+    return {
+      _id: item._id,
+      user_id: item.user_id,
+      fridge_id: item.fridge_id,
+      name: item.name || item.Name,
+      num: item.num || item.Num,
+      unit: item.unit,
+      expire_date: item.expire_date || item.ExpireDate,
+      place: (item.place || item.Place) as any,
+      type: item.type || item.Type,
+      created_at: item.created_at,
+      updated_at: item.updated_at
+    }
+  }
+
+  /**
    * 加载物品列表
    * 从后端获取当前冰箱的所有物品
    */
@@ -136,9 +156,14 @@ export const useItemStore = defineStore('item', () => {
     loading.value = true
     try {
       const fridgeStore = useFridgeStore()
+      console.log('[ItemStore] 加载物品，当前冰箱ID:', fridgeStore.currentFridgeId)
       const response = await itemApi.getAllItems(fridgeStore.currentFridgeId)
+      console.log('[ItemStore] 物品加载结果:', response)
       if (response.success && response.data) {
-        items.value = response.data
+        // 标准化数据
+        items.value = response.data.map(normalizeItem)
+        console.log('[ItemStore] 物品数量:', items.value.length)
+        console.log('[ItemStore] 第一个物品:', items.value[0])
       }
       return response
     } finally {

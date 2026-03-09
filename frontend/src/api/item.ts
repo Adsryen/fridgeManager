@@ -8,6 +8,7 @@ import type { Item, OCRResult, ChatMessage } from '../types/models'
 
 // 获取所有物品
 export function getAllItems(fridgeId: string = 'public') {
+  console.log('[API] 获取物品列表，冰箱ID:', fridgeId)
   return http.get<ApiResponse<Item[]>>('/item/total', {
     params: { fridge_id: fridgeId }
   })
