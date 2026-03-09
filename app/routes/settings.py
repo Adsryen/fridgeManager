@@ -44,7 +44,7 @@ def update():
     
     if success:
         return jsonify({'success': True, 'message': '设置已保存'})
-    return jsonify({'error': '保存失败'}), 400
+    return jsonify({'success': False, 'error': '保存失败'}), 400
 
 
 @settings_bp.route('/update-theme', methods=['POST'])
@@ -72,7 +72,7 @@ def update_theme():
             if success:
                 return jsonify({'success': True, 'message': '主题设置已保存', 'saved_to_server': True})
         
-        return jsonify({'error': '保存失败'}), 400
+        return jsonify({'success': False, 'error': '保存失败'}), 400
     else:
         # 游客用户，返回成功但提示未保存到服务器
         return jsonify({'success': True, 'message': '主题已切换（未登录，仅本地生效）', 'saved_to_server': False})

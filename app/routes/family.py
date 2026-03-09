@@ -1,8 +1,8 @@
 # -*- coding: utf-8 -*-
 """家庭路由"""
-from flask import Blueprint, request, jsonify, session
+from flask import Blueprint, request, jsonify
 from app.services.family_service import FamilyService
-from app.utils.auth import login_required
+from app.utils.jwt_auth import jwt_required
 from app import db_client
 
 family_bp = Blueprint('family', __name__, url_prefix='/family')
@@ -14,17 +14,18 @@ def get_db():
 
 
 @family_bp.route('/create', methods=['POST'])
-@login_required
+@jwt_required
 def create_family():
-    """创建家庭"""
+    """创建家庭（JWT 认证）"""
     try:
         data = request.get_json()
         name = data.get('name', '').strip()
         
         if not name:
-            return jsonify({'success': False, 'message': '家庭名称不能为空'}), 400
+            return jsonify({'success': False, 'error': '家庭名称不能为空'}), 400
         
-        user_id = session.get('user_id')
+        # 从 JWT Token 中获取用户 ID
+        user_id = request.user_id
         db = get_db()
         family_service = FamilyService(db)
         
@@ -32,29 +33,28 @@ def create_family():
         
         return jsonify({
             'success': True,
-            'message': '家庭创建成功',
             'data': {
                 'family_id': family._id,
-                'family_code': family.family_code,
-                'name': family.name
+                'family_code': family.family_code
             }
-        })
+        }), 200
     except Exception as e:
-        return jsonify({'success': False, 'message': str(e)}), 500
+        return jsonify({'success': False, 'error': str(e)}), 500
 
 
 @family_bp.route('/join', methods=['POST'])
-@login_required
+@jwt_required
 def join_family():
-    """加入家庭"""
+    """加入家庭（JWT 认证）"""
     try:
         data = request.get_json()
         family_code = data.get('family_code', '').strip().upper()
         
         if not family_code:
-            return jsonify({'success': False, 'message': '家庭编号不能为空'}), 400
+            return jsonify({'success': False, 'error': '家庭邀请码不能为空'}), 400
         
-        user_id = session.get('user_id')
+        # 从 JWT Token 中获取用户 ID
+        user_id = request.user_id
         db = get_db()
         family_service = FamilyService(db)
         
@@ -63,19 +63,20 @@ def join_family():
         return jsonify({
             'success': True,
             'message': '成功加入家庭'
-        })
+        }), 200
     except ValueError as e:
-        return jsonify({'success': False, 'message': str(e)}), 400
+        return jsonify({'success': False, 'error': str(e)}), 400
     except Exception as e:
-        return jsonify({'success': False, 'message': str(e)}), 500
+        return jsonify({'success': False, 'error': '服务器内部错误'}), 500
 
 
 @family_bp.route('/leave/<family_id>', methods=['POST'])
-@login_required
+@jwt_required
 def leave_family(family_id):
-    """离开家庭"""
+    """离开家庭（JWT 认证）"""
     try:
-        user_id = session.get('user_id')
+        # 从 JWT Token 中获取用户 ID
+        user_id = request.user_id
         db = get_db()
         family_service = FamilyService(db)
         
@@ -84,19 +85,20 @@ def leave_family(family_id):
         return jsonify({
             'success': True,
             'message': '已离开家庭'
-        })
+        }), 200
     except ValueError as e:
-        return jsonify({'success': False, 'message': str(e)}), 400
+        return jsonify({'success': False, 'error': str(e)}), 400
     except Exception as e:
-        return jsonify({'success': False, 'message': str(e)}), 500
+        return jsonify({'success': False, 'error': str(e)}), 500
 
 
 @family_bp.route('/list', methods=['GET'])
-@login_required
+@jwt_required
 def list_families():
-    """获取用户所在的所有家庭"""
+    """获取用户所在的所有家庭（JWT 认证）"""
     try:
-        user_id = session.get('user_id')
+        # 从 JWT Token 中获取用户 ID
+        user_id = request.user_id
         db = get_db()
         family_service = FamilyService(db)
         
@@ -107,44 +109,46 @@ def list_families():
             'data': families
         })
     except Exception as e:
-        return jsonify({'success': False, 'message': str(e)}), 500
+        return jsonify({'success': False, 'error': str(e)}), 500
 
 
 @family_bp.route('/<family_id>/members', methods=['GET'])
-@login_required
+@jwt_required
 def get_family_members(family_id):
-    """获取家庭成员列表"""
+    """获取家庭成员列表（JWT 认证）"""
     try:
-        user_id = session.get('user_id')
+        # 从 JWT Token 中获取用户 ID
+        user_id = request.user_id
         db = get_db()
         family_service = FamilyService(db)
         
         # 检查是否是家庭成员
         if not family_service.is_family_member(family_id, user_id):
-            return jsonify({'success': False, 'message': '您不是该家庭的成员'}), 403
+            return jsonify({'success': False, 'error': '您不是该家庭的成员'}), 403
         
         members = family_service.get_family_members(family_id)
         
         return jsonify({
             'success': True,
             'data': members
-        })
+        }), 200
     except Exception as e:
-        return jsonify({'success': False, 'message': str(e)}), 500
+        return jsonify({'success': False, 'error': str(e)}), 500
 
 
 @family_bp.route('/<family_id>', methods=['PUT'])
-@login_required
+@jwt_required
 def update_family(family_id):
-    """更新家庭信息"""
+    """更新家庭信息（JWT 认证）"""
     try:
         data = request.get_json()
         name = data.get('name', '').strip()
         
         if not name:
-            return jsonify({'success': False, 'message': '家庭名称不能为空'}), 400
+            return jsonify({'success': False, 'error': '家庭名称不能为空'}), 400
         
-        user_id = session.get('user_id')
+        # 从 JWT Token 中获取用户 ID
+        user_id = request.user_id
         db = get_db()
         family_service = FamilyService(db)
         
@@ -153,19 +157,20 @@ def update_family(family_id):
         return jsonify({
             'success': True,
             'message': '家庭信息更新成功'
-        })
+        }), 200
     except ValueError as e:
-        return jsonify({'success': False, 'message': str(e)}), 403
+        return jsonify({'success': False, 'error': str(e)}), 403
     except Exception as e:
-        return jsonify({'success': False, 'message': str(e)}), 500
+        return jsonify({'success': False, 'error': str(e)}), 500
 
 
 @family_bp.route('/<family_id>', methods=['DELETE'])
-@login_required
+@jwt_required
 def delete_family(family_id):
-    """删除家庭"""
+    """删除家庭（JWT 认证）"""
     try:
-        user_id = session.get('user_id')
+        # 从 JWT Token 中获取用户 ID
+        user_id = request.user_id
         db = get_db()
         family_service = FamilyService(db)
         
@@ -174,19 +179,20 @@ def delete_family(family_id):
         return jsonify({
             'success': True,
             'message': '家庭已删除'
-        })
+        }), 200
     except ValueError as e:
-        return jsonify({'success': False, 'message': str(e)}), 403
+        return jsonify({'success': False, 'error': str(e)}), 403
     except Exception as e:
-        return jsonify({'success': False, 'message': str(e)}), 500
+        return jsonify({'success': False, 'error': str(e)}), 500
 
 
 @family_bp.route('/<family_id>/members/<target_user_id>', methods=['DELETE'])
-@login_required
+@jwt_required
 def remove_member(family_id, target_user_id):
-    """移除家庭成员"""
+    """移除家庭成员（JWT 认证）"""
     try:
-        user_id = session.get('user_id')
+        # 从 JWT Token 中获取用户 ID
+        user_id = request.user_id
         db = get_db()
         family_service = FamilyService(db)
         
@@ -195,52 +201,54 @@ def remove_member(family_id, target_user_id):
         return jsonify({
             'success': True,
             'message': '成员已移除'
-        })
+        }), 200
     except ValueError as e:
-        return jsonify({'success': False, 'message': str(e)}), 403
+        return jsonify({'success': False, 'error': str(e)}), 403
     except Exception as e:
-        return jsonify({'success': False, 'message': str(e)}), 500
+        return jsonify({'success': False, 'error': str(e)}), 500
 
 
 @family_bp.route('/<family_id>/fridges', methods=['GET'])
-@login_required
+@jwt_required
 def get_family_fridges(family_id):
-    """获取家庭共享的冰箱列表"""
+    """获取家庭共享的冰箱列表（JWT 认证）"""
     try:
-        user_id = session.get('user_id')
+        # 从 JWT Token 中获取用户 ID
+        user_id = request.user_id
         db = get_db()
         family_service = FamilyService(db)
         
         # 检查是否是家庭成员
         if not family_service.is_family_member(family_id, user_id):
-            return jsonify({'success': False, 'message': '您不是该家庭的成员'}), 403
+            return jsonify({'success': False, 'error': '您不是该家庭的成员'}), 403
         
         fridges = family_service.get_family_shared_fridges(family_id)
         
         return jsonify({
             'success': True,
             'data': fridges
-        })
+        }), 200
     except Exception as e:
-        return jsonify({'success': False, 'message': str(e)}), 500
+        return jsonify({'success': False, 'error': str(e)}), 500
 
 
 @family_bp.route('/fridge/<fridge_id>/permission', methods=['POST'])
-@login_required
+@jwt_required
 def set_fridge_permission(fridge_id):
-    """设置冰箱权限"""
+    """设置冰箱权限（JWT 认证）"""
     try:
         data = request.get_json()
         is_family_shared = data.get('is_family_shared', False)
         is_editable_by_family = data.get('is_editable_by_family', False)
         
-        user_id = session.get('user_id')
+        # 从 JWT Token 中获取用户 ID
+        user_id = request.user_id
         db = get_db()
         
         # 检查是否是冰箱所有者
         fridge = db.fridge.find_one({'_id': fridge_id})
         if not fridge or fridge['user_id'] != user_id:
-            return jsonify({'success': False, 'message': '只有冰箱所有者可以设置权限'}), 403
+            return jsonify({'success': False, 'error': '只有冰箱所有者可以设置权限'}), 403
         
         family_service = FamilyService(db)
         family_service.set_fridge_permission(fridge_id, is_family_shared, is_editable_by_family)
@@ -248,15 +256,15 @@ def set_fridge_permission(fridge_id):
         return jsonify({
             'success': True,
             'message': '权限设置成功'
-        })
+        }), 200
     except Exception as e:
-        return jsonify({'success': False, 'message': str(e)}), 500
+        return jsonify({'success': False, 'error': str(e)}), 500
 
 
 @family_bp.route('/fridge/<fridge_id>/permission', methods=['GET'])
-@login_required
+@jwt_required
 def get_fridge_permission(fridge_id):
-    """获取冰箱权限"""
+    """获取冰箱权限（JWT 认证）"""
     try:
         db = get_db()
         family_service = FamilyService(db)
@@ -265,6 +273,6 @@ def get_fridge_permission(fridge_id):
         return jsonify({
             'success': True,
             'data': permission
-        })
+        }), 200
     except Exception as e:
-        return jsonify({'success': False, 'message': str(e)}), 500
+        return jsonify({'success': False, 'error': str(e)}), 500

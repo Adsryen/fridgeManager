@@ -1,10 +1,10 @@
 # -*- coding: utf-8 -*-
 """管理员路由"""
-from flask import Blueprint, render_template, jsonify, request, send_file
+from flask import Blueprint, jsonify, request, send_file
 from app import db_client
 from app.services.admin_service import AdminService
 from app.models.system_settings import SystemSettings
-from app.utils.auth import admin_required
+from app.utils.jwt_auth import admin_required
 import sys
 import os
 from datetime import datetime
@@ -12,152 +12,227 @@ from datetime import datetime
 admin_bp = Blueprint('admin', __name__)
 
 
-@admin_bp.route('/dashboard')
-@admin_required
-def dashboard():
-    """管理员仪表板"""
-    admin_service = AdminService(db_client.fridge)
-    stats = admin_service.get_statistics()
-    return render_template('admin/dashboard.html', stats=stats)
-
-
 @admin_bp.route('/users')
 @admin_required
 def users():
-    """用户管理页面"""
-    admin_service = AdminService(db_client.fridge)
-    users = admin_service.get_all_users()
-    return render_template('admin/users.html', users=users)
-
-
-@admin_bp.route('/user/<user_id>')
-@admin_required
-def user_detail(user_id):
-    """用户详情"""
-    admin_service = AdminService(db_client.fridge)
-    user = admin_service.get_user_details(user_id)
+    """获取所有用户 API
     
-    if not user:
-        return jsonify({'error': '用户不存在'}), 404
-    
-    return render_template('admin/user_detail.html', user=user)
+    Returns:
+        JSON: {
+            success: bool,
+            data: [
+                {
+                    _id: str,
+                    username: str,
+                    email: str,
+                    is_admin: bool,
+                    is_active: bool,
+                    created_at: str
+                }
+            ]
+        }
+    """
+    try:
+        admin_service = AdminService(db_client.fridge)
+        users_list = admin_service.get_all_users()
+        return jsonify({'success': True, 'data': users_list}), 200
+    except Exception as e:
+        return jsonify({'success': False, 'error': f'获取用户列表失败: {str(e)}'}), 500
 
 
 @admin_bp.route('/user/<user_id>/toggle-status', methods=['POST'])
 @admin_required
 def toggle_user_status(user_id):
-    """切换用户激活状态"""
-    admin_service = AdminService(db_client.fridge)
-    success = admin_service.toggle_user_status(user_id)
+    """激活/禁用用户 API
     
-    if success:
-        return jsonify({'success': True, 'message': '状态已更新'})
-    return jsonify({'error': '操作失败'}), 400
+    Args:
+        user_id: 用户 ID
+        
+    Returns:
+        JSON: {success: bool, message: str}
+    """
+    try:
+        admin_service = AdminService(db_client.fridge)
+        success = admin_service.toggle_user_status(user_id)
+        
+        if success:
+            return jsonify({'success': True, 'message': '用户状态已更新'}), 200
+        return jsonify({'success': False, 'error': '用户不存在或操作失败'}), 400
+    except Exception as e:
+        return jsonify({'success': False, 'error': f'操作失败: {str(e)}'}), 500
 
 
 @admin_bp.route('/user/<user_id>/toggle-admin', methods=['POST'])
 @admin_required
 def toggle_admin_status(user_id):
-    """切换用户管理员状态"""
-    admin_service = AdminService(db_client.fridge)
-    success = admin_service.toggle_admin_status(user_id)
+    """设置/取消管理员权限 API
     
-    if success:
-        return jsonify({'success': True, 'message': '权限已更新'})
-    return jsonify({'error': '操作失败'}), 400
+    Args:
+        user_id: 用户 ID
+        
+    Returns:
+        JSON: {success: bool, message: str}
+    """
+    try:
+        admin_service = AdminService(db_client.fridge)
+        success = admin_service.toggle_admin_status(user_id)
+        
+        if success:
+            return jsonify({'success': True, 'message': '管理员权限已更新'}), 200
+        return jsonify({'success': False, 'error': '用户不存在或操作失败'}), 400
+    except Exception as e:
+        return jsonify({'success': False, 'error': f'操作失败: {str(e)}'}), 500
 
 
 @admin_bp.route('/user/<user_id>/delete', methods=['POST'])
 @admin_required
 def delete_user(user_id):
-    """删除用户"""
-    admin_service = AdminService(db_client.fridge)
-    success = admin_service.delete_user(user_id)
+    """删除用户 API
     
-    if success:
-        return jsonify({'success': True, 'message': '用户已删除'})
-    return jsonify({'error': '删除失败'}), 400
+    Args:
+        user_id: 用户 ID
+        
+    Returns:
+        JSON: {success: bool, message: str}
+    """
+    try:
+        admin_service = AdminService(db_client.fridge)
+        success = admin_service.delete_user(user_id)
+        
+        if success:
+            return jsonify({'success': True, 'message': '用户已删除'}), 200
+        return jsonify({'success': False, 'error': '用户不存在或删除失败'}), 400
+    except Exception as e:
+        return jsonify({'success': False, 'error': f'删除用户失败: {str(e)}'}), 500
 
 
 @admin_bp.route('/user/<user_id>/reset-password', methods=['POST'])
 @admin_required
 def reset_user_password(user_id):
-    """重置用户密码"""
+    """重置用户密码 API
+    
+    Args:
+        user_id: 用户 ID
+        
+    Request Body:
+        {password: str}
+        
+    Returns:
+        JSON: {success: bool, message: str}
+    """
     try:
         data = request.get_json()
         new_password = data.get('password')
         
         if not new_password:
-            return jsonify({'error': '密码不能为空'}), 400
+            return jsonify({'success': False, 'error': '密码不能为空'}), 400
         
         if len(new_password) < 6:
-            return jsonify({'error': '密码长度至少6位'}), 400
+            return jsonify({'success': False, 'error': '密码长度至少6位'}), 400
         
         admin_service = AdminService(db_client.fridge)
         success = admin_service.reset_user_password(user_id, new_password)
         
         if success:
-            return jsonify({'success': True, 'message': '密码已重置'})
-        return jsonify({'error': '重置失败'}), 400
+            return jsonify({'success': True, 'message': '密码已重置'}), 200
+        return jsonify({'success': False, 'error': '用户不存在或重置失败'}), 400
     except Exception as e:
-        return jsonify({'error': str(e)}), 500
+        return jsonify({'success': False, 'error': f'重置密码失败: {str(e)}'}), 500
 
 
 @admin_bp.route('/stats')
 @admin_required
 def stats():
-    """获取统计数据"""
-    admin_service = AdminService(db_client.fridge)
-    stats = admin_service.get_statistics()
-    return jsonify(stats)
+    """获取统计数据 API
+    
+    Returns:
+        JSON: {
+            success: bool,
+            data: {
+                user_count: int,
+                item_count: int,
+                fridge_count: int,
+                family_count: int,
+                active_users: int
+            }
+        }
+    """
+    try:
+        admin_service = AdminService(db_client.fridge)
+        stats_data = admin_service.get_statistics()
+        return jsonify({'success': True, 'data': stats_data}), 200
+    except Exception as e:
+        return jsonify({'success': False, 'error': f'获取统计数据失败: {str(e)}'}), 500
 
 
 @admin_bp.route('/settings')
 @admin_required
 def settings():
-    """系统设置页面"""
-    system_settings = SystemSettings(db_client.fridge)
-    settings_data = system_settings.get_all_settings()
+    """获取系统设置 API
     
-    # 获取系统信息
-    python_version = f"{sys.version_info.major}.{sys.version_info.minor}.{sys.version_info.micro}"
-    
-    # 获取数据库大小
+    Returns:
+        JSON: {
+            success: bool,
+            data: {
+                session_timeout: int,
+                max_items_per_user: int,
+                default_expiry_warning_days: int,
+                enable_ai_features: bool,
+                openai_api_base: str,
+                openai_api_key: str,
+                openai_chat_model: str,
+                openai_vision_model: str,
+                openai_audio_model: str,
+                updated_at: str
+            }
+        }
+    """
     try:
-        db_path = 'data/fridge.db'
-        if os.path.exists(db_path):
-            db_size = os.path.getsize(db_path)
-            db_size_mb = round(db_size / (1024 * 1024), 2)
-            db_size_str = f"{db_size_mb} MB"
-        else:
-            db_size_str = "未知"
-    except:
-        db_size_str = "未知"
-    
-    return render_template('admin/settings.html', 
-                         settings=settings_data,
-                         python_version=python_version,
-                         db_size=db_size_str,
-                         last_update=settings_data.get('updated_at', '未知'))
+        system_settings = SystemSettings(db_client.fridge)
+        settings_data = system_settings.get_all_settings()
+        return jsonify({'success': True, 'data': settings_data}), 200
+    except Exception as e:
+        return jsonify({'success': False, 'error': f'获取系统设置失败: {str(e)}'}), 500
 
 
 @admin_bp.route('/settings/save', methods=['POST'])
 @admin_required
 def save_settings():
-    """保存系统设置"""
+    """保存系统设置 API
+    
+    Request Body:
+        {
+            settings: {
+                session_timeout: int,
+                max_items_per_user: int,
+                default_expiry_warning_days: int,
+                enable_ai_features: bool,
+                openai_api_base: str,
+                openai_api_key: str,
+                openai_chat_model: str,
+                openai_vision_model: str,
+                openai_audio_model: str
+            }
+        }
+        
+    Returns:
+        JSON: {success: bool, message: str}
+    """
     try:
         data = request.get_json()
-        category = data.get('category')
         settings = data.get('settings')
+        
+        if not settings:
+            return jsonify({'success': False, 'error': '设置数据不能为空'}), 400
         
         system_settings = SystemSettings(db_client.fridge)
         success = system_settings.update_settings(settings)
         
         if success:
-            return jsonify({'success': True, 'message': '设置已保存'})
-        return jsonify({'error': '保存失败'}), 400
+            return jsonify({'success': True, 'message': '设置已保存'}), 200
+        return jsonify({'success': False, 'error': '保存设置失败'}), 400
     except Exception as e:
-        return jsonify({'error': str(e)}), 500
+        return jsonify({'success': False, 'error': f'保存设置失败: {str(e)}'}), 500
 
 
 @admin_bp.route('/maintenance/clean-expired', methods=['POST'])
@@ -169,7 +244,7 @@ def clean_expired_items():
         count = admin_service.clean_expired_items()
         return jsonify({'success': True, 'count': count})
     except Exception as e:
-        return jsonify({'error': str(e)}), 500
+        return jsonify({'success': False, 'error': str(e)}), 500
 
 
 @admin_bp.route('/maintenance/backup')
@@ -183,53 +258,42 @@ def backup_database():
             return send_file(db_path, 
                            as_attachment=True,
                            download_name=f'fridge_backup_{timestamp}.db')
-        return jsonify({'error': '数据库文件不存在'}), 404
+        return jsonify({'success': False, 'error': '数据库文件不存在'}), 404
     except Exception as e:
-        return jsonify({'error': str(e)}), 500
-
-
-@admin_bp.route('/maintenance/logs')
-@admin_required
-def view_logs():
-    """查看系统日志"""
-    try:
-        admin_service = AdminService(db_client.fridge)
-        logs = admin_service.get_system_logs()
-        return render_template('admin/logs.html', logs=logs)
-    except Exception as e:
-        return jsonify({'error': str(e)}), 500
-
-
-@admin_bp.route('/ai-settings')
-@admin_required
-def ai_settings():
-    """AI设置页面"""
-    system_settings = SystemSettings(db_client.fridge)
-    settings = system_settings.get_all_settings()
-    return render_template('admin/ai_settings.html', settings=settings)
+        return jsonify({'success': False, 'error': str(e)}), 500
 
 
 @admin_bp.route('/ai/test-connection', methods=['POST'])
 @admin_required
 def test_ai_connection():
-    """测试AI API连接"""
+    """测试 AI 连接 API
+    
+    Request Body:
+        {
+            api_base: str,
+            api_key: str
+        }
+        
+    Returns:
+        JSON: {success: bool, message?: str, error?: str}
+    """
     import requests
     
-    data = request.get_json()
-    api_base = data.get('api_base', '').strip()
-    api_key = data.get('api_key', '').strip()
-    
-    if not api_base or not api_key:
-        return jsonify({'success': False, 'error': 'API地址和密钥不能为空'}), 400
-    
-    # 确保API地址格式正确
-    if not api_base.startswith('http'):
-        api_base = 'https://' + api_base
-    
-    # 移除末尾的斜杠
-    api_base = api_base.rstrip('/')
-    
     try:
+        data = request.get_json()
+        api_base = data.get('api_base', '').strip()
+        api_key = data.get('api_key', '').strip()
+        
+        if not api_base or not api_key:
+            return jsonify({'success': False, 'error': 'API地址和密钥不能为空'}), 400
+        
+        # 确保API地址格式正确
+        if not api_base.startswith('http'):
+            api_base = 'https://' + api_base
+        
+        # 移除末尾的斜杠
+        api_base = api_base.rstrip('/')
+        
         # 调用OpenAI协议的models接口测试连接
         url = f"{api_base}/models"
         headers = {
@@ -249,7 +313,7 @@ def test_ai_connection():
                 'success': False,
                 'error': f'API返回错误: {response.status_code} - {response.text}'
             }), 400
-        
+            
     except requests.exceptions.Timeout:
         return jsonify({
             'success': False,
@@ -270,7 +334,17 @@ def test_ai_connection():
 @admin_bp.route('/ai/list-models', methods=['POST'])
 @admin_required
 def list_ai_models():
-    """获取可用的AI模型列表"""
+    """获取可用的 AI 模型列表 API
+    
+    Request Body:
+        {
+            api_base: str,
+            api_key: str
+        }
+        
+    Returns:
+        JSON: {success: bool, models?: list, error?: str}
+    """
     try:
         import requests
     except ImportError as e:

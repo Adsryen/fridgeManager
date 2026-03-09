@@ -2,6 +2,7 @@
 """冰箱管理路由"""
 from flask import Blueprint, request, jsonify, session
 from app.utils.auth import login_required, get_current_user_id
+from app.utils.jwt_auth import jwt_required
 from app import db_client
 from app.services.fridge_service import FridgeService
 
@@ -14,7 +15,7 @@ def get_fridge_service():
 
 
 @fridge_bp.route('/list', methods=['GET'])
-@login_required
+@jwt_required
 def list_fridges():
     """获取用户的所有冰箱（包括家庭共享冰箱）"""
     try:
@@ -22,7 +23,7 @@ def list_fridges():
         
         fridge_service = get_fridge_service()
         family_service = FamilyService(db_client.fridge)
-        user_id = get_current_user_id()
+        user_id = request.user_id  # 从 JWT Token 中获取用户 ID
         
         # 获取用户自己的冰箱
         my_fridges = fridge_service.get_user_fridges(user_id)
@@ -61,7 +62,7 @@ def list_fridges():
 
 
 @fridge_bp.route('/create', methods=['POST'])
-@login_required
+@jwt_required
 def create_fridge():
     """创建新冰箱"""
     try:
@@ -81,7 +82,7 @@ def create_fridge():
                 'error': '冰箱名称不能超过20个字符'
             }), 400
         
-        user_id = get_current_user_id()
+        user_id = request.user_id  # 从 JWT Token 中获取用户 ID
         
         # 检查用户冰箱数量限制(最多10个)
         existing_fridges = fridge_service.get_user_fridges(user_id)
@@ -133,7 +134,7 @@ def get_fridge(fridge_id):
 
 
 @fridge_bp.route('/<fridge_id>/rename', methods=['PUT'])
-@login_required
+@jwt_required
 def rename_fridge(fridge_id):
     """重命名冰箱"""
     try:
@@ -153,7 +154,7 @@ def rename_fridge(fridge_id):
                 'error': '冰箱名称不能超过20个字符'
             }), 400
         
-        user_id = get_current_user_id()
+        user_id = request.user_id  # 从 JWT Token 中获取用户 ID
         success = fridge_service.update_fridge(fridge_id, user_id, name)
         
         if not success:
@@ -174,14 +175,14 @@ def rename_fridge(fridge_id):
 
 
 @fridge_bp.route('/<fridge_id>', methods=['DELETE'])
-@login_required
+@jwt_required
 def delete_fridge(fridge_id):
-    """删除冰箱"""
+    """删除冰箱及其所有物品"""
     try:
         fridge_service = get_fridge_service()
-        user_id = get_current_user_id()
+        user_id = request.user_id  # 从 JWT Token 中获取用户 ID
         
-        # 检查冰箱是否存在
+        # 验证冰箱所有权
         fridge = fridge_service.get_fridge(fridge_id, user_id)
         if not fridge:
             return jsonify({
@@ -189,14 +190,10 @@ def delete_fridge(fridge_id):
                 'error': '冰箱不存在或无权限'
             }), 404
         
-        # 检查冰箱中是否还有物品
-        item_count = fridge_service.get_fridge_item_count(fridge_id)
-        if item_count > 0:
-            return jsonify({
-                'success': False,
-                'error': f'冰箱中还有{item_count}件物品,请先清空'
-            }), 400
+        # 删除冰箱中的所有物品
+        deleted_items = fridge_service.delete_fridge_items(fridge_id)
         
+        # 删除冰箱
         success = fridge_service.delete_fridge(fridge_id, user_id)
         
         if not success:
@@ -207,7 +204,7 @@ def delete_fridge(fridge_id):
         
         return jsonify({
             'success': True,
-            'message': '删除成功'
+            'message': f'删除成功，已删除冰箱及其 {deleted_items} 件物品'
         })
     except Exception as e:
         return jsonify({
@@ -217,11 +214,14 @@ def delete_fridge(fridge_id):
 
 
 @fridge_bp.route('/switch', methods=['POST'])
-@login_required
+@jwt_required
 def switch_fridge():
     """切换当前冰箱"""
     try:
+        from app.services.settings_service import SettingsService
+        
         fridge_service = get_fridge_service()
+        settings_service = SettingsService(db_client.fridge)
         data = request.get_json()
         fridge_id = data.get('fridge_id')
         
@@ -231,25 +231,55 @@ def switch_fridge():
                 'error': '冰箱ID不能为空'
             }), 400
         
+        user_id = request.user_id  # 从 JWT Token 中获取用户 ID
+        
         # 如果是切换到公共冰箱
         if fridge_id == 'public':
-            session['current_fridge_id'] = 'public'
+            settings_service.update_current_fridge(user_id, 'public')
             return jsonify({
                 'success': True,
                 'message': '已切换到公共冰箱'
             })
         
-        # 验证冰箱是否属于当前用户
-        user_id = get_current_user_id()
+        # 验证冰箱是否存在且用户有权限访问
         fridge = fridge_service.get_fridge(fridge_id, user_id)
         
         if not fridge:
+            # 检查是否是共享冰箱
+            from app.services.family_service import FamilyService
+            family_service = FamilyService(db_client.fridge)
+            
+            # 获取用户所属的家庭
+            families = family_service.get_user_families(user_id)
+            has_access = False
+            fridge_name = None
+            
+            for family in families:
+                family_fridges = family_service.get_family_shared_fridges(family['_id'])
+                for shared_fridge in family_fridges:
+                    if shared_fridge['_id'] == fridge_id:
+                        has_access = True
+                        fridge_name = shared_fridge['name']
+                        break
+                if has_access:
+                    break
+            
+            if not has_access:
+                return jsonify({
+                    'success': False,
+                    'error': '冰箱不存在或无权限'
+                }), 404
+            
+            # 更新用户设置
+            settings_service.update_current_fridge(user_id, fridge_id)
+            
             return jsonify({
-                'success': False,
-                'error': '冰箱不存在或无权限'
-            }), 404
+                'success': True,
+                'message': f'已切换到{fridge_name}'
+            })
         
-        session['current_fridge_id'] = fridge_id
+        # 更新用户设置
+        settings_service.update_current_fridge(user_id, fridge_id)
         
         return jsonify({
             'success': True,
