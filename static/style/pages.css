@@ -222,8 +222,8 @@
 }
 
 .settings-page-content {
-    padding: 20px;
-    padding-bottom: 20px; /* 确保底部有足够的内边距 */
+    padding: 16px;
+    padding-bottom: 16px; /* 确保底部有足够的内边距 */
 }
 
 /* 分类页面和统计页面也不显示分类标签 */
@@ -235,25 +235,25 @@
 /* 用户信息卡片 */
 .user-profile-card {
     background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
-    border-radius: 16px;
-    padding: 24px;
+    border-radius: 12px;
+    padding: 19px;
     display: flex;
     align-items: center;
-    gap: 16px;
-    margin-bottom: 24px;
+    gap: 13px;
+    margin-bottom: 19px;
     color: white;
     box-shadow: 0 4px 12px rgba(102, 126, 234, 0.3);
 }
 
 .profile-avatar {
-    width: 64px;
-    height: 64px;
+    width: 51px;
+    height: 51px;
     border-radius: 50%;
     background: rgba(255, 255, 255, 0.2);
     display: flex;
     align-items: center;
     justify-content: center;
-    font-size: 32px;
+    font-size: 26px;
     flex-shrink: 0;
 }
 
@@ -267,49 +267,49 @@
 }
 
 .profile-name {
-    font-size: 20px;
+    font-size: 16px;
     font-weight: 600;
-    margin-bottom: 6px;
+    margin-bottom: 5px;
 }
 
 .profile-status {
-    font-size: 13px;
+    font-size: 11px;
     opacity: 0.95;
 }
 
 .profile-hint {
-    font-size: 13px;
+    font-size: 11px;
     opacity: 0.9;
 }
 
 .badge-admin, .badge-user {
     display: inline-flex;
     align-items: center;
-    gap: 4px;
-    padding: 4px 10px;
+    gap: 3px;
+    padding: 3px 8px;
     background: rgba(255, 255, 255, 0.25);
-    border-radius: 12px;
-    font-size: 12px;
+    border-radius: 10px;
+    font-size: 10px;
 }
 
 .btn-login-small {
-    padding: 8px 16px;
+    padding: 6px 13px;
     background: white;
     color: var(--primary-color);
-    border-radius: 20px;
+    border-radius: 16px;
     text-decoration: none;
-    font-size: 14px;
+    font-size: 11px;
     font-weight: 600;
     display: flex;
     align-items: center;
     justify-content: center;
-    gap: 6px;
+    gap: 5px;
     white-space: nowrap;
     transition: all 0.3s;
 }
 
 .btn-login-small i {
-    font-size: 14px;
+    font-size: 11px;
     display: flex;
     align-items: center;
 }
@@ -322,31 +322,31 @@
 .guest-actions {
     display: flex;
     flex-direction: column;
-    gap: 8px;
+    gap: 6px;
     align-items: stretch;
-    min-width: 100px;
+    min-width: 80px;
 }
 
 /* 注册按钮 */
 .btn-register-small {
-    padding: 8px 16px;
+    padding: 6px 13px;
     background: transparent;
     color: white;
     border: 2px solid white;
-    border-radius: 20px;
+    border-radius: 16px;
     text-decoration: none;
-    font-size: 14px;
+    font-size: 11px;
     font-weight: 600;
     display: flex;
     align-items: center;
     justify-content: center;
-    gap: 6px;
+    gap: 5px;
     white-space: nowrap;
     transition: all 0.3s;
 }
 
 .btn-register-small i {
-    font-size: 14px;
+    font-size: 11px;
     display: flex;
     align-items: center;
 }
@@ -360,18 +360,18 @@
 .quick-actions {
     display: grid;
     grid-template-columns: repeat(3, 1fr);
-    gap: 12px;
-    margin-bottom: 8px;
+    gap: 10px;
+    margin-bottom: 6px;
 }
 
 .quick-action-item {
     display: flex;
     flex-direction: column;
     align-items: center;
-    gap: 8px;
-    padding: 16px 8px;
+    gap: 6px;
+    padding: 13px 6px;
     background: var(--card-bg);
-    border-radius: 12px;
+    border-radius: 10px;
     text-decoration: none;
     color: var(--text-primary);
     transition: all 0.3s;
@@ -383,13 +383,13 @@
 }
 
 .quick-action-icon {
-    width: 48px;
-    height: 48px;
-    border-radius: 12px;
+    width: 38px;
+    height: 38px;
+    border-radius: 10px;
     display: flex;
     align-items: center;
     justify-content: center;
-    font-size: 20px;
+    font-size: 16px;
     color: white;
 }
 
@@ -418,32 +418,32 @@
 }
 
 .quick-action-item span {
-    font-size: 12px;
+    font-size: 10px;
     font-weight: 500;
     text-align: center;
 }
 
 /* 设置区块 */
 .settings-section {
-    margin-bottom: 24px;
+    margin-bottom: 19px;
 }
 
 .settings-section h3 {
-    font-size: 14px;
+    font-size: 11px;
     font-weight: 600;
     color: var(--text-secondary);
-    margin-bottom: 12px;
-    padding: 0 4px;
+    margin-bottom: 10px;
+    padding: 0 3px;
 }
 
 .settings-item {
     background: var(--card-bg);
-    border-radius: 12px;
-    padding: 16px;
+    border-radius: 10px;
+    padding: 13px;
     display: flex;
     justify-content: space-between;
     align-items: center;
-    margin-bottom: 8px;
+    margin-bottom: 6px;
     cursor: pointer;
     transition: all 0.3s;
     text-decoration: none;
@@ -463,13 +463,13 @@
 .settings-item-left {
     display: flex;
     align-items: center;
-    gap: 12px;
+    gap: 10px;
 }
 
 .settings-item-left i {
-    width: 24px;
+    width: 19px;
     text-align: center;
-    font-size: 18px;
+    font-size: 14px;
     color: var(--primary-color);
 }
 
@@ -478,38 +478,38 @@
 }
 
 .settings-item-left span {
-    font-size: 16px;
+    font-size: 13px;
 }
 
 .settings-item-right {
     display: flex;
     align-items: center;
-    gap: 8px;
+    gap: 6px;
 }
 
 .settings-value {
-    font-size: 14px;
+    font-size: 11px;
     color: var(--text-secondary);
 }
 
 .settings-hint {
-    font-size: 12px;
+    font-size: 10px;
     color: var(--text-secondary);
 }
 
 .settings-item-right i {
-    font-size: 14px;
+    font-size: 11px;
     color: var(--text-secondary);
 }
 
 /* 主题选择器 - 横向滑动 */
 .theme-selector {
     display: flex;
-    gap: 12px;
+    gap: 10px;
     overflow-x: auto;
     overflow-y: hidden;
-    padding: 8px 0;
-    margin-bottom: 12px;
+    padding: 6px 0;
+    margin-bottom: 10px;
     -webkit-overflow-scrolling: touch;
     scrollbar-width: none;
 }
@@ -521,17 +521,17 @@
 .theme-option {
     flex-shrink: 0;
     background: var(--card-bg);
-    border: 3px solid var(--border-color);
-    border-radius: 16px;
-    padding: 12px 16px;
+    border: 2px solid var(--border-color);
+    border-radius: 13px;
+    padding: 10px 13px;
     display: flex;
     flex-direction: column;
     align-items: center;
-    gap: 8px;
+    gap: 6px;
     cursor: pointer;
     transition: all 0.3s;
     box-shadow: 0 2px 6px rgba(0,0,0,0.06);
-    min-width: 80px;
+    min-width: 64px;
 }
 
 .theme-option:active {
@@ -545,14 +545,14 @@
 }
 
 .theme-color {
-    width: 52px;
-    height: 52px;
+    width: 42px;
+    height: 42px;
     border-radius: 50%;
     box-shadow: 0 2px 8px rgba(0,0,0,0.15);
 }
 
 .theme-option span {
-    font-size: 13px;
+    font-size: 10px;
     font-weight: 500;
     color: var(--text-primary);
     white-space: nowrap;
@@ -666,29 +666,29 @@
     display: flex;
     align-items: center;
     justify-content: space-between;
-    padding: 16px;
+    padding: 13px;
     background: var(--card-bg);
-    border-radius: 12px;
-    margin-bottom: 8px;
+    border-radius: 10px;
+    margin-bottom: 6px;
     transition: all 0.3s;
 }
 
 .settings-item-toggle .settings-item-left {
     display: flex;
     align-items: center;
-    gap: 12px;
+    gap: 10px;
     flex: 1;
 }
 
 .settings-item-toggle .settings-item-left i {
-    font-size: 18px;
+    font-size: 14px;
     color: var(--primary-color);
-    width: 24px;
+    width: 19px;
     text-align: center;
 }
 
 .settings-item-toggle .settings-item-left span {
-    font-size: 15px;
+    font-size: 12px;
     color: var(--text-primary);
     font-weight: 500;
     transition: all 0.3s ease;
@@ -699,9 +699,9 @@
     background: none;
     border: none;
     color: var(--text-secondary);
-    font-size: 16px;
+    font-size: 13px;
     cursor: pointer;
-    padding: 4px;
+    padding: 3px;
     margin-left: auto;
     transition: all 0.3s;
     display: flex;
@@ -721,8 +721,8 @@
 .toggle-switch {
     position: relative;
     display: inline-block;
-    width: 50px;
-    height: 28px;
+    width: 40px;
+    height: 22px;
     flex-shrink: 0;
 }
 
@@ -741,16 +741,16 @@
     bottom: 0;
     background-color: #ccc;
     transition: 0.3s;
-    border-radius: 28px;
+    border-radius: 22px;
 }
 
 .toggle-slider:before {
     position: absolute;
     content: "";
-    height: 22px;
-    width: 22px;
-    left: 3px;
-    bottom: 3px;
+    height: 18px;
+    width: 18px;
+    left: 2px;
+    bottom: 2px;
     background-color: white;
     transition: 0.3s;
     border-radius: 50%;
@@ -762,7 +762,7 @@
 }
 
 .toggle-switch input:checked + .toggle-slider:before {
-    transform: translateX(22px);
+    transform: translateX(18px);
 }
 
 .toggle-switch input:focus + .toggle-slider {
@@ -780,15 +780,15 @@ body.dark-mode .toggle-slider:before {
 
 /* 用户信息卡片上的退出登录按钮 */
 .profile-logout-btn {
-    width: 40px;
-    height: 40px;
+    width: 32px;
+    height: 32px;
     border-radius: 50%;
     background: rgba(255, 255, 255, 0.2);
     color: white;
     display: flex;
     align-items: center;
     justify-content: center;
-    font-size: 18px;
+    font-size: 14px;
     text-decoration: none;
     transition: all 0.3s;
     flex-shrink: 0;

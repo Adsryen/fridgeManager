@@ -121,8 +121,8 @@ body.dark-mode .icon-btn:active {
 /* 统计卡片 */
 .stats-container {
     display: flex;
-    gap: 8px;
-    padding: 8px 16px;
+    gap: 6px;
+    padding: 6px 12px;
     overflow-x: auto;
     -webkit-overflow-scrolling: touch;
     flex-shrink: 0;
@@ -131,14 +131,14 @@ body.dark-mode .icon-btn:active {
 
 .stat-card {
     flex: 1;
-    min-width: 90px;
+    min-width: 72px;
     background: var(--card-bg);
-    border-radius: 10px;
-    padding: 8px;
+    border-radius: 8px;
+    padding: 6px;
     display: flex;
     flex-direction: column;
     align-items: center;
-    gap: 4px;
+    gap: 3px;
     box-shadow: 0 2px 6px rgba(0,0,0,0.06);
     cursor: pointer;
     transition: all 0.3s;
@@ -149,13 +149,13 @@ body.dark-mode .icon-btn:active {
 }
 
 .stat-icon {
-    width: 32px;
-    height: 32px;
-    border-radius: 8px;
+    width: 26px;
+    height: 26px;
+    border-radius: 6px;
     display: flex;
     align-items: center;
     justify-content: center;
-    font-size: 16px;
+    font-size: 13px;
 }
 
 .stat-icon.total {
@@ -178,14 +178,14 @@ body.dark-mode .icon-btn:active {
 }
 
 .stat-value {
-    font-size: 18px;
+    font-size: 14px;
     font-weight: 700;
     color: var(--text-primary);
     line-height: 1.2;
 }
 
 .stat-label {
-    font-size: 10px;
+    font-size: 9px;
     color: var(--text-secondary);
 }
 
@@ -193,16 +193,16 @@ body.dark-mode .icon-btn:active {
 .fridge-selector-container {
     background: var(--bg-color);
     border-bottom: 1px solid var(--border-color);
-    padding: 8px 0;
+    padding: 6px 0;
     flex-shrink: 0;
 }
 
 .fridge-selector-scroll {
     display: flex;
-    gap: 8px;
+    gap: 6px;
     overflow-x: auto;
     overflow-y: hidden;
-    padding: 0 16px;
+    padding: 0 12px;
     -webkit-overflow-scrolling: touch;
     scrollbar-width: none;
 }
@@ -215,21 +215,21 @@ body.dark-mode .icon-btn:active {
     flex-shrink: 0;
     display: flex;
     align-items: center;
-    gap: 6px;
-    padding: 8px 16px;
+    gap: 5px;
+    padding: 6px 12px;
     background: var(--card-bg);
     border: 2px solid var(--border-color);
-    border-radius: 20px;
+    border-radius: 16px;
     cursor: pointer;
     transition: all 0.3s;
-    font-size: 13px;
+    font-size: 11px;
     font-weight: 500;
     color: var(--text-secondary);
     white-space: nowrap;
 }
 
 .fridge-tab i {
-    font-size: 14px;
+    font-size: 11px;
 }
 
 .fridge-tab:active {
@@ -255,7 +255,7 @@ body.dark-mode .icon-btn:active {
 
 /* 搜索栏 */
 .mobile-search {
-    padding: 8px 16px;
+    padding: 6px 12px;
     background: var(--bg-color);
     flex-shrink: 0;
 }
@@ -270,15 +270,15 @@ body.dark-mode .icon-btn:active {
     border-top: 1px solid var(--border-color);
     z-index: 999;
     box-shadow: 0 -2px 8px rgba(0,0,0,0.05);
-    padding: 8px 0;
+    padding: 6px 0;
 }
 
 .category-tags-scroll {
     display: flex;
-    gap: 4px;
+    gap: 3px;
     overflow-x: auto;
     overflow-y: hidden;
-    padding: 0 12px;
+    padding: 0 10px;
     -webkit-overflow-scrolling: touch;
     scrollbar-width: none;
 }
@@ -292,16 +292,16 @@ body.dark-mode .icon-btn:active {
     display: flex;
     flex-direction: column;
     align-items: center;
-    gap: 4px;
-    padding: 8px 12px;
+    gap: 3px;
+    padding: 6px 10px;
     background: transparent;
     border: none;
-    border-radius: 8px;
+    border-radius: 6px;
     cursor: pointer;
     transition: all 0.2s;
     color: var(--text-secondary);
     position: relative;
-    min-width: 60px;
+    min-width: 48px;
 }
 
 .category-tag:active {
@@ -315,12 +315,12 @@ body.dark-mode .icon-btn:active {
 }
 
 .category-tag-icon {
-    font-size: 24px;
+    font-size: 19px;
     line-height: 1;
 }
 
 .category-tag-name {
-    font-size: 12px;
+    font-size: 10px;
     font-weight: 500;
     white-space: nowrap;
 }
@@ -329,14 +329,14 @@ body.dark-mode .icon-btn:active {
     position: absolute;
     top: 2px;
     right: 2px;
-    font-size: 10px;
+    font-size: 8px;
     font-weight: 700;
-    padding: 2px 5px;
+    padding: 2px 4px;
     background: #ef4444;
     color: white;
-    border-radius: 10px;
-    min-width: 18px;
-    height: 18px;
+    border-radius: 8px;
+    min-width: 14px;
+    height: 14px;
     display: flex;
     align-items: center;
     justify-content: center;
@@ -358,7 +358,7 @@ body.dark-mode .icon-btn:active {
 
 /* 左侧边栏 */
 .sidebar {
-    width: 100px;
+    width: 80px;
     background: var(--card-bg);
     border-right: 1px solid var(--border-color);
     display: flex;
@@ -369,8 +369,8 @@ body.dark-mode .icon-btn:active {
 }
 
 .sidebar-title {
-    padding: 16px 12px 12px;
-    font-size: 12px;
+    padding: 12px 10px 10px;
+    font-size: 10px;
     font-weight: 600;
     color: var(--text-secondary);
     text-align: center;
@@ -383,8 +383,8 @@ body.dark-mode .icon-btn:active {
     flex-direction: column;
     align-items: center;
     justify-content: center;
-    gap: 6px;
-    padding: 24px 8px;
+    gap: 5px;
+    padding: 19px 6px;
     background: none;
     border: none;
     border-bottom: 1px solid var(--border-color);
@@ -393,15 +393,15 @@ body.dark-mode .icon-btn:active {
     transition: all 0.3s;
     position: relative;
     flex: 1;
-    min-height: 80px;
+    min-height: 64px;
 }
 
 .sidebar-item i {
-    font-size: 24px;
+    font-size: 19px;
 }
 
 .sidebar-item span {
-    font-size: 12px;
+    font-size: 10px;
     font-weight: 500;
 }
 
@@ -428,16 +428,16 @@ body.dark-mode .icon-btn:active {
 
 .sidebar-badge {
     position: absolute;
-    top: 8px;
-    right: 8px;
-    font-size: 10px;
+    top: 6px;
+    right: 6px;
+    font-size: 8px;
     font-weight: 700;
-    padding: 2px 5px;
+    padding: 2px 4px;
     background: #3b82f6;
     color: white;
-    border-radius: 10px;
-    min-width: 18px;
-    height: 18px;
+    border-radius: 8px;
+    min-width: 14px;
+    height: 14px;
     display: flex;
     align-items: center;
     justify-content: center;
@@ -459,7 +459,7 @@ body.dark-mode .icon-btn:active {
 }
 
 .main-list-area .mobile-items-container {
-    padding: 16px;
+    padding: 12px;
 }
 
 .search-input-wrapper {
@@ -470,17 +470,17 @@ body.dark-mode .icon-btn:active {
 
 .search-input-wrapper i.fa-search {
     position: absolute;
-    left: 16px;
+    left: 12px;
     color: var(--text-secondary);
-    font-size: 16px;
+    font-size: 13px;
 }
 
 .search-input-wrapper input {
     width: 100%;
-    padding: 12px 40px 12px 44px;
+    padding: 10px 32px 10px 36px;
     border: 2px solid var(--border-color);
-    border-radius: 12px;
-    font-size: 16px;
+    border-radius: 10px;
+    font-size: 13px;
     background: var(--card-bg);
     transition: all 0.3s;
 }
@@ -493,29 +493,29 @@ body.dark-mode .icon-btn:active {
 
 .clear-btn {
     position: absolute;
-    right: 12px;
+    right: 10px;
     background: none;
     border: none;
     color: var(--text-secondary);
-    font-size: 18px;
-    padding: 4px;
+    font-size: 14px;
+    padding: 3px;
     cursor: pointer;
 }
 
 /* 物品列表 */
 .mobile-items-container {
-    padding: 0 16px 16px;
+    padding: 0 12px 12px;
 }
 
 .mobile-item-card {
     background: var(--card-bg);
-    border-radius: 12px;
-    padding: 12px;
-    margin-bottom: 10px;
+    border-radius: 10px;
+    padding: 10px;
+    margin-bottom: 8px;
     box-shadow: 0 2px 6px rgba(0,0,0,0.06);
     transition: all 0.3s;
     display: flex;
-    gap: 12px;
+    gap: 10px;
 }
 
 .mobile-item-card:active {
@@ -540,12 +540,12 @@ body.dark-mode .icon-btn:active {
 .item-card-header {
     display: flex;
     align-items: flex-start;
-    gap: 8px;
-    margin-bottom: 8px;
+    gap: 6px;
+    margin-bottom: 6px;
 }
 
 .item-emoji {
-    font-size: 28px;
+    font-size: 22px;
     line-height: 1;
     flex-shrink: 0;
 }
@@ -556,9 +556,9 @@ body.dark-mode .icon-btn:active {
 }
 
 .item-name-info h3 {
-    font-size: 16px;
+    font-size: 13px;
     font-weight: 600;
-    margin-bottom: 4px;
+    margin-bottom: 3px;
     line-height: 1.4;
     word-wrap: break-word;
     word-break: break-word;
@@ -571,11 +571,11 @@ body.dark-mode .icon-btn:active {
 .item-place-badge {
     display: inline-flex;
     align-items: center;
-    gap: 3px;
-    padding: 2px 8px;
+    gap: 2px;
+    padding: 2px 6px;
     background: var(--bg-color);
-    border-radius: 6px;
-    font-size: 11px;
+    border-radius: 5px;
+    font-size: 9px;
     color: var(--text-secondary);
     transition: all 0.3s;
 }
@@ -596,35 +596,35 @@ body.dark-mode .icon-btn:active {
 .item-card-body {
     display: flex;
     flex-direction: column;
-    gap: 8px;
+    gap: 6px;
 }
 
 .item-info-row-group {
     display: flex;
     align-items: center;
-    gap: 12px;
+    gap: 10px;
     flex-wrap: wrap;
 }
 
 .item-info-inline {
     display: inline-flex;
     align-items: center;
-    gap: 4px;
-    font-size: 12px;
+    gap: 3px;
+    font-size: 10px;
     color: var(--text-secondary);
-    padding: 2px 6px;
+    padding: 2px 5px;
     background: var(--bg-color);
-    border-radius: 6px;
+    border-radius: 5px;
 }
 
 .item-info-inline i {
-    font-size: 11px;
+    font-size: 9px;
 }
 
 .item-bottom-row {
     display: flex;
     align-items: center;
-    gap: 8px;
+    gap: 6px;
     justify-content: space-between;
 }
 
@@ -636,9 +636,9 @@ body.dark-mode .icon-btn:active {
     display: flex;
     align-items: center;
     justify-content: center;
-    padding: 6px 12px;
-    border-radius: 6px;
-    font-size: 13px;
+    padding: 5px 10px;
+    border-radius: 5px;
+    font-size: 11px;
     font-weight: 600;
     flex: 1;
     min-width: 0;
@@ -662,18 +662,18 @@ body.dark-mode .icon-btn:active {
 .item-card-actions {
     display: flex;
     flex-direction: column;
-    gap: 6px;
+    gap: 5px;
     justify-content: flex-start;
-    padding-top: 8px;
+    padding-top: 6px;
 }
 
 .item-action-btn {
-    width: 36px;
-    height: 36px;
+    width: 29px;
+    height: 29px;
     padding: 0;
     border: none;
-    border-radius: 8px;
-    font-size: 16px;
+    border-radius: 6px;
+    font-size: 13px;
     cursor: pointer;
     transition: all 0.3s;
     display: flex;

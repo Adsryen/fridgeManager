@@ -6,10 +6,24 @@ function shouldUseDarkMode() {
     return hour >= 18 || hour < 6;
 }
 
-// 获取用户选择的主题色（默认粉色）
+// 获取用户选择的主题色（优先从服务器，其次localStorage）
 function getUserTheme() {
     try {
-        return localStorage.getItem('userTheme') || 'pink';
+        // 从body的class中读取服务器设置的主题
+        var bodyClasses = document.documentElement.className;
+        var themeMatch = bodyClasses.match(/theme-(\w+)/);
+        if (themeMatch) {
+            return themeMatch[1];
+        }
+        
+        // 如果没有主题class，尝试从localStorage读取（游客用户）
+        var localTheme = localStorage.getItem('userTheme');
+        if (localTheme) {
+            return localTheme;
+        }
+        
+        // 默认粉色
+        return 'pink';
     } catch (e) {
         return 'pink';
     }
@@ -19,12 +33,8 @@ function getUserTheme() {
 function selectTheme(theme) {
     console.log('选择主题:', theme);
     
-    // 保存用户选择的主题
-    try {
-        localStorage.setItem('userTheme', theme);
-    } catch (e) {
-        console.warn('无法保存主题设置:', e);
-    }
+    // 保存到服务器
+    saveThemeToServer(theme);
     
     // 应用主题
     applyTheme(theme);
@@ -41,14 +51,56 @@ function selectTheme(theme) {
     showToast('已切换到' + themeNames[theme] + '主题', 'success');
 }
 
+// 保存主题到服务器
+function saveThemeToServer(theme) {
+    fetch('/settings/update-theme', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+            theme_color: theme
+        })
+    })
+    .then(function(response) {
+        return response.json();
+    })
+    .then(function(data) {
+        if (data.success && !data.saved_to_server) {
+            // 游客用户，保存到localStorage
+            try {
+                localStorage.setItem('userTheme', theme);
+            } catch (e) {
+                console.warn('无法保存到localStorage:', e);
+            }
+        }
+    })
+    .catch(function(error) {
+        console.warn('保存主题设置失败，使用localStorage备用:', error);
+        // 保存到localStorage作为备用
+        try {
+            localStorage.setItem('userTheme', theme);
+        } catch (e) {
+            console.warn('无法保存到localStorage:', e);
+        }
+    });
+}
+
 // 应用主题
 function applyTheme(theme) {
-    // 移除所有主题类
+    // 移除所有主题类（从body和html）
     $('body').removeClass('theme-pink theme-blue theme-purple theme-green theme-orange theme-gray');
+    document.documentElement.className = document.documentElement.className.replace(/theme-\w+/g, '').trim();
     
-    // 添加新主题类
+    // 添加新主题类（同时到body和html）
     if (theme && theme !== 'pink') {
         $('body').addClass('theme-' + theme);
+        document.documentElement.classList.add('theme-' + theme);
+    }
+    
+    // 保持深色模式状态
+    if ($('body').hasClass('dark-mode')) {
+        document.documentElement.classList.add('dark-mode');
     }
     
     // 更新主题选择器的激活状态
@@ -74,23 +126,52 @@ function toggleAutoDarkMode() {
     const isChecked = $('#autoDarkModeToggle').is(':checked');
     console.log('切换自动日夜模式:', isChecked);
     
-    try {
-        if (isChecked) {
-            // 开启自动模式
-            localStorage.setItem('darkModeAuto', 'true');
-            localStorage.removeItem('darkMode');
-            initDarkMode();
-            showToast('已开启自动日夜切换', 'success');
-        } else {
-            // 关闭自动模式，保持当前状态
-            localStorage.setItem('darkModeAuto', 'false');
-            const currentDark = $('body').hasClass('dark-mode');
-            localStorage.setItem('darkMode', currentDark ? 'true' : 'false');
-            showToast('已关闭自动日夜切换', 'info');
-        }
-    } catch (e) {
-        console.warn('无法保存设置:', e);
+    const darkMode = isChecked ? 'auto' : ($('body').hasClass('dark-mode') ? 'dark' : 'light');
+    
+    // 保存到服务器
+    saveDarkModeToServer(darkMode);
+    
+    if (isChecked) {
+        initDarkMode();
+        showToast('已开启自动日夜切换', 'success');
+    } else {
+        showToast('已关闭自动日夜切换', 'info');
     }
+}
+
+// 保存深色模式到服务器
+function saveDarkModeToServer(darkMode) {
+    fetch('/settings/update-theme', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+            dark_mode: darkMode
+        })
+    })
+    .then(function(response) {
+        return response.json();
+    })
+    .then(function(data) {
+        if (data.success && !data.saved_to_server) {
+            // 游客用户，保存到localStorage
+            try {
+                localStorage.setItem('darkMode', darkMode);
+            } catch (e) {
+                console.warn('无法保存到localStorage:', e);
+            }
+        }
+    })
+    .catch(function(error) {
+        console.warn('保存深色模式设置失败，使用localStorage备用:', error);
+        // 保存到localStorage作为备用
+        try {
+            localStorage.setItem('darkMode', darkMode);
+        } catch (e) {
+            console.warn('无法保存到localStorage:', e);
+        }
+    });
 }
 
 // 显示日夜切换规则说明
@@ -146,36 +227,41 @@ function closeCustomAlert() {
 // 初始化深色模式
 function initDarkMode() {
     console.log('初始化深色模式');
-    let darkModeSetting = null;
-    let isAutoMode = true;
     
-    try {
-        darkModeSetting = localStorage.getItem('darkMode');
-        isAutoMode = localStorage.getItem('darkModeAuto') !== 'false';
-    } catch (e) {
-        console.warn('无法读取深色模式设置，使用自动模式', e);
+    // 从HTML元素读取服务器设置的深色模式状态
+    var isDark = document.documentElement.classList.contains('dark-mode');
+    var isAuto = !document.body.dataset.darkModeManual;
+    
+    // 如果是游客用户，尝试从localStorage读取
+    if (!document.body.dataset.loggedIn || document.body.dataset.loggedIn === 'false') {
+        try {
+            var localDarkMode = localStorage.getItem('darkMode');
+            if (localDarkMode === 'dark') {
+                isDark = true;
+                isAuto = false;
+            } else if (localDarkMode === 'light') {
+                isDark = false;
+                isAuto = false;
+            } else if (localDarkMode === 'auto') {
+                isAuto = true;
+                var hour = new Date().getHours();
+                isDark = hour >= 18 || hour < 6;
+            }
+        } catch (e) {
+            console.warn('无法读取localStorage:', e);
+        }
     }
     
-    let shouldBeDark = false;
-    
-    if (isAutoMode) {
-        shouldBeDark = shouldUseDarkMode();
-        console.log('深色模式（自动）:', shouldBeDark, '- 当前时间:', new Date().getHours() + '点');
-    } else {
-        shouldBeDark = darkModeSetting === 'true';
-        console.log('深色模式（手动）:', shouldBeDark);
-    }
-    
-    if (shouldBeDark) {
+    if (isDark) {
         $('body').addClass('dark-mode');
     } else {
         $('body').removeClass('dark-mode');
     }
     
-    updateDarkModeButton(shouldBeDark);
+    updateDarkModeButton(isDark);
     
     // 更新滑块状态
-    $('#autoDarkModeToggle').prop('checked', isAutoMode);
+    $('#autoDarkModeToggle').prop('checked', isAuto);
 }
 
 // 更新深色模式按钮
@@ -205,13 +291,13 @@ function toggleDarkMode() {
         $('body').toggleClass('dark-mode');
         const isDark = $('body').hasClass('dark-mode');
         
-        try {
-            localStorage.setItem('darkMode', isDark ? 'true' : 'false');
-            localStorage.setItem('darkModeAuto', 'false');
-            $('#autoDarkModeToggle').prop('checked', false);
-        } catch (e) {
-            console.warn('无法保存深色模式设置:', e);
-        }
+        // 保存到服务器（手动模式）
+        const darkMode = isDark ? 'dark' : 'light';
+        saveDarkModeToServer(darkMode);
+        
+        // 关闭自动模式
+        $('#autoDarkModeToggle').prop('checked', false);
+        document.body.dataset.darkModeManual = 'true';
         
         updateDarkModeButton(isDark);
         showToast(isDark ? '已切换到夜间模式 🌙' : '已切换到日间模式 ☀️', 'info');

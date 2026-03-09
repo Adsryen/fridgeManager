@@ -5,23 +5,23 @@
     background: var(--card-background);
     border-radius: var(--border-radius-lg);
     box-shadow: var(--shadow-sm);
-    margin-bottom: var(--spacing-md);
+    margin-bottom: 12px;
     overflow: hidden;
 }
 
 .card-header {
-    padding: var(--spacing-md);
+    padding: 12px;
     border-bottom: 1px solid var(--divider-color);
     font-weight: 600;
-    font-size: var(--font-size-body);
+    font-size: 13px;
 }
 
 .card-body {
-    padding: var(--spacing-md);
+    padding: 12px;
 }
 
 .card-footer {
-    padding: var(--spacing-md);
+    padding: 12px;
     border-top: 1px solid var(--divider-color);
 }
 
@@ -29,8 +29,8 @@
 .stat-card {
     background: var(--card-background);
     border-radius: var(--border-radius-lg);
-    padding: var(--spacing-lg);
-    margin-bottom: var(--spacing-md);
+    padding: 16px;
+    margin-bottom: 12px;
     box-shadow: var(--shadow-md);
     display: flex;
     flex-direction: column;
@@ -59,19 +59,19 @@
 }
 
 .stat-card-value {
-    font-size: 36px;
+    font-size: 29px;
     font-weight: 700;
-    margin-bottom: var(--spacing-sm);
+    margin-bottom: 6px;
 }
 
 .stat-card-label {
-    font-size: var(--font-size-body);
+    font-size: 13px;
     opacity: 0.9;
 }
 
 .stat-card-icon {
-    font-size: 24px;
-    margin-bottom: var(--spacing-sm);
+    font-size: 19px;
+    margin-bottom: 6px;
 }
 
 /* 按钮 */
@@ -79,10 +79,10 @@
     display: inline-flex;
     align-items: center;
     justify-content: center;
-    min-height: var(--touch-target-recommended);
-    padding: 0 var(--spacing-lg);
-    border-radius: var(--border-radius-md);
-    font-size: var(--font-size-body);
+    min-height: 38px;
+    padding: 0 16px;
+    border-radius: 8px;
+    font-size: 13px;
     font-weight: 500;
     transition: all 0.3s;
     border: none;
@@ -124,9 +124,9 @@
 }
 
 .btn-sm {
-    min-height: 36px;
-    padding: 0 var(--spacing-md);
-    font-size: var(--font-size-small);
+    min-height: 29px;
+    padding: 0 12px;
+    font-size: 11px;
 }
 
 .btn-block {
@@ -134,15 +134,15 @@
 }
 
 .btn i {
-    margin-right: var(--spacing-sm);
+    margin-right: 6px;
 }
 
 /* 徽章 */
 .badge {
     display: inline-block;
-    padding: var(--spacing-xs) var(--spacing-sm);
-    border-radius: var(--border-radius-sm);
-    font-size: var(--font-size-tiny);
+    padding: 3px 6px;
+    border-radius: 4px;
+    font-size: 10px;
     font-weight: 600;
     line-height: 1;
 }
@@ -180,7 +180,7 @@
 }
 
 .list-item {
-    padding: var(--spacing-md);
+    padding: 12px;
     border-bottom: 1px solid var(--divider-color);
     display: flex;
     align-items: center;
@@ -199,28 +199,29 @@
 }
 
 .list-item-action {
-    margin-left: var(--spacing-md);
+    margin-left: 12px;
 }
 
 /* 表单组 */
 .form-group {
-    margin-bottom: var(--spacing-md);
+    margin-bottom: 12px;
 }
 
 .form-label {
     display: block;
-    margin-bottom: var(--spacing-sm);
+    margin-bottom: 6px;
     font-weight: 500;
+    font-size: 12px;
     color: var(--text-primary);
 }
 
 .form-control {
     width: 100%;
-    min-height: var(--touch-target-recommended);
-    padding: var(--spacing-md);
+    min-height: 38px;
+    padding: 10px 12px;
     border: 1px solid var(--divider-color);
-    border-radius: var(--border-radius-md);
-    font-size: var(--font-size-body);
+    border-radius: 8px;
+    font-size: 13px;
 }
 
 .form-control:focus {
@@ -231,21 +232,21 @@
 /* 搜索框 */
 .search-box {
     position: relative;
-    margin-bottom: var(--spacing-md);
+    margin-bottom: 12px;
 }
 
 .search-input {
     width: 100%;
-    height: var(--touch-target-recommended);
-    padding: 0 var(--spacing-md) 0 calc(var(--spacing-md) + 24px);
+    height: 38px;
+    padding: 0 12px 0 38px;
     border: 1px solid var(--divider-color);
-    border-radius: var(--border-radius-lg);
-    font-size: var(--font-size-body);
+    border-radius: 10px;
+    font-size: 13px;
 }
 
 .search-icon {
     position: absolute;
-    left: var(--spacing-md);
+    left: 12px;
     top: 50%;
     transform: translateY(-50%);
     color: var(--text-secondary);
@@ -253,15 +254,16 @@
 
 /* 提示框 */
 .alert {
-    padding: var(--spacing-md);
-    border-radius: var(--border-radius-md);
-    margin-bottom: var(--spacing-md);
+    padding: 12px;
+    border-radius: 8px;
+    margin-bottom: 12px;
     display: flex;
     align-items: center;
+    font-size: 13px;
 }
 
 .alert i {
-    margin-right: var(--spacing-sm);
+    margin-right: 8px;
 }
 
 .alert-success {
@@ -289,13 +291,13 @@
     display: flex;
     justify-content: center;
     align-items: center;
-    padding: var(--spacing-xl);
+    padding: 32px;
 }
 
 .spinner {
-    width: 40px;
-    height: 40px;
-    border: 4px solid var(--divider-color);
+    width: 32px;
+    height: 32px;
+    border: 3px solid var(--divider-color);
     border-top-color: var(--primary-color);
     border-radius: 50%;
     animation: spin 1s linear infinite;
@@ -308,12 +310,12 @@
 /* 空状态 */
 .empty-state {
     text-align: center;
-    padding: var(--spacing-xl);
+    padding: 32px;
     color: var(--text-secondary);
 }
 
 .empty-state i {
-    font-size: 48px;
-    margin-bottom: var(--spacing-md);
+    font-size: 38px;
+    margin-bottom: 12px;
     opacity: 0.5;
 }

@@ -16,6 +16,10 @@ class UserSettings:
     items_per_page: int = 20  # 每页显示数量
     default_view: str = 'all'  # 默认视图 (all/cold/frozer)
     
+    # 主题设置
+    theme_color: str = 'pink'  # 主题颜色
+    dark_mode: str = 'auto'  # 深色模式 (auto/light/dark)
+    
     # 隐私设置
     profile_public: bool = False  # 个人资料是否公开
     
@@ -30,6 +34,8 @@ class UserSettings:
             'notify_days': self.notify_days,
             'items_per_page': self.items_per_page,
             'default_view': self.default_view,
+            'theme_color': self.theme_color,
+            'dark_mode': self.dark_mode,
             'profile_public': self.profile_public
         }
     
@@ -43,5 +49,7 @@ class UserSettings:
             notify_days=data.get('notify_days', 3),
             items_per_page=data.get('items_per_page', 20),
             default_view=data.get('default_view', 'all'),
+            theme_color=data.get('theme_color', 'pink'),
+            dark_mode=data.get('dark_mode', 'auto'),
             profile_public=data.get('profile_public', False)
         )

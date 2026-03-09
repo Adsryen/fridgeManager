@@ -644,3 +644,190 @@
     color: var(--text-secondary);
     font-size: 14px;
 }
+
+/* 添加方式选择样式 */
+.add-method-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
+}
+
+.add-method-card {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 10px;
+    padding: 16px;
+    background: var(--bg-color);
+    border: 2px solid var(--border-color);
+    border-radius: 12px;
+    cursor: pointer;
+    transition: all 0.3s;
+}
+
+.add-method-card.full-width {
+    grid-column: 1 / -1;
+    flex-direction: row;
+    justify-content: flex-start;
+}
+
+.add-method-card:active {
+    transform: scale(0.98);
+    border-color: var(--primary-color);
+}
+
+.add-method-icon {
+    width: 48px;
+    height: 48px;
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 20px;
+    color: white;
+    flex-shrink: 0;
+}
+
+.add-method-icon.ocr {
+    background: linear-gradient(135deg, #f59e0b, #d97706);
+}
+
+.add-method-icon.manual {
+    background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+}
+
+.add-method-icon.ai {
+    background: linear-gradient(135deg, #8b5cf6, #7c3aed);
+}
+
+.add-method-info {
+    flex: 1;
+    text-align: center;
+}
+
+.add-method-card.full-width .add-method-info {
+    text-align: left;
+}
+
+.add-method-title {
+    font-size: 15px;
+    font-weight: 600;
+    color: var(--text-primary);
+    margin-bottom: 3px;
+}
+
+.add-method-desc {
+    font-size: 11px;
+    color: var(--text-secondary);
+}
+
+.add-method-badge {
+    position: absolute;
+    top: 8px;
+    right: 8px;
+    padding: 3px 8px;
+    background: var(--danger-color);
+    color: white;
+    font-size: 9px;
+    font-weight: 600;
+    border-radius: 10px;
+}
+
+/* OCR上传区域样式 */
+.ocr-upload-area {
+    padding: 60px 20px;
+    border: 2px dashed var(--border-color);
+    border-radius: 16px;
+    cursor: pointer;
+    transition: all 0.3s;
+}
+
+.ocr-upload-area:hover {
+    border-color: var(--primary-color);
+    background: var(--bg-color);
+}
+
+/* AI对话样式 */
+.ai-message, .user-message {
+    display: flex;
+    gap: 12px;
+    margin-bottom: 16px;
+    align-items: flex-start;
+}
+
+.user-message {
+    flex-direction: row-reverse;
+}
+
+.ai-avatar, .user-avatar {
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    font-size: 16px;
+    color: white;
+}
+
+.ai-avatar {
+    background: linear-gradient(135deg, #8b5cf6, #7c3aed);
+}
+
+.user-avatar {
+    background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+}
+
+.ai-bubble, .user-bubble {
+    max-width: 70%;
+    padding: 12px 16px;
+    border-radius: 16px;
+    line-height: 1.5;
+    font-size: 14px;
+}
+
+.ai-bubble {
+    background: var(--bg-color);
+    color: var(--text-primary);
+    border-bottom-left-radius: 4px;
+}
+
+.user-bubble {
+    background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+    color: white;
+    border-bottom-right-radius: 4px;
+}
+
+/* AI对话消息操作按钮 */
+.user-message-wrapper:hover .message-actions {
+    opacity: 1 !important;
+}
+
+.message-action-btn {
+    background: transparent;
+    border: none;
+    color: var(--text-secondary);
+    font-size: 13px;
+    padding: 4px 8px;
+    border-radius: 6px;
+    cursor: pointer;
+    transition: all 0.2s;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.message-action-btn:hover {
+    background: var(--bg-secondary);
+    color: var(--primary-color);
+}
+
+.message-action-btn:active {
+    transform: scale(0.95);
+}
+
+.message-action-btn i {
+    font-size: 12px;
+}
