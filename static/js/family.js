@@ -339,30 +339,3 @@ function escapeHtml(text) {
     return text.replace(/[&<>"']/g, m => map[m]);
 }
 
-// 显示Toast通知
-function showToast(message, type = 'info') {
-    const alertClass = type === 'success' ? 'alert-success' : 
-                      type === 'danger' ? 'alert-danger' : 
-                      type === 'warning' ? 'alert-warning' : 'alert-info';
-    
-    const icon = type === 'success' ? 'fa-check-circle' : 
-                type === 'danger' ? 'fa-exclamation-circle' : 
-                type === 'warning' ? 'fa-exclamation-triangle' : 'fa-info-circle';
-    
-    const alertHtml = `
-        <div class="alert ${alertClass} alert-dismissible fade show" role="alert">
-            <i class="fas ${icon}"></i> ${message}
-            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
-        </div>
-    `;
-    
-    const container = $('.toast-container');
-    container.append(alertHtml);
-    
-    // 3秒后自动关闭
-    setTimeout(function() {
-        container.find('.alert').first().fadeOut('slow', function() {
-            $(this).remove();
-        });
-    }, 3000);
-}

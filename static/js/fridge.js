@@ -128,6 +128,17 @@ async function switchFridge(fridgeId) {
  * 打开添加冰箱抽屉
  */
 function openAddFridgeDrawer() {
+    // 检查是否登录
+    const isLoggedIn = document.body.dataset.loggedIn === 'true';
+    
+    if (!isLoggedIn) {
+        showToast('请先登录后再添加冰箱', 'warning', 2000);
+        setTimeout(() => {
+            window.location.href = '/auth/login';
+        }, 2200);
+        return;
+    }
+    
     // 先移除可能存在的旧抽屉
     const oldDrawer = document.getElementById('addFridgeDrawer');
     if (oldDrawer) {
