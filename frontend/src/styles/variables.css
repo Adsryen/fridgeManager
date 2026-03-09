@@ -1,4 +1,4 @@
-/* 主题变量和颜色定义 */
+/* 主题变量和颜色定义 - 与原 Flask 前端保持一致 */
 
 :root {
     /* 默认主题 - 粉色 */
@@ -22,7 +22,8 @@
 }
 
 /* 蓝色主题 */
-body.theme-blue {
+body.theme-blue,
+html.theme-blue {
     --theme-color-1: #60a5fa;
     --theme-color-2: #3b82f6;
     --theme-color-3: #2563eb;
@@ -36,7 +37,8 @@ body.theme-blue {
 }
 
 /* 紫色主题 */
-body.theme-purple {
+body.theme-purple,
+html.theme-purple {
     --theme-color-1: #a78bfa;
     --theme-color-2: #8b5cf6;
     --theme-color-3: #7c3aed;
@@ -50,7 +52,8 @@ body.theme-purple {
 }
 
 /* 绿色主题 */
-body.theme-green {
+body.theme-green,
+html.theme-green {
     --theme-color-1: #6ee7b7;
     --theme-color-2: #34d399;
     --theme-color-3: #10b981;
@@ -64,7 +67,8 @@ body.theme-green {
 }
 
 /* 橙色主题 */
-body.theme-orange {
+body.theme-orange,
+html.theme-orange {
     --theme-color-1: #fdba74;
     --theme-color-2: #fb923c;
     --theme-color-3: #f97316;
@@ -78,7 +82,8 @@ body.theme-orange {
 }
 
 /* 灰色主题（夜间） */
-body.theme-gray {
+body.theme-gray,
+html.theme-gray {
     --theme-color-1: #9ca3af;
     --theme-color-2: #6b7280;
     --theme-color-3: #4b5563;
@@ -92,7 +97,8 @@ body.theme-gray {
 }
 
 /* 深色模式变量 */
-body.dark-mode {
+body.dark-mode,
+html.dark-mode {
     --bg-color: #1a1a1a;
     --card-bg: #2d2d2d;
     --text-primary: #ffffff;
@@ -102,42 +108,49 @@ body.dark-mode {
 
 /* 深色模式 + 粉色主题 */
 body.dark-mode.theme-pink,
-body.dark-mode:not([class*="theme-"]) {
+body.dark-mode:not([class*="theme-"]),
+html.dark-mode.theme-pink,
+html.dark-mode:not([class*="theme-"]) {
     --theme-color-1: #ff9eb3;
     --theme-color-2: #ff8fa3;
     --theme-color-3: #ff7a93;
 }
 
 /* 深色模式 + 蓝色主题 */
-body.dark-mode.theme-blue {
+body.dark-mode.theme-blue,
+html.dark-mode.theme-blue {
     --theme-color-1: #3b82f6;
     --theme-color-2: #2563eb;
     --theme-color-3: #1d4ed8;
 }
 
 /* 深色模式 + 紫色主题 */
-body.dark-mode.theme-purple {
+body.dark-mode.theme-purple,
+html.dark-mode.theme-purple {
     --theme-color-1: #8b5cf6;
     --theme-color-2: #7c3aed;
     --theme-color-3: #6d28d9;
 }
 
 /* 深色模式 + 绿色主题 */
-body.dark-mode.theme-green {
+body.dark-mode.theme-green,
+html.dark-mode.theme-green {
     --theme-color-1: #34d399;
     --theme-color-2: #10b981;
     --theme-color-3: #059669;
 }
 
 /* 深色模式 + 橙色主题 */
-body.dark-mode.theme-orange {
+body.dark-mode.theme-orange,
+html.dark-mode.theme-orange {
     --theme-color-1: #fb923c;
     --theme-color-2: #f97316;
     --theme-color-3: #ea580c;
 }
 
 /* 深色模式 + 灰色主题 */
-body.dark-mode.theme-gray {
+body.dark-mode.theme-gray,
+html.dark-mode.theme-gray {
     --theme-color-1: #6b7280;
     --theme-color-2: #4b5563;
     --theme-color-3: #374151;

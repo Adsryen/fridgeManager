@@ -1,5 +1,4 @@
-import { ref, onMounted } from 'vue'
-import { updateProfile } from '@/api/auth'
+import { ref, computed, onMounted } from 'vue'
 
 export type Theme = 'light' | 'dark'
 
@@ -29,16 +28,8 @@ export function useTheme() {
     // 保存到 localStorage
     localStorage.setItem(THEME_STORAGE_KEY, theme)
     
-    // 同步主题设置到后端用户配置（如果用户已登录）
-    try {
-      const token = localStorage.getItem('token')
-      if (token) {
-        await updateProfile({ theme_preference: theme } as any)
-      }
-    } catch (error) {
-      console.error('[useTheme] 同步主题到后端失败', error)
-      // 不影响前端主题切换，静默失败
-    }
+    // 主题设置仅在前端存储，不同步到后端
+    // 如果未来需要跨设备同步主题，可以通过用户设置接口实现
   }
 
   /**
@@ -65,6 +56,7 @@ export function useTheme() {
 
   return {
     currentTheme,
+    isDark: computed(() => currentTheme.value === 'dark'),
     toggleTheme,
     setTheme,
     loadTheme
