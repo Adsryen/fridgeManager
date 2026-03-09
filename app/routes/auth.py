@@ -180,7 +180,7 @@ def profile():
             'email': user.email,
             'is_admin': user.is_admin,
             'is_active': user.is_active,
-            'created_at': user.created_at.isoformat() if hasattr(user, 'created_at') and user.created_at else None
+            'created_at': user.created_at if hasattr(user, 'created_at') else None
         }
     }), 200
 

@@ -34,8 +34,8 @@ export function getProfile() {
 }
 
 // 更新用户信息
-export function updateProfile(data: { email?: string; username?: string }) {
-  return http.post<ApiResponse>('/auth/update-profile', data)
+export function updateProfile(data: { email?: string; username?: string; theme?: string }) {
+  return http.put<ApiResponse>('/auth/profile', data)
 }
 
 // 修改密码
