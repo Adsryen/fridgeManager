@@ -4,6 +4,7 @@ import os
 import secrets
 from flask import Flask
 from flask_session import Session
+from flask_cors import CORS
 from app.utils.database import SQLiteMongoLikeClient
 
 
@@ -27,6 +28,18 @@ def create_app(config_name: str = 'default') -> Flask:
     # 加载配置
     from config.settings import config
     app.config.from_object(config[config_name])
+    
+    # 配置 CORS - 支持跨域请求
+    cors_origins = app.config.get('CORS_ORIGINS', ['http://localhost:5173', 'http://127.0.0.1:5173'])
+    CORS(app, 
+         resources={r"/*": {
+             "origins": cors_origins,
+             "methods": ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
+             "allow_headers": ["Content-Type", "Authorization"],
+             "expose_headers": ["Content-Type", "Authorization"],
+             "supports_credentials": True,
+             "max_age": 3600
+         }})
     
     # 设置密钥 - 使用固定密钥或从环境变量读取，避免重启后session失效
     secret_key = app.config.get('SECRET_KEY')

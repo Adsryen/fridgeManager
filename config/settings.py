@@ -5,12 +5,15 @@ import os
 
 class Config:
     """基础配置"""
-    SECRET_KEY = os.environ.get('SECRET_KEY')
+    SECRET_KEY = os.environ.get('SECRET_KEY') or 'dev-secret-key-change-in-production'
     DATABASE_DIR = os.environ.get('DATABASE_DIR', 'data')
     
     # Flask 配置
     JSON_AS_ASCII = False
     JSON_SORT_KEYS = False
+    
+    # CORS 配置
+    CORS_ORIGINS = os.environ.get('CORS_ORIGINS', 'http://localhost:5173,http://127.0.0.1:5173').split(',')
     
     # 会话配置 - 使用文件系统存储，重启后不丢失
     SESSION_TYPE = 'filesystem'  # 使用文件系统存储session
