@@ -61,6 +61,15 @@ class SystemSettings:
             'daily_summary_email': 0,
             'summary_email_time': '09:00',
             
+            # AI功能设置
+            'enable_ai_features': 0,
+            'openai_api_base': '',
+            'openai_api_key': '',
+            'openai_model': 'gpt-3.5-turbo',  # 保留兼容性
+            'openai_chat_model': 'gpt-3.5-turbo',
+            'openai_vision_model': 'gpt-4-vision-preview',
+            'openai_audio_model': 'whisper-1',
+            
             # 系统信息
             'created_at': datetime.now().isoformat(),
             'updated_at': datetime.now().isoformat()
@@ -77,7 +86,8 @@ class SystemSettings:
         bool_fields = [
             'allow_registration', 'require_email_verification',
             'auto_delete_expired', 'enable_login_log',
-            'enable_email_notification', 'daily_summary_email'
+            'enable_email_notification', 'daily_summary_email',
+            'enable_ai_features'
         ]
         for field in bool_fields:
             if field in settings:
@@ -97,7 +107,8 @@ class SystemSettings:
             bool_fields = [
                 'allow_registration', 'require_email_verification',
                 'auto_delete_expired', 'enable_login_log',
-                'enable_email_notification', 'daily_summary_email'
+                'enable_email_notification', 'daily_summary_email',
+                'enable_ai_features'
             ]
             for field in bool_fields:
                 if field in updates and isinstance(updates[field], bool):
