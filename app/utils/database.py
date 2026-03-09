@@ -212,6 +212,7 @@ class SQLiteDatabase:
         self.family = SQLiteCollection(conn, 'family')
         self.family_member = SQLiteCollection(conn, 'family_member')
         self.fridge_permission = SQLiteCollection(conn, 'fridge_permission')
+        self.chat_history = SQLiteCollection(conn, 'chat_history')
 
 
 class SQLiteMongoLikeClient:
@@ -274,6 +275,8 @@ class SQLiteMongoLikeClient:
             "notify_days INTEGER DEFAULT 3, "
             "items_per_page INTEGER DEFAULT 20, "
             "default_view TEXT DEFAULT 'all', "
+            "theme_color TEXT DEFAULT 'pink', "
+            "dark_mode TEXT DEFAULT 'auto', "
             "profile_public INTEGER DEFAULT 0"
             ")"
         )
@@ -303,6 +306,10 @@ class SQLiteMongoLikeClient:
             "enable_email_notification INTEGER DEFAULT 0, "
             "daily_summary_email INTEGER DEFAULT 0, "
             "summary_email_time TEXT DEFAULT '09:00', "
+            "enable_ai_features INTEGER DEFAULT 0, "
+            "openai_api_base TEXT, "
+            "openai_api_key TEXT, "
+            "openai_model TEXT DEFAULT 'gpt-3.5-turbo', "
             "created_at TEXT, "
             "updated_at TEXT"
             ")"
@@ -368,6 +375,17 @@ class SQLiteMongoLikeClient:
             ")"
         )
         
+        # 创建 chat_history 表
+        conn.execute(
+            "CREATE TABLE IF NOT EXISTS chat_history ("
+            "_id TEXT PRIMARY KEY, "
+            "user_id TEXT NOT NULL, "
+            "role TEXT NOT NULL, "
+            "content TEXT NOT NULL, "
+            "created_at TEXT NOT NULL"
+            ")"
+        )
+        
         # 创建索引
         conn.execute("CREATE INDEX IF NOT EXISTS idx_item_user_id ON item(user_id)")
         conn.execute("CREATE INDEX IF NOT EXISTS idx_item_expire ON item(ExpireDate)")
@@ -382,6 +400,8 @@ class SQLiteMongoLikeClient:
         conn.execute("CREATE INDEX IF NOT EXISTS idx_family_member_family_id ON family_member(family_id)")
         conn.execute("CREATE INDEX IF NOT EXISTS idx_family_member_user_id ON family_member(user_id)")
         conn.execute("CREATE INDEX IF NOT EXISTS idx_fridge_permission_fridge_id ON fridge_permission(fridge_id)")
+        conn.execute("CREATE INDEX IF NOT EXISTS idx_chat_history_user_id ON chat_history(user_id)")
+        conn.execute("CREATE INDEX IF NOT EXISTS idx_chat_history_created_at ON chat_history(created_at)")
         
         conn.commit()
         self._connections[path] = conn

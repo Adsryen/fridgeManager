@@ -45,3 +45,34 @@ def update():
     if success:
         return jsonify({'success': True, 'message': '设置已保存'})
     return jsonify({'error': '保存失败'}), 400
+
+
+@settings_bp.route('/update-theme', methods=['POST'])
+def update_theme():
+    """更新用户主题设置"""
+    user_id = get_current_user_id()
+    
+    data = request.get_json()
+    theme_color = data.get('theme_color')
+    dark_mode = data.get('dark_mode')
+    
+    # 如果用户已登录，保存到数据库
+    if user_id:
+        settings_service = SettingsService(db_client.fridge)
+        
+        # 构建更新参数
+        update_params = {}
+        if theme_color:
+            update_params['theme_color'] = theme_color
+        if dark_mode:
+            update_params['dark_mode'] = dark_mode
+        
+        if update_params:
+            success = settings_service.update_settings(user_id, **update_params)
+            if success:
+                return jsonify({'success': True, 'message': '主题设置已保存', 'saved_to_server': True})
+        
+        return jsonify({'error': '保存失败'}), 400
+    else:
+        # 游客用户，返回成功但提示未保存到服务器
+        return jsonify({'success': True, 'message': '主题已切换（未登录，仅本地生效）', 'saved_to_server': False})

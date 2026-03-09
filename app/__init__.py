@@ -28,8 +28,20 @@ def create_app(config_name: str = 'default') -> Flask:
     from config.settings import config
     app.config.from_object(config[config_name])
     
-    # 设置密钥
-    app.secret_key = app.config.get('SECRET_KEY') or secrets.token_hex(32)
+    # 设置密钥 - 使用固定密钥或从环境变量读取，避免重启后session失效
+    secret_key = app.config.get('SECRET_KEY')
+    if not secret_key:
+        # 尝试从文件读取，如果不存在则生成并保存
+        secret_key_file = os.path.join(app.config.get('DATABASE_DIR', 'data'), '.secret_key')
+        if os.path.exists(secret_key_file):
+            with open(secret_key_file, 'r') as f:
+                secret_key = f.read().strip()
+        else:
+            secret_key = secrets.token_hex(32)
+            os.makedirs(os.path.dirname(secret_key_file), exist_ok=True)
+            with open(secret_key_file, 'w') as f:
+                f.write(secret_key)
+    app.secret_key = secret_key
     
     # 确保session目录存在
     session_dir = app.config.get('SESSION_FILE_DIR')
