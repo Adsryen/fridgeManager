@@ -8,6 +8,69 @@
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <link rel="icon" type="image/png" href="{{ url_for('static', filename='images/ice-box.png') }}">
     <title>{{ system_name or '冰箱里面还有啥' }}</title>
+    
+    <!-- 主题预加载脚本 - 必须在CSS之前执行，避免闪现 -->
+    <script>
+        (function() {
+            // 服务器端传递的用户主题设置
+            var serverTheme = '{{ theme_color }}';
+            var serverDarkMode = '{{ dark_mode }}';
+            var isLoggedIn = {{ 'true' if is_logged_in else 'false' }};
+            
+            // 如果是游客，尝试从localStorage读取
+            if (!isLoggedIn) {
+                try {
+                    var localTheme = localStorage.getItem('userTheme');
+                    if (localTheme) {
+                        serverTheme = localTheme;
+                    }
+                    var localDarkMode = localStorage.getItem('darkMode');
+                    if (localDarkMode) {
+                        serverDarkMode = localDarkMode;
+                    }
+                } catch (e) {
+                    // localStorage不可用，使用默认值
+                }
+            }
+            
+            // 应用主题颜色
+            if (serverTheme && serverTheme !== 'pink') {
+                document.documentElement.className = 'theme-' + serverTheme;
+                // 等待body加载后也添加主题类
+                if (document.body) {
+                    document.body.classList.add('theme-' + serverTheme);
+                } else {
+                    document.addEventListener('DOMContentLoaded', function() {
+                        document.body.classList.add('theme-' + serverTheme);
+                    });
+                }
+            }
+            
+            // 应用深色模式
+            var shouldBeDark = false;
+            if (serverDarkMode === 'dark') {
+                shouldBeDark = true;
+            } else if (serverDarkMode === 'light') {
+                shouldBeDark = false;
+            } else {
+                // auto模式：根据时间判断
+                var hour = new Date().getHours();
+                shouldBeDark = hour >= 18 || hour < 6;
+            }
+            
+            if (shouldBeDark) {
+                document.documentElement.classList.add('dark-mode');
+                if (document.body) {
+                    document.body.classList.add('dark-mode');
+                } else {
+                    document.addEventListener('DOMContentLoaded', function() {
+                        document.body.classList.add('dark-mode');
+                    });
+                }
+            }
+        })();
+    </script>
+    
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <!-- 使用模块化CSS -->
@@ -182,11 +245,11 @@
                     <span>我的冰箱</span>
                 </div>
                 <!-- 更多私人冰箱会动态添加 -->
+                {% endif %}
                 <div class="fridge-tab add-fridge" onclick="openAddFridgeDrawer()">
                     <i class="fas fa-plus-circle"></i>
                     <span>添加冰箱</span>
                 </div>
-                {% endif %}
             </div>
         </div>
 
@@ -655,6 +718,57 @@
             <span class="nav-badge guest">游客</span>
             {% endif %}
         </button>
+    </div>
+
+    <!-- 添加方式选择抽屉 -->
+    <div class="drawer-overlay" id="addMethodDrawer">
+        <div class="drawer-content" style="height: auto; max-height: 60vh;">
+            <div class="drawer-header">
+                <h5><i class="fas fa-plus-circle"></i> 选择添加方式</h5>
+                <button class="close-btn" onclick="closeDrawer('addMethodDrawer')">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            <div class="drawer-body" style="padding: 24px;">
+                <div class="add-method-grid">
+                    <div class="add-method-card" onclick="handleAddMethod('ocr')">
+                        <div class="add-method-icon ocr">
+                            <i class="fas fa-camera"></i>
+                        </div>
+                        <div class="add-method-info">
+                            <div class="add-method-title">文字识别</div>
+                            <div class="add-method-desc">拍照识别</div>
+                        </div>
+                        {% if not is_logged_in %}
+                        <div class="add-method-badge">需要登录</div>
+                        {% endif %}
+                    </div>
+                    
+                    <div class="add-method-card" onclick="handleAddMethod('manual')">
+                        <div class="add-method-icon manual">
+                            <i class="fas fa-edit"></i>
+                        </div>
+                        <div class="add-method-info">
+                            <div class="add-method-title">手动添加</div>
+                            <div class="add-method-desc">手动填写</div>
+                        </div>
+                    </div>
+                    
+                    <div class="add-method-card full-width" onclick="handleAddMethod('ai')">
+                        <div class="add-method-icon ai">
+                            <i class="fas fa-comments"></i>
+                        </div>
+                        <div class="add-method-info">
+                            <div class="add-method-title">AI对话</div>
+                            <div class="add-method-desc">与AI对话添加物品</div>
+                        </div>
+                        {% if not is_logged_in %}
+                        <div class="add-method-badge">需要登录</div>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
     </div>
 
     <!-- 添加物品抽屉 -->
