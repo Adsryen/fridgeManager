@@ -1,174 +1,208 @@
 <template>
   <div class="family-page">
-    <!-- 页面头部 -->
-    <div class="family-header">
-      <div class="family-header-content">
-        <div class="family-title">
-          <i class="fas fa-users"></i>
-          <h1>家庭管理</h1>
+    <!-- 顶部导航栏 -->
+    <div class="mobile-header">
+      <div class="header-content">
+        <div class="header-left">
+          <div class="header-icon">
+            <i class="fas fa-users"></i>
+          </div>
+          <div class="app-name">家庭管理</div>
         </div>
-        <button class="back-btn" @click="goBack">
-          <i class="fas fa-arrow-left"></i>
-        </button>
+        <div class="header-right">
+          <button class="icon-btn" @click="toggleDarkMode" title="切换深色模式">
+            <i :class="isDark ? 'fas fa-sun' : 'fas fa-moon'"></i>
+          </button>
+        </div>
       </div>
     </div>
 
-    <!-- 主要内容 -->
-    <div class="family-container">
-      <!-- 操作按钮 -->
-      <div class="action-buttons">
-        <button class="action-btn primary" @click="showCreateDialog">
+    <!-- 主内容区 -->
+    <div class="mobile-content">
+      <div class="family-content">
+        <!-- 操作按钮 -->
+        <div class="action-buttons">
+          <button class="action-btn primary" @click="showCreateForm = true">
+            <i class="fas fa-plus"></i>
+            <span>创建家庭</span>
+          </button>
+          <button class="action-btn success" @click="showJoinForm = true">
+            <i class="fas fa-sign-in-alt"></i>
+            <span>加入家庭</span>
+          </button>
+        </div>
+
+        <!-- 加载状态 -->
+        <div v-if="familyStore.loading" class="loading-state">
+          <div class="spinner"></div>
+          <p>加载中...</p>
+        </div>
+
+        <!-- 家庭列表 -->
+        <div v-else-if="familyStore.families.length > 0" class="family-list">
+          <div
+            v-for="family in familyStore.families"
+            :key="family._id"
+            class="family-card"
+          >
+            <div class="family-card-header">
+              <div class="family-icon">
+                <i class="fas fa-users"></i>
+              </div>
+              <div class="family-info">
+                <div class="family-name">{{ family.name }}</div>
+                <div class="family-meta">
+                  <span v-if="family.owner_id === userStore.user?._id" class="owner-badge">
+                    <i class="fas fa-crown"></i> 所有者
+                  </span>
+                  <span class="member-count">
+                    <i class="fas fa-user"></i> {{ family.member_count }} 人
+                  </span>
+                </div>
+              </div>
+            </div>
+            <div class="family-card-body">
+              <div class="family-code">
+                <span class="label">家庭编号:</span>
+                <span class="code">{{ family.family_code }}</span>
+                <button class="copy-btn" @click="copyCode(family.family_code)" title="复制">
+                  <i class="fas fa-copy"></i>
+                </button>
+              </div>
+              <div class="family-actions">
+                <button class="btn-secondary" @click="viewMembers(family)">
+                  <i class="fas fa-users"></i> 查看成员
+                </button>
+                <button
+                  v-if="family.owner_id === userStore.user?._id"
+                  class="btn-danger"
+                  @click="deleteFamily(family)"
+                >
+                  <i class="fas fa-trash"></i> 解散
+                </button>
+                <button v-else class="btn-danger" @click="leaveFamily(family)">
+                  <i class="fas fa-sign-out-alt"></i> 退出
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- 空状态 -->
+        <div v-else class="empty-state">
+          <i class="fas fa-users"></i>
+          <h4>还没有家庭</h4>
+          <p>创建一个家庭或加入现有家庭开始使用</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- 底部导航栏 -->
+    <div class="mobile-bottom-nav">
+      <button class="nav-item" @click="$router.push('/')">
+        <i class="fas fa-home"></i>
+        <span>首页</span>
+      </button>
+      <button class="nav-item" @click="$router.push('/fridge')">
+        <i class="fas fa-snowflake"></i>
+        <span>冰箱</span>
+      </button>
+      <button class="nav-item add-btn" @click="$router.push('/')">
+        <div class="add-icon">
           <i class="fas fa-plus"></i>
-          <span>创建家庭</span>
-        </button>
-        <button class="action-btn success" @click="showJoinDialog">
-          <i class="fas fa-sign-in-alt"></i>
-          <span>加入家庭</span>
-        </button>
-      </div>
-
-      <!-- 加载状态 -->
-      <div v-if="familyStore.loading" class="loading-state">
-        <el-skeleton :rows="3" animated />
-      </div>
-
-      <!-- 家庭列表 -->
-      <div v-else-if="familyStore.families.length > 0" class="family-grid">
-        <FamilyCard
-          v-for="family in familyStore.families"
-          :key="family._id"
-          :family="family"
-          @view-detail="handleViewDetail"
-          @leave="handleLeave"
-          @delete="handleDelete"
-        />
-      </div>
-
-      <!-- 空状态 -->
-      <div v-else class="empty-state">
+        </div>
+      </button>
+      <button class="nav-item active">
         <i class="fas fa-users"></i>
-        <p>您还没有加入任何家庭</p>
-        <p class="empty-hint">创建一个家庭或加入现有家庭开始使用</p>
-      </div>
+        <span>家庭</span>
+      </button>
+      <button class="nav-item" @click="$router.push('/profile')">
+        <i class="fas fa-user"></i>
+        <span>我的</span>
+        <span v-if="!userStore.isLoggedIn" class="nav-badge guest">游客</span>
+        <span v-else-if="userStore.isAdmin" class="nav-badge admin">管理员</span>
+        <span v-else class="nav-badge user">私人</span>
+      </button>
     </div>
 
-    <!-- 创建家庭对话框 -->
-    <el-dialog
-      v-model="createDialogVisible"
-      title="创建家庭"
-      width="500px"
-      :close-on-click-modal="false"
-    >
-      <el-form
-        ref="createFormRef"
-        :model="createForm"
-        :rules="createRules"
-        label-width="80px"
-      >
-        <el-form-item label="家庭名称" prop="name">
-          <el-input
+    <!-- 创建家庭抽屉 -->
+    <Drawer v-model="showCreateForm" title="创建家庭">
+      <div class="form-content">
+        <div class="form-group">
+          <label><i class="fas fa-users"></i> 家庭名称</label>
+          <input
             v-model="createForm.name"
+            type="text"
+            class="mobile-input"
             placeholder="请输入家庭名称"
             maxlength="50"
-            show-word-limit
           />
-        </el-form-item>
-      </el-form>
-      <template #footer>
-        <el-button @click="createDialogVisible = false">取消</el-button>
-        <el-button type="primary" :loading="creating" @click="handleCreate">
-          创建
-        </el-button>
-      </template>
-    </el-dialog>
+        </div>
+        <div class="form-actions">
+          <button class="btn-secondary" @click="showCreateForm = false">取消</button>
+          <button class="btn-primary" :disabled="creating" @click="handleCreate">
+            <i class="fas fa-check"></i>
+            {{ creating ? '创建中...' : '创建' }}
+          </button>
+        </div>
+      </div>
+    </Drawer>
 
-    <!-- 加入家庭对话框 -->
-    <el-dialog
-      v-model="joinDialogVisible"
-      title="加入家庭"
-      width="500px"
-      :close-on-click-modal="false"
-    >
-      <el-form
-        ref="joinFormRef"
-        :model="joinForm"
-        :rules="joinRules"
-        label-width="80px"
-      >
-        <el-form-item label="家庭编号" prop="code">
-          <el-input
+    <!-- 加入家庭抽屉 -->
+    <Drawer v-model="showJoinForm" title="加入家庭">
+      <div class="form-content">
+        <div class="form-group">
+          <label><i class="fas fa-key"></i> 家庭编号</label>
+          <input
             v-model="joinForm.code"
+            type="text"
+            class="mobile-input"
             placeholder="请输入6位家庭编号"
             maxlength="6"
-            @input="joinForm.code = joinForm.code.toUpperCase()"
           />
-          <template #extra>
-            <span class="form-hint">请向家庭创建者索取家庭编号</span>
-          </template>
-        </el-form-item>
-      </el-form>
-      <template #footer>
-        <el-button @click="joinDialogVisible = false">取消</el-button>
-        <el-button type="success" :loading="joining" @click="handleJoin">
-          加入
-        </el-button>
-      </template>
-    </el-dialog>
+        </div>
+        <div class="form-actions">
+          <button class="btn-secondary" @click="showJoinForm = false">取消</button>
+          <button class="btn-primary" :disabled="joining" @click="handleJoin">
+            <i class="fas fa-check"></i>
+            {{ joining ? '加入中...' : '加入' }}
+          </button>
+        </div>
+      </div>
+    </Drawer>
 
-    <!-- 家庭详情对话框 -->
-    <el-dialog
-      v-model="detailDialogVisible"
-      :title="currentFamily?.name"
-      width="800px"
-      :close-on-click-modal="false"
-    >
-      <el-tabs v-model="activeTab">
-        <el-tab-pane label="成员" name="members">
-          <MemberList
-            v-if="currentFamily"
-            :family-id="currentFamily._id"
-            :members="familyStore.members"
-            :loading="familyStore.loading"
-            @remove="handleRemoveMember"
-          />
-        </el-tab-pane>
-        <el-tab-pane label="共享冰箱" name="fridges">
-          <div v-if="activeTab === 'fridges'">
-            <SharedFridgeList
-              v-if="currentFamily"
-              :family-id="currentFamily._id"
-            />
-          </div>
-        </el-tab-pane>
-      </el-tabs>
-    </el-dialog>
+    <!-- 成员列表抽屉 -->
+    <Drawer v-model="showMemberList" title="家庭成员">
+      <MemberList
+        v-if="currentFamily"
+        :family-id="currentFamily._id"
+        :members="[]"
+      />
+    </Drawer>
   </div>
 </template>
 
 <script setup lang="ts">
 import { ref, onMounted } from 'vue'
-import { useRouter } from 'vue-router'
-import { ElMessage, ElMessageBox, type FormInstance, type FormRules } from 'element-plus'
-import { useFamilyStore } from '@/stores/family'
-import FamilyCard from '@/components/family/FamilyCard.vue'
-import MemberList from '@/components/family/MemberList.vue'
-import SharedFridgeList from '@/components/family/SharedFridgeList.vue'
-import type { Family } from '@/types/models'
+import { useFamilyStore } from '../stores/family'
+import { useUserStore } from '../stores/user'
+import { useTheme } from '../composables/useTheme'
+import Drawer from '../components/common/Drawer.vue'
+import MemberList from '../components/family/MemberList.vue'
+import { ElMessage, ElMessageBox } from 'element-plus'
+import type { Family } from '../types/models'
 
-const router = useRouter()
 const familyStore = useFamilyStore()
+const userStore = useUserStore()
+const { isDark, toggleTheme } = useTheme()
 
-// 对话框状态
-const createDialogVisible = ref(false)
-const joinDialogVisible = ref(false)
-const detailDialogVisible = ref(false)
-const activeTab = ref('members')
+const showCreateForm = ref(false)
+const showJoinForm = ref(false)
+const showMemberList = ref(false)
+const creating = ref(false)
+const joining = ref(false)
+const currentFamily = ref<Family | null>(null)
 
-// 表单引用
-const createFormRef = ref<FormInstance>()
-const joinFormRef = ref<FormInstance>()
-
-// 表单数据
 const createForm = ref({
   name: ''
 })
@@ -177,267 +211,357 @@ const joinForm = ref({
   code: ''
 })
 
-// 表单验证规则
-const createRules: FormRules = {
-  name: [
-    { required: true, message: '请输入家庭名称', trigger: 'blur' },
-    { min: 1, max: 50, message: '家庭名称长度在 1 到 50 个字符', trigger: 'blur' }
-  ]
+const toggleDarkMode = () => {
+  toggleTheme()
 }
 
-const joinRules: FormRules = {
-  code: [
-    { required: true, message: '请输入家庭编号', trigger: 'blur' },
-    { len: 6, message: '家庭编号应为6位', trigger: 'blur' }
-  ]
+const copyCode = async (code: string) => {
+  try {
+    await navigator.clipboard.writeText(code)
+    ElMessage.success('已复制到剪贴板')
+  } catch {
+    ElMessage.error('复制失败')
+  }
 }
 
-// 加载状态
-const creating = ref(false)
-const joining = ref(false)
-
-// 当前家庭
-const currentFamily = ref<Family | null>(null)
-
-// 返回首页
-const goBack = () => {
-  router.push('/')
-}
-
-// 显示创建对话框
-const showCreateDialog = () => {
-  createForm.value.name = ''
-  createDialogVisible.value = true
-}
-
-// 显示加入对话框
-const showJoinDialog = () => {
-  joinForm.value.code = ''
-  joinDialogVisible.value = true
-}
-
-// 创建家庭
-const handleCreate = async () => {
-  if (!createFormRef.value) return
-
-  await createFormRef.value.validate(async (valid) => {
-    if (!valid) return
-
-    creating.value = true
-    try {
-      const response = await familyStore.createFamily(createForm.value.name)
-      if (response.success && response.data) {
-        ElMessage.success(`家庭创建成功！家庭编号: ${response.data.family_code}`)
-        createDialogVisible.value = false
-        createForm.value.name = ''
-      } else {
-        ElMessage.error(response.error || '创建失败')
-      }
-    } catch (_error) {
-      ElMessage.error('创建家庭失败')
-    } finally {
-      creating.value = false
-    }
-  })
-}
-
-// 加入家庭
-const handleJoin = async () => {
-  if (!joinFormRef.value) return
-
-  await joinFormRef.value.validate(async (valid) => {
-    if (!valid) return
-
-    joining.value = true
-    try {
-      const response = await familyStore.joinFamily(joinForm.value.code)
-      if (response.success) {
-        ElMessage.success('成功加入家庭！')
-        joinDialogVisible.value = false
-        joinForm.value.code = ''
-      } else {
-        ElMessage.error(response.error || '加入失败')
-      }
-    } catch (_error) {
-      ElMessage.error('加入家庭失败')
-    } finally {
-      joining.value = false
-    }
-  })
-}
-
-// 查看家庭详情
-const handleViewDetail = async (family: Family) => {
+const viewMembers = (family: Family) => {
   currentFamily.value = family
-  activeTab.value = 'members'
-  detailDialogVisible.value = true
-  
-  // 加载成员列表
-  await familyStore.loadMembers(family._id)
+  showMemberList.value = true
 }
 
-// 离开家庭
-const handleLeave = async (familyId: string) => {
+const handleCreate = async () => {
+  if (!createForm.value.name) {
+    ElMessage.error('请输入家庭名称')
+    return
+  }
+
+  creating.value = true
+  try {
+    await familyStore.createFamily(createForm.value.name)
+    ElMessage.success('创建成功')
+    showCreateForm.value = false
+    createForm.value.name = ''
+    await familyStore.loadFamilies()
+  } catch (error: any) {
+    ElMessage.error(error.message || '创建失败')
+  } finally {
+    creating.value = false
+  }
+}
+
+const handleJoin = async () => {
+  if (!joinForm.value.code) {
+    ElMessage.error('请输入家庭编号')
+    return
+  }
+
+  if (joinForm.value.code.length !== 6) {
+    ElMessage.error('家庭编号应为6位')
+    return
+  }
+
+  joining.value = true
+  try {
+    await familyStore.joinFamily(joinForm.value.code)
+    ElMessage.success('加入成功')
+    showJoinForm.value = false
+    joinForm.value.code = ''
+    await familyStore.loadFamilies()
+  } catch (error: any) {
+    ElMessage.error(error.message || '加入失败')
+  } finally {
+    joining.value = false
+  }
+}
+
+const deleteFamily = async (family: Family) => {
   try {
     await ElMessageBox.confirm(
-      '确定要离开这个家庭吗？',
-      '提示',
+      `确定要解散家庭"${family.name}"吗？解散后所有成员将被移除。`,
+      '确认解散',
       {
-        confirmButtonText: '确定',
+        confirmButtonText: '解散',
         cancelButtonText: '取消',
         type: 'warning'
       }
     )
 
-    const response = await familyStore.leaveFamily(familyId)
-    if (response.success) {
-      ElMessage.success('已离开家庭')
-    } else {
-      ElMessage.error(response.error || '操作失败')
-    }
-  } catch (_error) {
-    // 用户取消操作
+    await familyStore.deleteFamily(family._id)
+    ElMessage.success('解散成功')
+    await familyStore.loadFamilies()
+  } catch {
+    // 用户取消
   }
 }
 
-// 删除家庭
-const handleDelete = async (familyId: string) => {
+const leaveFamily = async (family: Family) => {
   try {
     await ElMessageBox.confirm(
-      '确定要删除这个家庭吗？此操作不可恢复！',
-      '警告',
+      `确定要退出家庭"${family.name}"吗？`,
+      '确认退出',
       {
-        confirmButtonText: '确定',
-        cancelButtonText: '取消',
-        type: 'error'
-      }
-    )
-
-    const response = await familyStore.deleteFamily(familyId)
-    if (response.success) {
-      ElMessage.success('家庭已删除')
-    } else {
-      ElMessage.error(response.error || '删除失败')
-    }
-  } catch (_error) {
-    // 用户取消操作
-  }
-}
-
-// 移除成员
-const handleRemoveMember = async (userId: string) => {
-  if (!currentFamily.value) return
-
-  try {
-    await ElMessageBox.confirm(
-      '确定要移除该成员吗？',
-      '提示',
-      {
-        confirmButtonText: '确定',
+        confirmButtonText: '退出',
         cancelButtonText: '取消',
         type: 'warning'
       }
     )
 
-    const response = await familyStore.removeMember(currentFamily.value._id, userId)
-    if (response.success) {
-      ElMessage.success('成员已移除')
-    } else {
-      ElMessage.error(response.error || '操作失败')
-    }
-  } catch (_error) {
-    // 用户取消操作
+    await familyStore.leaveFamily(family._id)
+    ElMessage.success('退出成功')
+    await familyStore.loadFamilies()
+  } catch {
+    // 用户取消
   }
 }
 
-// 页面加载时获取家庭列表
-onMounted(async () => {
-  await familyStore.loadFamilies()
+onMounted(() => {
+  familyStore.loadFamilies()
 })
 </script>
 
 <style scoped>
-/* 家庭管理页面样式 */
 .family-page {
-  min-height: 100vh;
-  background: var(--bg-color);
+  width: 100%;
+  height: 100vh;
+  overflow: hidden;
+}
+
+.family-content {
+  padding: 20px;
   padding-bottom: 80px;
-}
-
-.family-header {
-  background: var(--card-bg);
-  padding: 20px;
-  border-bottom: 1px solid var(--border-color);
-  position: sticky;
-  top: 0;
-  z-index: 100;
-  backdrop-filter: blur(10px);
-}
-
-.family-header-content {
-  max-width: 1200px;
-  margin: 0 auto;
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-}
-
-.family-title {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-}
-
-.family-title i {
-  font-size: 24px;
-  color: var(--theme-color-2);
-}
-
-.family-title h1 {
-  font-size: 24px;
-  font-weight: 600;
-  margin: 0;
-  color: var(--text-primary);
-}
-
-.back-btn {
-  width: 40px;
-  height: 40px;
-  border-radius: 12px;
-  background: var(--bg-color);
-  border: none;
-  color: var(--text-primary);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  cursor: pointer;
-  transition: all 0.3s;
-}
-
-.back-btn:hover {
-  transform: scale(1.05);
-  background: var(--hover-bg);
-}
-
-.family-container {
-  max-width: 1200px;
-  margin: 0 auto;
-  padding: 20px;
 }
 
 .action-buttons {
   display: flex;
   gap: 12px;
   margin-bottom: 24px;
-  flex-wrap: wrap;
 }
 
 .action-btn {
   flex: 1;
-  min-width: 150px;
-  padding: 16px 24px;
-  border-radius: 16px;
+  padding: 14px;
   border: none;
+  border-radius: 12px;
+  font-size: 15px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  color: white;
+}
+
+.action-btn.primary {
+  background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+}
+
+.action-btn.success {
+  background: linear-gradient(135deg, #10b981, #059669);
+}
+
+.action-btn:active {
+  transform: scale(0.98);
+}
+
+.family-list {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.family-card {
+  background: var(--card-bg);
+  border-radius: 12px;
+  border: 1px solid var(--border-color);
+  overflow: hidden;
+}
+
+.family-card-header {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 16px;
+  background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+  color: white;
+}
+
+.family-icon {
+  width: 48px;
+  height: 48px;
+  border-radius: 12px;
+  background: rgba(255, 255, 255, 0.2);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 20px;
+  flex-shrink: 0;
+}
+
+.family-info {
+  flex: 1;
+  min-width: 0;
+}
+
+.family-name {
+  font-size: 18px;
+  font-weight: 600;
+  margin-bottom: 4px;
+}
+
+.family-meta {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  font-size: 13px;
+  opacity: 0.9;
+}
+
+.owner-badge {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.member-count {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.family-card-body {
+  padding: 16px;
+}
+
+.family-code {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 12px;
+  background: var(--bg-color);
+  border-radius: 8px;
+  margin-bottom: 12px;
+}
+
+.family-code .label {
+  font-size: 13px;
+  color: var(--text-secondary);
+}
+
+.family-code .code {
+  flex: 1;
+  font-size: 16px;
+  font-weight: 600;
+  font-family: monospace;
+  color: var(--primary-color);
+}
+
+.copy-btn {
+  width: 32px;
+  height: 32px;
+  border-radius: 6px;
+  background: var(--primary-color);
+  border: none;
+  color: white;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.copy-btn:active {
+  transform: scale(0.9);
+}
+
+.family-actions {
+  display: flex;
+  gap: 8px;
+}
+
+.btn-secondary,
+.btn-danger {
+  flex: 1;
+  padding: 10px;
+  border: none;
+  border-radius: 8px;
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+}
+
+.btn-secondary {
+  background: var(--bg-color);
+  color: var(--text-primary);
+}
+
+.btn-secondary:active {
+  transform: scale(0.98);
+  background: var(--border-color);
+}
+
+.btn-danger {
+  background: var(--danger-color);
+  color: white;
+}
+
+.btn-danger:active {
+  transform: scale(0.98);
+}
+
+.form-content {
+  padding: 0;
+}
+
+.form-group {
+  margin-bottom: 20px;
+}
+
+.form-group label {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--text-primary);
+  margin-bottom: 8px;
+}
+
+.form-group label i {
+  color: var(--primary-color);
+}
+
+.mobile-input {
+  width: 100%;
+  padding: 14px 16px;
+  border: 2px solid var(--border-color);
+  border-radius: 12px;
+  font-size: 16px;
+  background: var(--card-bg);
+  color: var(--text-primary);
+  transition: all 0.3s;
+}
+
+.mobile-input:focus {
+  outline: none;
+  border-color: var(--primary-color);
+  box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+}
+
+.form-actions {
+  display: flex;
+  gap: 12px;
+  margin-top: 24px;
+}
+
+.btn-primary {
+  flex: 1;
+  padding: 14px;
+  border: none;
+  border-radius: 12px;
   font-size: 16px;
   font-weight: 600;
   cursor: pointer;
@@ -446,76 +570,16 @@ onMounted(async () => {
   align-items: center;
   justify-content: center;
   gap: 8px;
-}
-
-.action-btn.primary {
-  background: linear-gradient(135deg, var(--theme-color-2), var(--theme-color-3));
+  background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
   color: white;
 }
 
-.action-btn.success {
-  background: linear-gradient(135deg, #10b981, #059669);
-  color: white;
+.btn-primary:active:not(:disabled) {
+  transform: scale(0.98);
 }
 
-.action-btn:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 8px 16px rgba(0,0,0,0.1);
-}
-
-.action-btn:active {
-  transform: translateY(0);
-}
-
-.loading-state {
-  padding: 40px 20px;
-}
-
-.family-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
-  gap: 20px;
-}
-
-.empty-state {
-  text-align: center;
-  padding: 60px 20px;
-  color: var(--text-secondary);
-}
-
-.empty-state i {
-  font-size: 64px;
-  margin-bottom: 16px;
-  opacity: 0.3;
-}
-
-.empty-state p {
-  font-size: 16px;
-  margin: 0;
-}
-
-.empty-hint {
-  margin-top: 8px;
-  font-size: 14px;
-}
-
-.form-hint {
-  font-size: 12px;
-  color: var(--text-secondary);
-}
-
-/* 响应式 */
-@media (max-width: 768px) {
-  .family-grid {
-    grid-template-columns: 1fr;
-  }
-
-  .action-buttons {
-    flex-direction: column;
-  }
-
-  .action-btn {
-    width: 100%;
-  }
+.btn-primary:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
 }
 </style>

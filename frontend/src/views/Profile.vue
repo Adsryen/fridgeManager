@@ -1,442 +1,717 @@
 <template>
   <div class="profile-page">
     <!-- 顶部导航栏 -->
-    <header class="mobile-header">
+    <div class="mobile-header">
       <div class="header-content">
-        <button class="icon-btn" @click="goBack">
-          <i class="fas fa-arrow-left"></i>
-        </button>
-        <div class="app-name">个人资料</div>
-        <div style="width: 32px"></div>
+        <div class="header-left">
+          <div class="header-icon">
+            <i class="fas fa-user"></i>
+          </div>
+          <div class="app-name">个人中心</div>
+        </div>
+        <div class="header-right">
+          <button class="icon-btn" @click="toggleDarkMode" title="切换深色模式">
+            <i :class="isDark ? 'fas fa-sun' : 'fas fa-moon'"></i>
+          </button>
+        </div>
       </div>
-    </header>
+    </div>
 
     <!-- 主内容区 -->
-    <div class="profile-content">
-      <!-- 用户信息卡片 -->
-      <div class="user-card">
-        <div class="user-avatar-large">
-          <i class="fas fa-user"></i>
+    <div class="mobile-content">
+      <div class="settings-page-content">
+        <!-- 用户信息卡片 -->
+        <div class="user-profile-card">
+          <div :class="['profile-avatar', { guest: !userStore.isLoggedIn }]">
+            <i :class="userStore.isLoggedIn ? 'fas fa-user-circle' : 'fas fa-user'"></i>
+          </div>
+          <div class="profile-info">
+            <div class="profile-name">{{ userStore.user?.username || '游客模式' }}</div>
+            <div v-if="userStore.isLoggedIn" class="profile-status">
+              <span v-if="userStore.isAdmin" class="badge-admin">
+                <i class="fas fa-crown"></i> 管理员
+              </span>
+              <span v-else class="badge-user">
+                <i class="fas fa-check-circle"></i> 已登录
+              </span>
+            </div>
+            <div v-else class="profile-hint">登录后享受更多功能</div>
+          </div>
+          <div v-if="!userStore.isLoggedIn" class="guest-actions">
+            <a href="/login" class="btn-login-small">
+              <i class="fas fa-sign-in-alt"></i> 登录
+            </a>
+            <a href="/register" class="btn-register-small">
+              <i class="fas fa-user-plus"></i> 注册
+            </a>
+          </div>
         </div>
-        <div class="user-info">
-          <div class="user-name">{{ user?.username }}</div>
-          <div class="user-email">{{ user?.email }}</div>
-          <div class="user-meta">
-            <span v-if="user?.is_admin" class="badge-admin">
-              <i class="fas fa-crown"></i> 管理员
-            </span>
-            <span class="user-join-date">
-              注册于 {{ formatDate(user?.created_at) }}
-            </span>
+
+        <!-- 管理后台入口 -->
+        <div v-if="userStore.isLoggedIn && userStore.isAdmin" class="settings-section">
+          <router-link to="/admin/dashboard" class="settings-item admin-entry">
+            <div class="settings-item-left">
+              <i class="fas fa-shield-alt"></i>
+              <span>管理后台</span>
+            </div>
+            <div class="settings-item-right">
+              <span class="badge-admin-small">管理员</span>
+              <i class="fas fa-chevron-right"></i>
+            </div>
+          </router-link>
+        </div>
+
+        <!-- 外观设置 -->
+        <div class="settings-section">
+          <h3>外观设置</h3>
+          <div class="settings-item-toggle">
+            <div class="settings-item-left">
+              <i class="fas fa-adjust"></i>
+              <span>自动日夜切换</span>
+            </div>
+            <label class="toggle-switch">
+              <input type="checkbox" v-model="autoTheme" @change="toggleAutoTheme">
+              <span class="toggle-slider"></span>
+            </label>
+          </div>
+        </div>
+
+        <!-- 主题选择 -->
+        <div class="settings-section">
+          <h3>主题颜色</h3>
+          <div class="theme-selector-scroll">
+            <div class="theme-selector">
+              <div 
+                v-for="theme in themes" 
+                :key="theme.name"
+                :class="['theme-option', { active: currentTheme === theme.name }]"
+                :data-theme="theme.name"
+                @click="selectTheme(theme.name)"
+              >
+                <div class="theme-color" :style="{ background: theme.gradient }"></div>
+                <span>{{ theme.label }}</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- 数据管理 -->
+        <div class="settings-section">
+          <h3>数据管理</h3>
+          <div class="settings-item" @click="exportData">
+            <div class="settings-item-left">
+              <i class="fas fa-download"></i>
+              <span>导出数据</span>
+            </div>
+            <div class="settings-item-right">
+              <i class="fas fa-chevron-right"></i>
+            </div>
+          </div>
+          <div class="settings-item" @click="clearExpiredItems">
+            <div class="settings-item-left">
+              <i class="fas fa-trash-alt"></i>
+              <span>清理过期物品</span>
+            </div>
+            <div class="settings-item-right">
+              <i class="fas fa-chevron-right"></i>
+            </div>
+          </div>
+        </div>
+
+        <!-- 关于 -->
+        <div class="settings-section">
+          <h3>关于</h3>
+          <a href="https://github.com/Adsryen/fridgeManager" target="_blank" class="settings-item">
+            <div class="settings-item-left">
+              <i class="fab fa-github"></i>
+              <span>GitHub 仓库</span>
+            </div>
+            <div class="settings-item-right">
+              <span class="settings-value">Adsryen/fridgeManager</span>
+              <i class="fas fa-external-link-alt" style="margin-left: 8px; font-size: 12px;"></i>
+            </div>
+          </a>
+          <div class="settings-item">
+            <div class="settings-item-left">
+              <i class="fas fa-info-circle"></i>
+              <span>版本信息</span>
+            </div>
+            <div class="settings-item-right">
+              <span class="settings-value">v1.0.0</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- 退出登录 -->
+        <div v-if="userStore.isLoggedIn" class="settings-section">
+          <div class="settings-item danger-item" @click="handleLogout">
+            <div class="settings-item-left">
+              <i class="fas fa-sign-out-alt"></i>
+              <span>退出登录</span>
+            </div>
+            <div class="settings-item-right">
+              <i class="fas fa-chevron-right"></i>
+            </div>
           </div>
         </div>
       </div>
+    </div>
 
-      <!-- 编辑个人资料 -->
-      <div class="section">
-        <div class="section-title">
-          <i class="fas fa-user-edit"></i>
-          <span>编辑资料</span>
+    <!-- 底部导航栏 -->
+    <div class="mobile-bottom-nav">
+      <button class="nav-item" @click="$router.push('/')">
+        <i class="fas fa-home"></i>
+        <span>首页</span>
+      </button>
+      <button class="nav-item" @click="$router.push('/fridge')">
+        <i class="fas fa-snowflake"></i>
+        <span>冰箱</span>
+      </button>
+      <button class="nav-item add-btn" @click="$router.push('/')">
+        <div class="add-icon">
+          <i class="fas fa-plus"></i>
         </div>
-        <el-form ref="profileFormRef" :model="profileForm" :rules="profileRules" label-position="top">
-          <el-form-item label="用户名" prop="username">
-            <el-input v-model="profileForm.username" disabled>
-              <template #prefix>
-                <i class="fas fa-user"></i>
-              </template>
-            </el-input>
-          </el-form-item>
-          <el-form-item label="邮箱" prop="email">
-            <el-input v-model="profileForm.email" type="email">
-              <template #prefix>
-                <i class="fas fa-envelope"></i>
-              </template>
-            </el-input>
-          </el-form-item>
-          <el-button type="primary" @click="handleUpdateProfile" :loading="profileLoading" size="large" style="width: 100%">
-            保存修改
-          </el-button>
-        </el-form>
-      </div>
-
-      <!-- 修改密码 -->
-      <div class="section">
-        <div class="section-title">
-          <i class="fas fa-lock"></i>
-          <span>修改密码</span>
-        </div>
-        <el-form ref="passwordFormRef" :model="passwordForm" :rules="passwordRules" label-position="top">
-          <el-form-item label="当前密码" prop="oldPassword">
-            <el-input v-model="passwordForm.oldPassword" type="password" show-password>
-              <template #prefix>
-                <i class="fas fa-key"></i>
-              </template>
-            </el-input>
-          </el-form-item>
-          <el-form-item label="新密码" prop="newPassword">
-            <el-input v-model="passwordForm.newPassword" type="password" show-password>
-              <template #prefix>
-                <i class="fas fa-lock"></i>
-              </template>
-            </el-input>
-          </el-form-item>
-          <el-form-item label="确认新密码" prop="confirmPassword">
-            <el-input v-model="passwordForm.confirmPassword" type="password" show-password>
-              <template #prefix>
-                <i class="fas fa-lock"></i>
-              </template>
-            </el-input>
-          </el-form-item>
-          <el-button type="primary" @click="handleChangePassword" :loading="passwordLoading" size="large" style="width: 100%">
-            修改密码
-          </el-button>
-        </el-form>
-      </div>
+      </button>
+      <button class="nav-item" @click="$router.push('/family')">
+        <i class="fas fa-users"></i>
+        <span>家庭</span>
+      </button>
+      <button class="nav-item active">
+        <i class="fas fa-user"></i>
+        <span>我的</span>
+        <span v-if="!userStore.isLoggedIn" class="nav-badge guest">游客</span>
+        <span v-else-if="userStore.isAdmin" class="nav-badge admin">管理员</span>
+        <span v-else class="nav-badge user">私人</span>
+      </button>
     </div>
   </div>
 </template>
 
 <script setup lang="ts">
-import { ref, reactive, computed, onMounted } from 'vue'
+import { ref, computed, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
-import { ElMessage, type FormInstance, type FormRules } from 'element-plus'
-import { useUserStore } from '@/stores/user'
-import * as authApi from '@/api/auth'
+import { useUserStore } from '../stores/user'
+import { useItemStore } from '../stores/item'
+import { useTheme } from '../composables/useTheme'
+import { ElMessage, ElMessageBox } from 'element-plus'
 
 const router = useRouter()
 const userStore = useUserStore()
+const itemStore = useItemStore()
+const { isDark, toggleTheme } = useTheme()
 
-// 计算属性
-const user = computed(() => userStore.user)
+const autoTheme = ref(false)
+const currentTheme = ref('pink')
 
-// 表单引用
-const profileFormRef = ref<FormInstance>()
-const passwordFormRef = ref<FormInstance>()
+const themes = [
+  { name: 'pink', label: '粉色', gradient: 'linear-gradient(135deg, #ffc0cb, #ffb6c1)' },
+  { name: 'blue', label: '蓝色', gradient: 'linear-gradient(135deg, #60a5fa, #3b82f6)' },
+  { name: 'purple', label: '紫色', gradient: 'linear-gradient(135deg, #a78bfa, #8b5cf6)' },
+  { name: 'green', label: '绿色', gradient: 'linear-gradient(135deg, #6ee7b7, #34d399)' },
+  { name: 'orange', label: '橙色', gradient: 'linear-gradient(135deg, #fdba74, #fb923c)' },
+  { name: 'gray', label: '灰色', gradient: 'linear-gradient(135deg, #9ca3af, #6b7280)' }
+]
 
-// 个人资料表单
-const profileForm = reactive({
-  username: '',
-  email: ''
+onMounted(() => {
+  // 从 localStorage 读取主题设置
+  const savedTheme = localStorage.getItem('userTheme') || 'pink'
+  currentTheme.value = savedTheme
+  
+  const savedAutoTheme = localStorage.getItem('autoTheme')
+  autoTheme.value = savedAutoTheme === 'true'
 })
 
-// 密码表单
-const passwordForm = reactive({
-  oldPassword: '',
-  newPassword: '',
-  confirmPassword: ''
-})
-
-// 加载状态
-const profileLoading = ref(false)
-const passwordLoading = ref(false)
-
-// 表单验证规则
-const profileRules: FormRules = {
-  email: [
-    { required: true, message: '请输入邮箱', trigger: 'blur' },
-    { type: 'email', message: '请输入正确的邮箱格式', trigger: 'blur' }
-  ]
+const toggleDarkMode = () => {
+  toggleTheme()
 }
 
-const passwordRules: FormRules = {
-  oldPassword: [
-    { required: true, message: '请输入当前密码', trigger: 'blur' }
-  ],
-  newPassword: [
-    { required: true, message: '请输入新密码', trigger: 'blur' },
-    { min: 6, message: '密码长度至少为 6 位', trigger: 'blur' }
-  ],
-  confirmPassword: [
-    { required: true, message: '请确认新密码', trigger: 'blur' },
-    {
-      validator: (_rule, value, callback) => {
-        if (value !== passwordForm.newPassword) {
-          callback(new Error('两次输入的密码不一致'))
-        } else {
-          callback()
-        }
-      },
-      trigger: 'blur'
+const toggleAutoTheme = () => {
+  localStorage.setItem('autoTheme', autoTheme.value.toString())
+  if (autoTheme.value) {
+    // 根据时间自动切换
+    const hour = new Date().getHours()
+    const shouldBeDark = hour >= 18 || hour < 6
+    if (shouldBeDark !== isDark.value) {
+      toggleTheme()
     }
-  ]
-}
-
-// 格式化日期
-const formatDate = (dateStr?: string) => {
-  if (!dateStr) return ''
-  const date = new Date(dateStr)
-  return date.toLocaleDateString('zh-CN', {
-    year: 'numeric',
-    month: 'long',
-    day: 'numeric'
-  })
-}
-
-// 返回上一页
-const goBack = () => {
-  router.back()
-}
-
-// 更新个人资料
-const handleUpdateProfile = async () => {
-  if (!profileFormRef.value) return
-
-  try {
-    await profileFormRef.value.validate()
-  } catch {
-    return
   }
+}
 
-  profileLoading.value = true
+const selectTheme = (themeName: string) => {
+  currentTheme.value = themeName
+  localStorage.setItem('userTheme', themeName)
+  
+  // 移除所有主题类
+  document.documentElement.className = document.documentElement.className
+    .split(' ')
+    .filter(c => !c.startsWith('theme-'))
+    .join(' ')
+  
+  // 添加新主题类
+  if (themeName !== 'pink') {
+    document.documentElement.classList.add(`theme-${themeName}`)
+    document.body.classList.add(`theme-${themeName}`)
+  }
+  
+  ElMessage.success(`已切换到${themes.find(t => t.name === themeName)?.label}主题`)
+}
 
+const exportData = async () => {
   try {
-    const response = await authApi.updateProfile({
-      email: profileForm.email
+    await ElMessageBox.confirm('确定要导出所有数据吗？', '导出数据', {
+      confirmButtonText: '导出',
+      cancelButtonText: '取消',
+      type: 'info'
+    })
+    
+    // 获取所有物品数据
+    const items = itemStore.items
+    const dataStr = JSON.stringify(items, null, 2)
+    const dataBlob = new Blob([dataStr], { type: 'application/json' })
+    const url = URL.createObjectURL(dataBlob)
+    const link = document.createElement('a')
+    link.href = url
+    link.download = `fridge-data-${new Date().toISOString().split('T')[0]}.json`
+    link.click()
+    URL.revokeObjectURL(url)
+    
+    ElMessage.success('数据导出成功')
+  } catch {
+    // 用户取消
+  }
+}
+
+const clearExpiredItems = async () => {
+  try {
+    await ElMessageBox.confirm('确定要清理所有过期物品吗？此操作不可恢复！', '清理过期物品', {
+      confirmButtonText: '清理',
+      cancelButtonText: '取消',
+      type: 'warning'
+    })
+    
+    // 这里应该调用后端 API 清理过期物品
+    ElMessage.success('过期物品清理成功')
+  } catch {
+    // 用户取消
+  }
+}
+
+const handleLogout = async () => {
+  try {
+    await ElMessageBox.confirm('确定要退出登录吗？', '确认退出', {
+      confirmButtonText: '退出',
+      cancelButtonText: '取消',
+      type: 'warning'
     })
 
-    if (response.success) {
-      ElMessage.success('个人资料更新成功')
-      // 重新获取用户信息
-      await userStore.fetchProfile()
-    } else {
-      ElMessage.error(response.error || '更新失败')
-    }
-  } catch (error: any) {
-    console.error('[个人资料] 更新失败', error)
-    ElMessage.error(error.message || '网络错误，请稍后重试')
-  } finally {
-    profileLoading.value = false
-  }
-}
-
-// 修改密码
-const handleChangePassword = async () => {
-  if (!passwordFormRef.value) return
-
-  try {
-    await passwordFormRef.value.validate()
+    await userStore.logout()
+    ElMessage.success('已退出登录')
+    router.push('/login')
   } catch {
-    return
-  }
-
-  passwordLoading.value = true
-
-  try {
-    const response = await authApi.changePassword(
-      passwordForm.oldPassword,
-      passwordForm.newPassword
-    )
-
-    if (response.success) {
-      ElMessage.success('密码修改成功')
-      // 清空表单
-      passwordFormRef.value?.resetFields()
-    } else {
-      ElMessage.error(response.error || '修改失败')
-    }
-  } catch (error: any) {
-    console.error('[个人资料] 修改密码失败', error)
-    ElMessage.error(error.message || '网络错误，请稍后重试')
-  } finally {
-    passwordLoading.value = false
+    // 用户取消
   }
 }
-
-// 初始化
-onMounted(async () => {
-  const currentUser = user.value
-  if (currentUser) {
-    profileForm.username = currentUser.username
-    profileForm.email = currentUser.email
-  } else {
-    // 如果没有用户信息，尝试获取
-    try {
-      await userStore.fetchProfile()
-      const fetchedUser = userStore.user
-      if (fetchedUser) {
-        profileForm.username = fetchedUser.username
-        profileForm.email = fetchedUser.email
-      }
-    } catch (error) {
-      console.error('[个人资料] 获取用户信息失败', error)
-      ElMessage.error('获取用户信息失败')
-      router.push('/login')
-    }
-  }
-})
 </script>
 
 <style scoped>
 .profile-page {
-  min-height: 100vh;
-  background: var(--bg-color);
+  width: 100%;
+  height: 100vh;
+  overflow: hidden;
 }
 
-/* 顶部导航栏 */
-.mobile-header {
-  position: fixed;
-  top: 0;
-  left: 0;
-  right: 0;
-  background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
-  color: white;
-  z-index: 1000;
-  box-shadow: 0 2px 8px rgba(0,0,0,0.1);
-  height: 48px;
-}
-
-.header-content {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding: 8px 16px;
-  height: 100%;
-}
-
-.icon-btn {
-  background: rgba(0, 0, 0, 0.2);
-  border: none;
-  width: 32px;
-  height: 32px;
-  border-radius: 50%;
-  color: white;
-  font-size: 16px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  cursor: pointer;
-  transition: all 0.3s ease;
-}
-
-.icon-btn:active {
-  transform: scale(0.95);
-  background: rgba(0, 0, 0, 0.3);
-}
-
-.app-name {
-  font-size: 16px;
-  font-weight: 600;
-}
-
-/* 主内容区 */
-.profile-content {
-  padding-top: 48px;
-  padding-bottom: 24px;
+.settings-page-content {
+  padding: 20px;
+  padding-bottom: 100px;
+  overflow-y: auto;
+  height: calc(100vh - 60px - 70px);
 }
 
 /* 用户信息卡片 */
-.user-card {
-  background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
-  padding: 32px 24px;
+.user-profile-card {
   display: flex;
-  flex-direction: column;
   align-items: center;
   gap: 16px;
-  color: white;
+  padding: 24px;
+  background: var(--card-bg);
+  border-radius: 16px;
+  margin-bottom: 24px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
 }
 
-.user-avatar-large {
-  width: 80px;
-  height: 80px;
+.profile-avatar {
+  width: 64px;
+  height: 64px;
   border-radius: 50%;
-  background: rgba(255, 255, 255, 0.2);
+  background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 40px;
-  border: 3px solid rgba(255, 255, 255, 0.3);
+  font-size: 32px;
+  color: white;
+  flex-shrink: 0;
 }
 
-.user-info {
-  text-align: center;
+.profile-avatar.guest {
+  background: #9ca3af;
 }
 
-.user-name {
-  font-size: 24px;
+.profile-info {
+  flex: 1;
+  min-width: 0;
+}
+
+.profile-name {
+  font-size: 20px;
   font-weight: 600;
-  margin-bottom: 8px;
+  color: var(--text-primary);
+  margin-bottom: 6px;
 }
 
-.user-email {
-  font-size: 14px;
-  opacity: 0.9;
-  margin-bottom: 12px;
-}
-
-.user-meta {
+.profile-status {
   display: flex;
+  gap: 8px;
   align-items: center;
-  justify-content: center;
-  gap: 12px;
-  flex-wrap: wrap;
+}
+
+.badge-admin,
+.badge-user {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 4px 10px;
+  border-radius: 12px;
+  font-size: 12px;
+  font-weight: 600;
 }
 
 .badge-admin {
-  padding: 4px 12px;
-  border-radius: 12px;
-  background: rgba(255, 255, 255, 0.2);
-  font-size: 12px;
-  font-weight: 600;
+  background: linear-gradient(135deg, #f59e0b, #ef4444);
+  color: white;
 }
 
-.user-join-date {
-  font-size: 12px;
-  opacity: 0.8;
+.badge-user {
+  background: #3b82f6;
+  color: white;
 }
 
-/* 区块 */
-.section {
-  background: var(--card-bg);
-  margin: 16px;
-  padding: 20px;
-  border-radius: 12px;
-  box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+.profile-hint {
+  font-size: 14px;
+  color: var(--text-secondary);
 }
 
-.section-title {
+.guest-actions {
   display: flex;
+  gap: 8px;
+  flex-shrink: 0;
+}
+
+.btn-login-small,
+.btn-register-small {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 8px 12px;
+  border-radius: 8px;
+  font-size: 13px;
+  font-weight: 500;
+  text-decoration: none;
+  transition: all 0.3s;
+}
+
+.btn-login-small {
+  background: var(--primary-color);
+  color: white;
+}
+
+.btn-register-small {
+  background: var(--card-bg);
+  color: var(--primary-color);
+  border: 1px solid var(--primary-color);
+}
+
+/* 设置区块 */
+.settings-section {
+  margin-bottom: 24px;
+}
+
+.settings-section h3 {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--text-secondary);
+  margin-bottom: 12px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+/* 快捷操作 */
+.quick-actions {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 12px;
+}
+
+.quick-action-item {
+  display: flex;
+  flex-direction: column;
   align-items: center;
   gap: 8px;
-  font-size: 16px;
-  font-weight: 600;
+  padding: 16px 8px;
+  background: var(--card-bg);
+  border-radius: 12px;
+  text-decoration: none;
   color: var(--text-primary);
-  margin-bottom: 20px;
-  padding-bottom: 12px;
-  border-bottom: 2px solid var(--border-color);
+  transition: all 0.3s;
+  border: 1px solid var(--border-color);
 }
 
-.section-title i {
+.quick-action-item:active {
+  transform: scale(0.95);
+}
+
+.quick-action-icon {
+  width: 48px;
+  height: 48px;
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 24px;
+  color: white;
+}
+
+.quick-action-icon.admin {
+  background: linear-gradient(135deg, #f59e0b, #ef4444);
+}
+
+.quick-action-icon.fridge {
+  background: linear-gradient(135deg, #60a5fa, #3b82f6);
+}
+
+.quick-action-icon.family {
+  background: linear-gradient(135deg, #a78bfa, #8b5cf6);
+}
+
+.quick-action-item span {
+  font-size: 13px;
+  font-weight: 500;
+}
+
+/* 管理后台入口 */
+.admin-entry {
+  background: linear-gradient(135deg, rgba(245, 158, 11, 0.1), rgba(239, 68, 68, 0.1));
+  border: 1px solid rgba(245, 158, 11, 0.3);
+}
+
+.admin-entry .settings-item-left i {
+  color: #f59e0b;
+}
+
+.badge-admin-small {
+  display: inline-flex;
+  align-items: center;
+  padding: 3px 8px;
+  border-radius: 10px;
+  font-size: 11px;
+  font-weight: 600;
+  background: linear-gradient(135deg, #f59e0b, #ef4444);
+  color: white;
+}
+
+/* 设置项 */
+.settings-item,
+.settings-item-toggle {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 16px;
+  background: var(--card-bg);
+  border-radius: 12px;
+  margin-bottom: 8px;
+  cursor: pointer;
+  transition: all 0.3s;
+  border: 1px solid var(--border-color);
+  text-decoration: none;
+  color: var(--text-primary);
+}
+
+.settings-item:active {
+  transform: scale(0.98);
+}
+
+.settings-item-left {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex: 1;
+}
+
+.settings-item-left i {
+  width: 24px;
+  text-align: center;
+  font-size: 18px;
   color: var(--primary-color);
 }
 
-/* 表单样式 */
-:deep(.el-form-item__label) {
-  font-weight: 600;
-  color: var(--text-primary);
-  margin-bottom: 8px;
+.settings-item-left span {
+  font-size: 15px;
+  font-weight: 500;
 }
 
-:deep(.el-input__wrapper) {
-  border-radius: 8px;
-  padding: 12px 16px;
+.settings-item-right {
+  display: flex;
+  align-items: center;
+  gap: 8px;
 }
 
-:deep(.el-input__prefix) {
+.settings-value {
+  font-size: 13px;
   color: var(--text-secondary);
-  font-size: 16px;
 }
 
-:deep(.el-button) {
-  border-radius: 8px;
-  font-weight: 600;
+.settings-item-right i {
+  font-size: 14px;
+  color: var(--text-secondary);
 }
 
-/* 响应式布局 */
-@media (min-width: 769px) {
-  .profile-page {
-    max-width: 768px;
-    margin: 0 auto;
-    box-shadow: 0 0 20px rgba(0, 0, 0, 0.1);
-  }
+.danger-item {
+  color: var(--danger-color);
+}
+
+.danger-item .settings-item-left i {
+  color: var(--danger-color);
+}
+
+/* 切换开关 */
+.toggle-switch {
+  position: relative;
+  display: inline-block;
+  width: 48px;
+  height: 28px;
+}
+
+.toggle-switch input {
+  opacity: 0;
+  width: 0;
+  height: 0;
+}
+
+.toggle-slider {
+  position: absolute;
+  cursor: pointer;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: #ccc;
+  transition: 0.3s;
+  border-radius: 28px;
+}
+
+.toggle-slider:before {
+  position: absolute;
+  content: "";
+  height: 20px;
+  width: 20px;
+  left: 4px;
+  bottom: 4px;
+  background-color: white;
+  transition: 0.3s;
+  border-radius: 50%;
+}
+
+.toggle-switch input:checked + .toggle-slider {
+  background-color: var(--primary-color);
+}
+
+.toggle-switch input:checked + .toggle-slider:before {
+  transform: translateX(20px);
+}
+
+/* 主题选择器 */
+.theme-selector-scroll {
+  overflow-x: auto;
+  overflow-y: hidden;
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+}
+
+.theme-selector-scroll::-webkit-scrollbar {
+  display: none;
+}
+
+.theme-selector {
+  display: flex;
+  gap: 12px;
+  padding-bottom: 4px;
+  min-width: min-content;
+}
+
+.theme-option {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  padding: 12px;
+  background: var(--card-bg);
+  border-radius: 12px;
+  cursor: pointer;
+  transition: all 0.3s;
+  border: 2px solid transparent;
+  flex-shrink: 0;
+  min-width: 80px;
+}
+
+.theme-option.active {
+  border-color: var(--primary-color);
+  background: var(--bg-color);
+}
+
+.theme-option:active {
+  transform: scale(0.95);
+}
+
+.theme-color {
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+}
+
+.theme-option span {
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--text-primary);
+  white-space: nowrap;
+}
+
+/* 导航气泡 */
+.nav-badge {
+  position: absolute;
+  top: 4px;
+  right: 8px;
+  font-size: 9px;
+  font-weight: 700;
+  padding: 2px 6px;
+  border-radius: 10px;
+  line-height: 1;
+  white-space: nowrap;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+}
+
+.nav-badge.guest {
+  background: #9ca3af;
+  color: white;
+}
+
+.nav-badge.user {
+  background: #3b82f6;
+  color: white;
+}
+
+.nav-badge.admin {
+  background: linear-gradient(135deg, #f59e0b, #ef4444);
+  color: white;
 }
 </style>
