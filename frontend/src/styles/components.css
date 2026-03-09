@@ -1,0 +1,255 @@
+/* 通用组件样式：抽屉、表单、卡片、按钮等 */
+
+/* 抽屉组件 */
+.drawer-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0,0,0,0.5);
+    z-index: 2000;
+    display: none;
+    animation: fadeIn 0.3s;
+}
+
+.drawer-overlay.active {
+    display: block;
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; }
+    to { opacity: 1; }
+}
+
+.drawer-content {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    background: var(--card-bg);
+    border-radius: 20px 20px 0 0;
+    height: 75vh;
+    overflow: hidden;
+    animation: slideUp 0.3s;
+    display: flex;
+    flex-direction: column;
+}
+
+.drawer-content.full-height {
+    height: 85vh;
+}
+
+/* 针对小屏幕设备优化 */
+@media (max-height: 667px) {
+    .drawer-content {
+        height: 85vh;
+    }
+    
+    .drawer-content.full-height {
+        height: 92vh;
+    }
+}
+
+/* 针对大屏幕设备优化 */
+@media (min-height: 900px) {
+    .drawer-content {
+        height: 70vh;
+    }
+    
+    .drawer-content.full-height {
+        height: 80vh;
+    }
+}
+
+@keyframes slideUp {
+    from { transform: translateY(100%); }
+    to { transform: translateY(0); }
+}
+
+.drawer-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 20px;
+    border-bottom: 1px solid var(--border-color);
+    position: sticky;
+    top: 0;
+    background: var(--card-bg);
+    z-index: 10;
+}
+
+.drawer-header h5 {
+    font-size: 18px;
+    font-weight: 600;
+    margin: 0;
+}
+
+.close-btn {
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    background: var(--bg-color);
+    border: none;
+    color: var(--text-primary);
+    font-size: 18px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+}
+
+.drawer-body {
+    padding: 20px;
+    flex: 1;
+    overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
+}
+
+/* 用户信息卡片 */
+.user-info-card {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    padding: 20px;
+    background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+    border-radius: 16px;
+    color: white;
+    margin-bottom: 20px;
+}
+
+.user-avatar {
+    width: 60px;
+    height: 60px;
+    border-radius: 50%;
+    background: rgba(255,255,255,0.2);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 28px;
+}
+
+.user-details {
+    flex: 1;
+}
+
+.user-name-large {
+    font-size: 20px;
+    font-weight: 600;
+    margin-bottom: 4px;
+}
+
+.user-status {
+    font-size: 14px;
+    opacity: 0.9;
+}
+
+/* 菜单列表 */
+.menu-list {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.menu-item {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 16px;
+    background: var(--bg-color);
+    border-radius: 12px;
+    color: var(--text-primary);
+    text-decoration: none;
+    transition: all 0.3s;
+}
+
+.menu-item:active {
+    transform: scale(0.98);
+    background: var(--border-color);
+}
+
+.menu-item i:first-child {
+    width: 24px;
+    text-align: center;
+    font-size: 18px;
+}
+
+.menu-item span {
+    flex: 1;
+    font-size: 16px;
+}
+
+.menu-item i:last-child {
+    font-size: 14px;
+    color: var(--text-secondary);
+}
+
+.menu-item.danger {
+    color: var(--danger-color);
+}
+
+/* 表单样式 */
+.form-group {
+    margin-bottom: 20px;
+}
+
+.form-group label {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--text-primary);
+    margin-bottom: 8px;
+}
+
+.mobile-input {
+    width: 100%;
+    padding: 14px 16px;
+    border: 2px solid var(--border-color);
+    border-radius: 12px;
+    font-size: 16px;
+    background: var(--card-bg);
+    transition: all 0.3s;
+}
+
+.mobile-input:focus {
+    outline: none;
+    border-color: var(--primary-color);
+    box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+}
+
+/* 按钮样式 */
+.btn-primary, .btn-secondary {
+    flex: 1;
+    padding: 14px;
+    border: none;
+    border-radius: 12px;
+    font-size: 16px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+}
+
+.btn-primary {
+    background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+    color: white;
+}
+
+.btn-primary:active {
+    transform: scale(0.98);
+}
+
+.btn-secondary {
+    background: var(--bg-color);
+    color: var(--text-primary);
+}
+
+.btn-secondary:active {
+    transform: scale(0.98);
+    background: var(--border-color);
+}
