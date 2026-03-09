@@ -61,79 +61,87 @@
 - **Python 3.12+**：主要编程语言
 - **Flask 3.1.0**：Web 框架
 - **SQLite 3**：轻量级数据库（无需额外安装）
+- **JWT**：用户认证
+- **APScheduler**：定时任务
 
 ### 前端
-- **HTML5**：页面结构
-- **CSS3**：样式设计
-- **JavaScript (ES6)**：前端逻辑
-- **jQuery 3.6.0**：DOM 操作
-- **Bootstrap 5.0.0**：UI 框架
-- **Font Awesome**：图标库
-- **Moment.js**：日期处理
+- **Vue 3**：渐进式 JavaScript 框架
+- **TypeScript**：类型安全
+- **Vite**：现代化构建工具
+- **Pinia**：状态管理
+- **Vue Router**：路由管理
+- **Element Plus**：UI 组件库
+- **Axios**：HTTP 客户端
 
 ### 开发工具
 - **Virtual Environment**：Python 虚拟环境
+- **ESLint + Prettier**：代码规范
 - **Version Control**：Git
 
 ## 🚀 快速开始
 
 ### 前置要求
 - Python 3.12 或更高版本
+- Node.js 18+ 和 npm
 - Git
 
-### Windows 用户（推荐）
+### 开发环境部署
 
-1. **克隆仓库**
-   ```bash
-   git clone https://github.com/Adsryen/fridgeManager.git
-   cd fridgeManager
-   ```
+#### 1. 克隆仓库
+```bash
+git clone https://github.com/Adsryen/fridgeManager.git
+cd fridgeManager
+```
 
-2. **一键配置**
-   ```bash
-   # 双击运行
-   scripts\setup.bat
-   ```
+#### 2. 后端设置
+```bash
+# 创建虚拟环境
+python -m venv venv
 
-3. **启动应用**
-   ```bash
-   # 双击运行
-   scripts\start.bat
-   ```
+# 激活虚拟环境
+# Windows
+venv\Scripts\activate
+# Linux/Mac
+source venv/bin/activate
 
-4. **访问应用**
-   
-   打开浏览器访问 `http://127.0.0.1:8080`
+# 安装依赖
+pip install -r requirements.txt
+```
 
-### Linux/Mac 用户
+#### 3. 前端设置
+```bash
+cd frontend
+npm install
+```
 
-1. **克隆仓库**
-   ```bash
-   git clone https://github.com/Adsryen/fridgeManager.git
-   cd fridgeManager
-   ```
+#### 4. 启动开发服务器
 
-2. **创建虚拟环境**
-   ```bash
-   python -m venv venv
-   source venv/bin/activate
-   ```
+**方式一：使用启动脚本（推荐）**
+```bash
+# Windows PowerShell
+.\start_dev.ps1
 
-3. **安装依赖**
-   ```bash
-   pip install -r requirements.txt
-   ```
+# 或者使用 npm
+npm run dev:all
+```
 
-4. **运行应用**
-   ```bash
-   python run.py
-   ```
+**方式二：分别启动**
+```bash
+# 终端 1 - 启动后端（端口 8080）
+python run.py
 
-5. **访问应用**
-   
-   打开浏览器访问 `http://127.0.0.1:8080`
+# 终端 2 - 启动前端（端口 5173）
+cd frontend
+npm run dev
+```
 
-### Docker 部署（推荐生产环境）
+#### 5. 访问应用
+- 前端：`http://localhost:5173`
+- 后端 API：`http://localhost:8080`
+
+### 生产环境部署
+
+#### Docker 部署（推荐）
 
 1. **克隆仓库**
    ```bash
@@ -151,6 +159,20 @@
    打开浏览器访问 `http://localhost:8080`
 
 详细说明请查看 [Docker 部署指南](./docker/README.md)
+
+#### Vercel 部署前端
+
+[![Deploy with Vercel](https://vercel.com/button)](https://vercel.com/new/clone?repository-url=https%3A%2F%2Fgithub.com%2FAdsryen%2FfridgeManager&project-name=fridge-manager&repository-name=fridgeManager&root-directory=frontend&env=VITE_API_BASE_URL&envDescription=后端%20API%20地址&envLink=https%3A%2F%2Fgithub.com%2FAdsryen%2FfridgeManager%23vercel-部署)
+
+**环境变量配置：**
+- `VITE_API_BASE_URL`：后端 API 地址（例如：`https://your-backend.com`）
+
+**部署步骤：**
+1. 点击上方按钮，跳转到 Vercel
+2. 登录 Vercel 账号
+3. 配置环境变量 `VITE_API_BASE_URL`
+4. 点击 Deploy 开始部署
+5. 部署完成后，访问 Vercel 提供的域名
 
 ## 📖 使用指南
 
@@ -222,51 +244,77 @@
 
 ```
 fridgeManager/
-├── app/                   # 应用核心代码
-│   ├── __init__.py        # Flask 应用工厂
-│   ├── models/            # 数据模型
-│   │   ├── user.py        # 用户模型
-│   │   └── item.py        # 物品模型
-│   ├── routes/            # 路由蓝图
-│   │   ├── main.py        # 主页路由
-│   │   ├── auth.py        # 认证路由
-│   │   └── item.py        # 物品路由
-│   ├── services/          # 业务逻辑
+├── app/                      # 后端应用核心代码
+│   ├── __init__.py           # Flask 应用工厂
+│   ├── models/               # 数据模型
+│   │   ├── user.py           # 用户模型
+│   │   ├── item.py           # 物品模型
+│   │   ├── fridge.py         # 冰箱模型
+│   │   ├── family.py         # 家庭模型
+│   │   └── ...
+│   ├── routes/               # 路由蓝图
+│   │   ├── auth.py           # 认证路由
+│   │   ├── item.py           # 物品路由
+│   │   ├── fridge.py         # 冰箱路由
+│   │   ├── family.py         # 家庭路由
+│   │   └── admin.py          # 管理员路由
+│   ├── services/             # 业务逻辑
 │   │   ├── user_service.py
-│   │   └── item_service.py
-│   └── utils/             # 工具函数
-│       ├── auth.py        # 认证工具
-│       └── database.py    # 数据库工具
-├── config/                # 配置文件
-│   └── settings.py        # 应用配置
-├── docker/                # Docker 部署
-│   ├── Dockerfile         # Docker 镜像
-│   ├── docker-compose.yml # Docker Compose 配置
-│   └── README.md          # Docker 部署指南
-├── docs/                  # 文档
-│   ├── README_EN.md       # 英文文档
-│   └── 快速开始.md        # 快速开始指南
-├── migrations/            # 数据库迁移脚本
-├── scripts/               # 脚本工具
-│   ├── setup.bat          # Windows 配置脚本
-│   ├── start.bat          # Windows 启动脚本
-│   └── migrate_add_user_id.py # 数据迁移
-├── static/                # 静态资源
-│   ├── index.js           # 前端 JavaScript
-│   └── style/
-│       └── index.css      # 样式表
-├── templates/             # HTML 模板
-│   ├── template.html      # 主页模板
-│   ├── login.html         # 登录页面
-│   └── register.html      # 注册页面
-├── tests/                 # 测试套件
-│   ├── conftest.py        # Pytest 配置
-│   ├── test_app.py        # 单元测试
-│   └── test_database.py   # 集成测试
-├── data/                  # 数据库目录（不提交到 Git）
-├── run.py                 # 应用启动入口
-├── requirements.txt       # Python 依赖
-└── README.md              # 项目文档（中文）
+│   │   ├── item_service.py
+│   │   ├── fridge_service.py
+│   │   └── family_service.py
+│   ├── utils/                # 工具函数
+│   │   ├── jwt_auth.py       # JWT 认证
+│   │   ├── database.py       # 数据库工具
+│   │   └── validators.py     # 数据验证
+│   └── tasks/                # 定时任务
+│       └── scheduler.py      # 任务调度器
+├── frontend/                 # Vue3 前端应用
+│   ├── src/
+│   │   ├── api/              # API 接口
+│   │   ├── assets/           # 静态资源
+│   │   ├── components/       # Vue 组件
+│   │   │   ├── common/       # 通用组件
+│   │   │   ├── item/         # 物品组件
+│   │   │   ├── fridge/       # 冰箱组件
+│   │   │   ├── family/       # 家庭组件
+│   │   │   └── ai/           # AI 功能组件
+│   │   ├── composables/      # 组合式函数
+│   │   ├── router/           # 路由配置
+│   │   ├── stores/           # Pinia 状态管理
+│   │   ├── styles/           # 全局样式
+│   │   ├── types/            # TypeScript 类型
+│   │   ├── utils/            # 工具函数
+│   │   ├── views/            # 页面视图
+│   │   ├── App.vue           # 根组件
+│   │   └── main.ts           # 入口文件
+│   ├── public/               # 公共资源
+│   ├── .env.development      # 开发环境变量
+│   ├── .env.production       # 生产环境变量
+│   ├── package.json          # 前端依赖
+│   ├── tsconfig.json         # TypeScript 配置
+│   ├── vite.config.ts        # Vite 配置
+│   └── vercel.json           # Vercel 部署配置
+├── config/                   # 后端配置文件
+│   └── settings.py           # 应用配置
+├── docker/                   # Docker 部署
+│   ├── Dockerfile            # Docker 镜像
+│   ├── docker-compose.yml    # Docker Compose 配置
+│   └── README.md             # Docker 部署指南
+├── docs/                     # 文档
+│   ├── README_EN.md          # 英文文档
+│   ├── API接口文档.md        # API 文档
+│   └── 快速开始.md           # 快速开始指南
+├── scripts/                  # 脚本工具
+│   └── migrate_*.py          # 数据迁移脚本
+├── static/                   # Flask 静态资源（旧版）
+├── templates/                # Flask 模板（旧版）
+├── tests/                    # 测试套件
+├── data/                     # 数据库目录（不提交到 Git）
+├── start_dev.ps1             # 开发环境启动脚本
+├── run.py                    # 后端启动入口
+├── requirements.txt          # Python 依赖
+└── README.md                 # 项目文档（中文）
 ```
 
 ## 🧪 测试
