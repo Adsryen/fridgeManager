@@ -3,6 +3,7 @@
     <div class="add-method-grid">
       <!-- OCR识别 -->
       <div class="add-method-card" @click="handleSelect('ocr')">
+        <span v-if="!isLoggedIn" class="login-badge">需登录</span>
         <div class="add-method-icon ocr">
           <i class="fas fa-camera"></i>
         </div>
@@ -25,6 +26,7 @@
 
       <!-- AI对话 -->
       <div class="add-method-card full-width" @click="handleSelect('ai')">
+        <span v-if="!isLoggedIn" class="login-badge">需登录</span>
         <div class="add-method-icon ai">
           <i class="fas fa-comments"></i>
         </div>
@@ -38,6 +40,12 @@
 </template>
 
 <script setup lang="ts">
+import { useUserStore } from '../../stores/user'
+import { computed } from 'vue'
+
+const userStore = useUserStore()
+const isLoggedIn = computed(() => userStore.isLoggedIn)
+
 const emit = defineEmits<{
   select: [method: 'ocr' | 'manual' | 'ai']
 }>()
@@ -49,13 +57,13 @@ const handleSelect = (method: 'ocr' | 'manual' | 'ai') => {
 
 <style scoped>
 .add-method-selector {
-  padding: 24px;
+  padding: 0;
 }
 
 .add-method-grid {
   display: grid;
   grid-template-columns: 1fr 1fr;
-  gap: 12px;
+  gap: 10px;
 }
 
 .add-method-card {
@@ -63,10 +71,10 @@ const handleSelect = (method: 'ocr' | 'manual' | 'ai') => {
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 10px;
-  padding: 16px;
+  gap: 8px;
+  padding: 14px 10px;
   background: var(--bg-color);
-  border: 2px solid var(--border-color);
+  border: 1px solid var(--border-color);
   border-radius: 12px;
   cursor: pointer;
   transition: all 0.3s;
@@ -76,21 +84,37 @@ const handleSelect = (method: 'ocr' | 'manual' | 'ai') => {
   grid-column: 1 / -1;
   flex-direction: row;
   justify-content: flex-start;
+  padding: 12px 14px;
 }
 
 .add-method-card:active {
-  transform: scale(0.98);
+  transform: scale(0.96);
   border-color: var(--primary-color);
+  background: var(--primary-light);
+}
+
+.login-badge {
+  position: absolute;
+  top: 6px;
+  right: 6px;
+  padding: 3px 7px;
+  background: linear-gradient(135deg, #f59e0b, #ef4444);
+  color: white;
+  font-size: 10px;
+  font-weight: 600;
+  border-radius: 8px;
+  z-index: 1;
+  box-shadow: 0 2px 4px rgba(239, 68, 68, 0.3);
 }
 
 .add-method-icon {
-  width: 48px;
-  height: 48px;
-  border-radius: 12px;
+  width: 44px;
+  height: 44px;
+  border-radius: 10px;
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 20px;
+  font-size: 18px;
   color: white;
   flex-shrink: 0;
 }
@@ -117,26 +141,14 @@ const handleSelect = (method: 'ocr' | 'manual' | 'ai') => {
 }
 
 .add-method-title {
-  font-size: 15px;
+  font-size: 14px;
   font-weight: 600;
   color: var(--text-primary);
-  margin-bottom: 3px;
+  margin-bottom: 2px;
 }
 
 .add-method-desc {
   font-size: 11px;
   color: var(--text-secondary);
-}
-
-.add-method-badge {
-  position: absolute;
-  top: 8px;
-  right: 8px;
-  padding: 3px 8px;
-  background: var(--danger-color);
-  color: white;
-  font-size: 9px;
-  font-weight: 600;
-  border-radius: 10px;
 }
 </style>
