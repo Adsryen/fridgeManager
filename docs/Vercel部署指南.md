@@ -2,6 +2,19 @@
 
 本指南将帮助你将前端应用部署到 Vercel。
 
+## 📋 快速参考
+
+| 配置项 | 值 |
+|--------|-----|
+| **Framework Preset** | ✅ Vite（不是 Vue.js） |
+| **Root Directory** | `frontend` |
+| **Build Command** | `npm run build` |
+| **Output Directory** | `dist` |
+| **Node.js Version** | 18.x |
+| **环境变量** | `VITE_API_BASE_URL` |
+
+> 💡 **重点**：选择 **Vite** 而不是 Vue.js，因为项目使用 Vite 构建工具！
+
 ## 前置要求
 
 1. 一个 [Vercel](https://vercel.com) 账号
@@ -76,10 +89,20 @@
    - 授权并选择你的 GitHub 仓库
 
 3. **配置项目**
-   - **Framework Preset**: Vite
-   - **Root Directory**: `frontend`
-   - **Build Command**: `npm run build`
-   - **Output Directory**: `dist`
+   
+   在项目配置页面，按以下方式填写：
+   
+   - **Framework Preset**: 选择 **Vite** 
+     > 💡 虽然项目使用 Vue 3，但应该选择 Vite 而不是 Vue.js，因为项目使用 Vite 作为构建工具
+   
+   - **Root Directory**: 点击 **Edit**，输入 `frontend`
+     > ⚠️ 重要：必须设置为 `frontend`，因为前端代码在 frontend 子目录中
+   
+   - **Build Command**: `npm run build` （通常自动检测，无需修改）
+   
+   - **Output Directory**: `dist` （通常自动检测，无需修改）
+   
+   - **Install Command**: `npm install` （通常自动检测，无需修改）
 
 4. **配置环境变量**
    在 **Environment Variables** 部分添加：
@@ -92,9 +115,41 @@
 
 ## 环境变量说明
 
-| 变量名 | 说明 | 示例 |
-|--------|------|------|
-| `VITE_API_BASE_URL` | 后端 API 地址 | `https://api.example.com` |
+| 变量名 | 说明 | 示例 | 必需 |
+|--------|------|------|------|
+| `VITE_API_BASE_URL` | 后端 API 地址 | `https://api.example.com` | 是 |
+
+> ⚠️ **注意**：
+> - 所有前端环境变量必须以 `VITE_` 开头才能在代码中访问
+> - 修改环境变量后需要重新部署才能生效
+> - 不要在环境变量中包含敏感信息（如密钥），这些会暴露在前端代码中
+
+## 项目类型选择详解
+
+### 为什么选择 Vite 而不是 Vue.js？
+
+在 Vercel 创建项目时，你会看到多个框架选项：
+
+- ❌ **Vue.js** - 这是针对使用 Vue CLI 或 Nuxt.js 的项目
+- ✅ **Vite** - 这是正确的选择，因为本项目使用 Vite 作为构建工具
+- ❌ **Other** - 通用选项，但不如 Vite 预设优化好
+
+**选择 Vite 的好处：**
+1. Vercel 会自动识别 Vite 项目结构
+2. 自动配置正确的构建命令和输出目录
+3. 优化的缓存策略和构建性能
+4. 支持 Vite 的所有特性（如 HMR、环境变量等）
+
+### 完整的项目配置示例
+
+```
+Framework Preset: Vite
+Root Directory: frontend
+Build Command: npm run build
+Output Directory: dist
+Install Command: npm install
+Node.js Version: 18.x (推荐)
+```
 
 ## 自定义域名
 
@@ -118,7 +173,22 @@ vercel --prod
 
 ## 常见问题
 
-### 1. API 请求失败（CORS 错误）
+### 1. 选择了错误的框架类型怎么办？
+
+如果不小心选择了 Vue.js 而不是 Vite：
+
+**方案 1：删除项目重新创建**
+1. 在 Vercel Dashboard 中进入项目设置
+2. 滚动到底部，点击 **Delete Project**
+3. 重新导入项目，这次选择 Vite
+
+**方案 2：手动修改构建配置**
+1. 进入项目 **Settings** → **General**
+2. 修改 **Framework Preset** 为 Vite
+3. 确认 **Root Directory** 为 `frontend`
+4. 保存并重新部署
+
+### 2. API 请求失败（CORS 错误）
 
 **原因**：后端未配置 CORS 允许 Vercel 域名
 
@@ -135,20 +205,20 @@ CORS(app, origins=[
 ])
 ```
 
-### 2. 环境变量未生效
+### 3. 环境变量未生效
 
 **解决方案**：
 1. 确保环境变量名以 `VITE_` 开头
 2. 在 Vercel Dashboard 中检查环境变量是否正确配置
-3. 重新部署项目
+3. 重新部署项目（修改环境变量不会自动触发部署）
 
-### 3. 路由 404 错误
+### 4. 路由 404 错误
 
 **原因**：SPA 路由未正确配置
 
 **解决方案**：确保 `vercel.json` 文件存在且配置正确（已包含在项目中）
 
-### 4. 构建失败
+### 5. 构建失败
 
 **常见原因**：
 - Node.js 版本不兼容
@@ -159,6 +229,17 @@ CORS(app, origins=[
 1. 检查 Vercel 构建日志
 2. 本地运行 `npm run build` 测试
 3. 确保 `package.json` 中的依赖版本正确
+4. 在 Vercel 项目设置中指定 Node.js 版本（推荐 18.x）
+
+### 6. Root Directory 设置错误
+
+**症状**：构建时提示找不到 `package.json`
+
+**解决方案**：
+1. 进入 Vercel 项目 **Settings** → **General**
+2. 找到 **Root Directory**
+3. 点击 **Edit**，输入 `frontend`
+4. 保存并重新部署
 
 ## 性能优化
 
