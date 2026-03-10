@@ -291,7 +291,7 @@ const passwordStrengthClass = computed(() => {
 
 // 返回上一页
 const goBack = () => {
-  router.push('/login')
+  router.push('/profile')
 }
 
 // 验证用户名
@@ -417,60 +417,104 @@ const handleSubmit = async () => {
 /* 注册页面专用样式 */
 .register-page {
   min-height: 100vh;
+  height: 100vh;
   display: flex;
   flex-direction: column;
   padding-bottom: env(safe-area-inset-bottom);
   background: var(--bg-color);
+  position: relative;
+  overflow: hidden;
+}
+
+.register-page::before {
+  content: '';
+  position: absolute;
+  top: -50%;
+  right: -20%;
+  width: 500px;
+  height: 500px;
+  background: radial-gradient(circle, var(--theme-color-1) 0%, transparent 70%);
+  opacity: 0.15;
+  border-radius: 50%;
+  pointer-events: none;
+}
+
+.register-page::after {
+  content: '';
+  position: absolute;
+  bottom: -30%;
+  left: -10%;
+  width: 400px;
+  height: 400px;
+  background: radial-gradient(circle, var(--theme-color-2) 0%, transparent 70%);
+  opacity: 0.12;
+  border-radius: 50%;
+  pointer-events: none;
 }
 
 /* 返回按钮 */
 .back-btn-wrapper {
   position: fixed;
-  top: 20px;
-  left: 20px;
+  top: 16px;
+  left: 16px;
   z-index: 1000;
 }
 
 .back-btn {
-  width: 44px;
-  height: 44px;
+  width: 40px;
+  height: 40px;
   border-radius: 50%;
   background: var(--card-bg);
-  border: none;
+  border: 1px solid var(--border-color);
   color: var(--text-primary);
-  font-size: 20px;
+  font-size: 18px;
   display: flex;
   align-items: center;
   justify-content: center;
   cursor: pointer;
   transition: all 0.3s;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.08);
+  backdrop-filter: blur(10px);
 }
 
 .back-btn:active {
   transform: scale(0.95);
-  background: var(--hover-bg);
+  background: var(--primary-color);
+  color: white;
+  border-color: var(--primary-color);
 }
 
 /* 主内容区 */
 .register-content {
   flex: 1;
-  padding: 24px;
+  padding: 80px 20px 40px;
   display: flex;
   flex-direction: column;
+  max-width: 440px;
+  width: 100%;
+  margin: 0 auto;
+  position: relative;
+  z-index: 1;
+  overflow-y: auto;
+  overflow-x: hidden;
+  -webkit-overflow-scrolling: touch;
 }
 
 /* Logo区域 */
 .register-logo-section {
   text-align: center;
-  padding: 32px 0 24px;
+  padding: 0 0 24px;
+  margin-bottom: 8px;
+  flex-shrink: 0;
 }
 
 .register-logo-icon {
-  width: 72px;
-  height: 72px;
-  margin: 0 auto 12px;
+  width: 80px;
+  height: 80px;
+  margin: 0 auto 16px;
   animation: float 3s ease-in-out infinite;
+  filter: drop-shadow(0 4px 12px var(--theme-color-1));
+  opacity: 0.95;
 }
 
 .register-logo-icon img {
@@ -490,24 +534,33 @@ const handleSubmit = async () => {
 }
 
 .register-logo-title {
-  font-size: 22px;
+  font-size: 24px;
   font-weight: 700;
   color: var(--text-primary);
-  margin-bottom: 6px;
+  margin-bottom: 8px;
+  letter-spacing: -0.5px;
 }
 
 .register-logo-subtitle {
-  font-size: 14px;
+  font-size: 15px;
   color: var(--text-secondary);
+  font-weight: 500;
 }
 
 /* 表单区域 */
 .register-form-section {
-  flex: 1;
+  background: var(--card-bg);
+  border-radius: 24px;
+  padding: 32px 24px;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.08);
+  backdrop-filter: blur(10px);
+  border: 1px solid var(--border-color);
+  flex-shrink: 0;
+  margin-bottom: 20px;
 }
 
 :deep(.el-form-item) {
-  margin-bottom: 18px;
+  margin-bottom: 20px;
 }
 
 :deep(.el-form-item__content) {
@@ -517,8 +570,8 @@ const handleSubmit = async () => {
 .register-form-label {
   display: flex;
   align-items: center;
-  gap: 8px;
-  font-size: 14px;
+  gap: 6px;
+  font-size: 13px;
   font-weight: 600;
   color: var(--text-primary);
   margin-bottom: 8px;
@@ -526,6 +579,7 @@ const handleSubmit = async () => {
 
 .required-mark {
   color: var(--danger-color);
+  font-size: 14px;
 }
 
 .register-input-wrapper {
@@ -536,50 +590,69 @@ const handleSubmit = async () => {
 
 .register-input-icon {
   position: absolute;
-  left: 16px;
+  left: 18px;
   color: var(--text-secondary);
   font-size: 18px;
+  z-index: 1;
 }
 
 .register-input {
   width: 100%;
-  padding: 14px 16px 14px 48px;
+  padding: 14px 50px 14px 52px;
   border: 2px solid var(--border-color);
-  border-radius: 12px;
-  font-size: 16px;
-  background: var(--card-bg);
+  border-radius: 14px;
+  font-size: 15px;
+  background: var(--bg-color);
   color: var(--text-primary);
-  transition: all 0.3s;
+  transition: all 0.3s ease;
+  font-weight: 400;
+}
+
+.register-input::placeholder {
+  color: var(--text-secondary);
+  opacity: 0.6;
 }
 
 .register-input:focus {
   outline: none;
   border-color: var(--primary-color);
-  box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+  background: var(--card-bg);
+  box-shadow: 0 0 0 4px color-mix(in srgb, var(--primary-color) 15%, transparent);
+  transform: translateY(-1px);
 }
 
 .register-input.valid {
   border-color: var(--success-color);
+  background: color-mix(in srgb, var(--success-color) 5%, var(--bg-color));
 }
 
 .register-input.invalid {
   border-color: var(--danger-color);
+  background: color-mix(in srgb, var(--danger-color) 5%, var(--bg-color));
 }
 
 .toggle-password-btn {
   position: absolute;
-  right: 16px;
+  right: 14px;
   background: none;
   border: none;
   color: var(--text-secondary);
   font-size: 18px;
-  padding: 8px;
+  padding: 10px;
   cursor: pointer;
-  transition: color 0.3s;
+  transition: all 0.3s;
+  z-index: 1;
+  border-radius: 8px;
+}
+
+.toggle-password-btn:hover {
+  background: color-mix(in srgb, var(--primary-color) 10%, transparent);
 }
 
 .toggle-password-btn:active {
   color: var(--primary-color);
+  transform: scale(0.95);
+  background: color-mix(in srgb, var(--primary-color) 15%, transparent);
 }
 
 /* 密码强度指示器 */
@@ -615,11 +688,11 @@ const handleSubmit = async () => {
 
 /* 密码要求列表 */
 .password-requirements {
-  margin-top: 8px;
-  padding: 12px;
+  margin-top: 10px;
+  padding: 12px 14px;
   list-style: none;
-  background: var(--card-bg);
-  border-radius: 8px;
+  background: var(--bg-color);
+  border-radius: 12px;
   border: 1px solid var(--border-color);
   display: none;
   animation: slideDown 0.3s ease-out;
@@ -643,7 +716,7 @@ const handleSubmit = async () => {
 .password-requirements li {
   font-size: 13px;
   color: var(--text-secondary);
-  padding: 6px 0;
+  padding: 5px 0;
   display: flex;
   align-items: center;
   gap: 8px;
@@ -657,19 +730,20 @@ const handleSubmit = async () => {
 }
 
 .password-requirements li.valid {
-  color: #10b981 !important;
+  color: var(--success-color) !important;
 }
 
 .password-requirements li.valid i {
-  color: #10b981 !important;
+  color: var(--success-color) !important;
 }
 
 .password-requirements li.invalid {
-  color: #ef4444 !important;
+  color: var(--text-secondary) !important;
+  opacity: 0.6;
 }
 
 .password-requirements li.invalid i {
-  color: #ef4444 !important;
+  color: var(--text-secondary) !important;
 }
 
 /* 提示信息 */
@@ -677,6 +751,8 @@ const handleSubmit = async () => {
   font-size: 12px;
   margin-top: 6px;
   display: block;
+  font-weight: 500;
+  padding-left: 4px;
 }
 
 .field-feedback.valid {
@@ -691,10 +767,10 @@ const handleSubmit = async () => {
 .register-submit-btn {
   width: 100%;
   padding: 16px;
-  background: linear-gradient(135deg, #667eea, #764ba2);
+  background: linear-gradient(135deg, var(--header-bg-start) 0%, var(--header-bg-end) 100%);
   color: white;
   border: none;
-  border-radius: 12px;
+  border-radius: 14px;
   font-size: 16px;
   font-weight: 600;
   cursor: pointer;
@@ -702,56 +778,51 @@ const handleSubmit = async () => {
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: 8px;
-  box-shadow: 0 4px 12px rgba(102, 126, 234, 0.3);
+  gap: 10px;
+  box-shadow: 0 6px 20px color-mix(in srgb, var(--primary-color) 35%, transparent);
   margin-top: 24px;
-  animation: floatButton 3s ease-in-out infinite;
-}
-
-@keyframes floatButton {
-  0%,
-  100% {
-    transform: translateY(0);
-  }
-  50% {
-    transform: translateY(-3px);
-  }
+  letter-spacing: 0.3px;
 }
 
 .register-submit-btn:hover {
-  box-shadow: 0 6px 16px rgba(102, 126, 234, 0.4);
+  box-shadow: 0 8px 24px color-mix(in srgb, var(--primary-color) 45%, transparent);
   transform: translateY(-2px);
+  filter: brightness(1.05);
 }
 
 .register-submit-btn:active {
   transform: scale(0.98) translateY(0);
-  box-shadow: 0 2px 8px rgba(102, 126, 234, 0.3);
-  animation: none;
+  box-shadow: 0 4px 12px color-mix(in srgb, var(--primary-color) 30%, transparent);
+  filter: brightness(0.95);
 }
 
 .register-submit-btn:disabled {
   opacity: 0.6;
   cursor: not-allowed;
-  animation: none;
+  transform: none;
 }
 
 /* 登录链接 */
 .register-login-link {
   text-align: center;
   margin-top: 20px;
-  padding: 16px;
+  padding: 12px;
   font-size: 14px;
   color: var(--text-secondary);
+  font-weight: 500;
 }
 
 .register-login-link a {
   color: var(--primary-color);
   text-decoration: none;
   font-weight: 600;
+  margin-left: 4px;
+  transition: all 0.3s;
 }
 
 .register-login-link a:active {
   opacity: 0.7;
+  color: var(--secondary-color);
 }
 
 /* 加载动画 */
@@ -770,6 +841,69 @@ const handleSubmit = async () => {
   }
   100% {
     transform: rotate(360deg);
+  }
+}
+
+/* 响应式优化 */
+@media (max-width: 480px) {
+  .register-content {
+    padding: 70px 16px 32px;
+  }
+
+  .register-form-section {
+    padding: 28px 20px;
+    border-radius: 20px;
+  }
+
+  .register-logo-title {
+    font-size: 22px;
+  }
+
+  .register-logo-icon {
+    width: 72px;
+    height: 72px;
+  }
+
+  .register-logo-section {
+    padding: 0 0 20px;
+  }
+}
+
+@media (max-height: 600px) {
+  .register-content {
+    padding: 70px 20px 32px;
+  }
+
+  .register-logo-section {
+    padding: 0 0 16px;
+  }
+
+  .register-logo-icon {
+    width: 60px;
+    height: 60px;
+    margin-bottom: 12px;
+  }
+
+  .register-logo-title {
+    font-size: 20px;
+  }
+
+  .register-form-section {
+    padding: 24px 20px;
+  }
+
+  :deep(.el-form-item) {
+    margin-bottom: 16px;
+  }
+}
+
+@media (min-height: 800px) {
+  .register-content {
+    padding: 100px 20px 40px;
+  }
+
+  .register-logo-section {
+    padding: 20px 0 32px;
   }
 }
 </style>

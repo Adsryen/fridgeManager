@@ -22,20 +22,22 @@
       <div class="settings-page-content">
         <!-- 用户信息卡片 -->
         <div class="user-profile-card">
-          <div :class="['profile-avatar', { guest: !userStore.isLoggedIn }]">
-            <i :class="userStore.isLoggedIn ? 'fas fa-user-circle' : 'fas fa-user'"></i>
-          </div>
-          <div class="profile-info">
-            <div class="profile-name">{{ userStore.user?.username || '游客模式' }}</div>
-            <div v-if="userStore.isLoggedIn" class="profile-status">
-              <span v-if="userStore.isAdmin" class="badge-admin">
-                <i class="fas fa-crown"></i> 管理员
-              </span>
-              <span v-else class="badge-user">
-                <i class="fas fa-check-circle"></i> 已登录
-              </span>
+          <div class="profile-header">
+            <div :class="['profile-avatar', { guest: !userStore.isLoggedIn }]">
+              <i :class="userStore.isLoggedIn ? 'fas fa-user-circle' : 'fas fa-user'"></i>
             </div>
-            <div v-else class="profile-hint">登录后享受更多功能</div>
+            <div class="profile-info">
+              <div class="profile-name">{{ userStore.user?.username || '游客模式' }}</div>
+              <div v-if="userStore.isLoggedIn" class="profile-status">
+                <span v-if="userStore.isAdmin" class="badge-admin">
+                  <i class="fas fa-crown"></i> 管理员
+                </span>
+                <span v-else class="badge-user">
+                  <i class="fas fa-check-circle"></i> 已登录
+                </span>
+              </div>
+              <div v-else class="profile-hint">登录后享受更多功能</div>
+            </div>
           </div>
           <div v-if="!userStore.isLoggedIn" class="guest-actions">
             <a href="/login" class="btn-login-small">
@@ -188,7 +190,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, onMounted } from 'vue'
+import { ref, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import { useUserStore } from '../stores/user'
 import { useItemStore } from '../stores/item'
@@ -221,18 +223,18 @@ onMounted(() => {
   autoTheme.value = savedAutoTheme === 'true'
 })
 
-const toggleDarkMode = () => {
-  toggleTheme()
+const toggleDarkMode = async () => {
+  await toggleTheme()
 }
 
-const toggleAutoTheme = () => {
+const toggleAutoTheme = async () => {
   localStorage.setItem('autoTheme', autoTheme.value.toString())
   if (autoTheme.value) {
     // 根据时间自动切换
     const hour = new Date().getHours()
     const shouldBeDark = hour >= 18 || hour < 6
     if (shouldBeDark !== isDark.value) {
-      toggleTheme()
+      await toggleTheme()
     }
   }
 }
@@ -322,32 +324,38 @@ const handleLogout = async () => {
 
 .settings-page-content {
   padding: 20px;
-  padding-bottom: 100px;
+  padding-bottom: 20px;
   overflow-y: auto;
-  height: calc(100vh - 60px - 70px);
+  height: 100%;
 }
 
 /* 用户信息卡片 */
 .user-profile-card {
   display: flex;
-  align-items: center;
+  flex-direction: column;
   gap: 16px;
-  padding: 24px;
+  padding: 20px;
   background: var(--card-bg);
   border-radius: 16px;
   margin-bottom: 24px;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
 }
 
+.profile-header {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+
 .profile-avatar {
-  width: 64px;
-  height: 64px;
+  width: 56px;
+  height: 56px;
   border-radius: 50%;
   background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 32px;
+  font-size: 28px;
   color: white;
   flex-shrink: 0;
 }
@@ -362,10 +370,13 @@ const handleLogout = async () => {
 }
 
 .profile-name {
-  font-size: 20px;
+  font-size: 18px;
   font-weight: 600;
   color: var(--text-primary);
   margin-bottom: 6px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 .profile-status {
@@ -396,38 +407,53 @@ const handleLogout = async () => {
 }
 
 .profile-hint {
-  font-size: 14px;
+  font-size: 13px;
   color: var(--text-secondary);
+  line-height: 1.4;
 }
 
 .guest-actions {
   display: flex;
-  gap: 8px;
-  flex-shrink: 0;
+  flex-direction: column;
+  gap: 10px;
+  width: 100%;
 }
 
 .btn-login-small,
 .btn-register-small {
-  display: inline-flex;
+  display: flex;
   align-items: center;
-  gap: 4px;
-  padding: 8px 12px;
-  border-radius: 8px;
-  font-size: 13px;
+  justify-content: center;
+  gap: 6px;
+  padding: 11px 16px;
+  border-radius: 10px;
+  font-size: 14px;
   font-weight: 500;
   text-decoration: none;
   transition: all 0.3s;
+  width: 100%;
 }
 
 .btn-login-small {
-  background: var(--primary-color);
+  background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
   color: white;
+  box-shadow: 0 2px 8px rgba(102, 126, 234, 0.3);
 }
 
 .btn-register-small {
   background: var(--card-bg);
   color: var(--primary-color);
-  border: 1px solid var(--primary-color);
+  border: 1px solid var(--border-color);
+}
+
+.btn-login-small:active {
+  transform: scale(0.98);
+  box-shadow: 0 1px 4px rgba(102, 126, 234, 0.3);
+}
+
+.btn-register-small:active {
+  transform: scale(0.98);
+  background: var(--bg-color);
 }
 
 /* 设置区块 */
@@ -684,34 +710,5 @@ const handleLogout = async () => {
   font-weight: 500;
   color: var(--text-primary);
   white-space: nowrap;
-}
-
-/* 导航气泡 */
-.nav-badge {
-  position: absolute;
-  top: 4px;
-  right: 8px;
-  font-size: 9px;
-  font-weight: 700;
-  padding: 2px 6px;
-  border-radius: 10px;
-  line-height: 1;
-  white-space: nowrap;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
-}
-
-.nav-badge.guest {
-  background: #9ca3af;
-  color: white;
-}
-
-.nav-badge.user {
-  background: #3b82f6;
-  color: white;
-}
-
-.nav-badge.admin {
-  background: linear-gradient(135deg, #f59e0b, #ef4444);
-  color: white;
 }
 </style>

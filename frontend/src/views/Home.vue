@@ -1,4 +1,4 @@
-<template>
+ ，<template>
   <div class="home-page">
     <!-- 顶部导航栏 -->
     <div class="mobile-header">
@@ -247,7 +247,7 @@
         <i class="fas fa-snowflake"></i>
         <span>冰箱</span>
       </button>
-      <button class="nav-item add-btn" @click="showAddMethodSelector = true">
+      <button class="nav-item add-btn" @click="handleAddClick">
         <div class="add-icon">
           <i class="fas fa-plus"></i>
         </div>
@@ -259,13 +259,16 @@
       <button class="nav-item" :class="{ active: $route.path === '/profile' }" @click="$router.push('/profile')">
         <i class="fas fa-user"></i>
         <span>我的</span>
+        <span v-if="!userStore.isLoggedIn" class="nav-badge guest">游客</span>
+        <span v-else-if="userStore.isAdmin" class="nav-badge admin">管理员</span>
+        <span v-else class="nav-badge user">私人</span>
       </button>
     </div>
 
-    <!-- 添加方式选择抽屉 -->
-    <Drawer v-model="showAddMethodSelector" title="选择添加方式">
+    <!-- 添加方式选择气泡菜单 -->
+    <BubbleMenu v-model="showAddMethodSelector">
       <AddMethodSelector @select="handleAddMethodSelect" />
-    </Drawer>
+    </BubbleMenu>
 
     <!-- 物品表单抽屉 -->
     <Drawer v-model="showItemForm" title="添加物品">
@@ -308,10 +311,13 @@
 
 <script setup lang="ts">
 import { ref, computed, onMounted } from 'vue'
+import { useRouter } from 'vue-router'
 import { useItemStore } from '../stores/item'
 import { useFridgeStore } from '../stores/fridge'
+import { useUserStore } from '../stores/user'
 import { useTheme } from '../composables/useTheme'
 import Drawer from '../components/common/Drawer.vue'
+import BubbleMenu from '../components/common/BubbleMenu.vue'
 import ItemForm from '../components/item/ItemForm.vue'
 import ChatDialog from '../components/ai/ChatDialog.vue'
 import TakeOutDialog from '../components/item/TakeOutDialog.vue'
@@ -324,6 +330,8 @@ import { updateItem as updateItemApi, deleteItem as deleteItemApi } from '../api
 
 const itemStore = useItemStore()
 const fridgeStore = useFridgeStore()
+const userStore = useUserStore()
+const router = useRouter()
 const { isDark, toggleTheme } = useTheme()
 
 const searchQuery = ref('')
@@ -379,8 +387,8 @@ const filteredItems = computed(() => {
   return items
 })
 
-const toggleDarkMode = () => {
-  toggleTheme()
+const toggleDarkMode = async () => {
+  await toggleTheme()
 }
 
 const switchFridge = async (fridgeId: string) => {
@@ -556,8 +564,21 @@ const handleItemSuccess = () => {
   itemStore.loadItems()
 }
 
+const handleAddClick = () => {
+  // 游客也可以打开添加菜单
+  showAddMethodSelector.value = true
+}
+
 const handleAddMethodSelect = (method: 'ocr' | 'manual' | 'ai') => {
   showAddMethodSelector.value = false
+  
+  // OCR 和 AI 需要登录
+  if ((method === 'ocr' || method === 'ai') && !userStore.isLoggedIn) {
+    ElMessage.warning('该功能需要登录后使用')
+    router.push('/login')
+    return
+  }
+  
   if (method === 'manual') {
     showItemForm.value = true
   } else if (method === 'ocr') {

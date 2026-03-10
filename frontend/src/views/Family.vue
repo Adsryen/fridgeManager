@@ -21,7 +21,7 @@
     <div class="mobile-content">
       <div class="family-content">
         <!-- 操作按钮 -->
-        <div class="action-buttons">
+        <div v-if="userStore.isLoggedIn" class="action-buttons">
           <button class="action-btn primary" @click="showCreateForm = true">
             <i class="fas fa-plus"></i>
             <span>创建家庭</span>
@@ -85,6 +85,21 @@
                 </button>
               </div>
             </div>
+          </div>
+        </div>
+
+        <!-- 游客提示 -->
+        <div v-else-if="!userStore.isLoggedIn" class="empty-state guest-hint">
+          <i class="fas fa-user-lock"></i>
+          <h4>需要登录</h4>
+          <p>登录后才能使用家庭管理功能</p>
+          <div class="guest-actions">
+            <router-link to="/login" class="btn-primary">
+              <i class="fas fa-sign-in-alt"></i> 立即登录
+            </router-link>
+            <router-link to="/register" class="btn-secondary">
+              <i class="fas fa-user-plus"></i> 注册账号
+            </router-link>
           </div>
         </div>
 
@@ -211,8 +226,8 @@ const joinForm = ref({
   code: ''
 })
 
-const toggleDarkMode = () => {
-  toggleTheme()
+const toggleDarkMode = async () => {
+  await toggleTheme()
 }
 
 const copyCode = async (code: string) => {
@@ -581,5 +596,88 @@ onMounted(() => {
 .btn-primary:disabled {
   opacity: 0.6;
   cursor: not-allowed;
+}
+
+.guest-hint {
+  padding: 60px 20px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: 300px;
+}
+
+.guest-hint i {
+  font-size: 56px;
+  color: var(--text-secondary);
+  opacity: 0.25;
+  margin-bottom: 16px;
+}
+
+.guest-hint h4 {
+  font-size: 18px;
+  font-weight: 600;
+  color: var(--text-primary);
+  margin-bottom: 8px;
+  text-align: center;
+}
+
+.guest-hint p {
+  font-size: 14px;
+  color: var(--text-secondary);
+  margin-bottom: 24px;
+  text-align: center;
+  line-height: 1.5;
+}
+
+.guest-actions {
+  display: flex;
+  gap: 10px;
+  width: 100%;
+  max-width: 280px;
+}
+
+.guest-actions .btn-primary,
+.guest-actions .btn-secondary {
+  flex: 1;
+  padding: 11px 20px;
+  border-radius: 10px;
+  font-size: 14px;
+  font-weight: 500;
+  text-decoration: none;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  transition: all 0.3s;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.08);
+}
+
+.guest-actions .btn-primary {
+  background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+  color: white;
+  border: none;
+}
+
+.guest-actions .btn-secondary {
+  background: var(--card-bg);
+  color: var(--text-primary);
+  border: 1px solid var(--border-color);
+}
+
+.guest-actions .btn-primary:active {
+  transform: scale(0.97);
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+}
+
+.guest-actions .btn-secondary:active {
+  transform: scale(0.97);
+  background: var(--bg-color);
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+}
+
+.guest-actions .btn-primary i,
+.guest-actions .btn-secondary i {
+  font-size: 13px;
 }
 </style>

@@ -93,7 +93,7 @@
 
         <!-- 添加冰箱按钮 -->
         <div class="add-fridge-section">
-          <button class="btn-primary full-width" @click="showCreateForm = true">
+          <button class="btn-primary full-width" @click="handleCreateClick">
             <i class="fas fa-plus"></i>
             创建新冰箱
           </button>
@@ -138,6 +138,7 @@
 
 <script setup lang="ts">
 import { ref, onMounted } from 'vue'
+import { useRouter } from 'vue-router'
 import { useFridgeStore } from '../stores/fridge'
 import { useUserStore } from '../stores/user'
 import { useTheme } from '../composables/useTheme'
@@ -148,11 +149,22 @@ import type { Fridge } from '../types/models'
 
 const fridgeStore = useFridgeStore()
 const userStore = useUserStore()
+const router = useRouter()
 const { isDark, toggleTheme } = useTheme()
 const showCreateForm = ref(false)
 
-const toggleDarkMode = () => {
-  toggleTheme()
+const toggleDarkMode = async () => {
+  await toggleTheme()
+}
+
+const handleCreateClick = () => {
+  // 检查是否登录
+  if (!userStore.isLoggedIn) {
+    ElMessage.warning('请先登录后再创建冰箱')
+    router.push('/login')
+    return
+  }
+  showCreateForm.value = true
 }
 
 const renameFridge = async (fridge: Fridge) => {
