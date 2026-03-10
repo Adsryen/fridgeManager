@@ -1,4 +1,4 @@
-import { ref, computed, onMounted } from 'vue'
+import { ref, computed } from 'vue'
 
 export type Theme = 'light' | 'dark'
 
@@ -22,8 +22,14 @@ export function useTheme() {
   const setTheme = async (theme: Theme) => {
     currentTheme.value = theme
     
-    // 更新 HTML 根元素的 data-theme 属性
-    document.documentElement.setAttribute('data-theme', theme)
+    // 更新 HTML 和 body 元素的类名
+    if (theme === 'dark') {
+      document.documentElement.classList.add('dark-mode')
+      document.body.classList.add('dark-mode')
+    } else {
+      document.documentElement.classList.remove('dark-mode')
+      document.body.classList.remove('dark-mode')
+    }
     
     // 保存到 localStorage
     localStorage.setItem(THEME_STORAGE_KEY, theme)
@@ -46,13 +52,6 @@ export function useTheme() {
       setTheme('light')
     }
   }
-
-  /**
-   * 初始化主题
-   */
-  onMounted(() => {
-    loadTheme()
-  })
 
   return {
     currentTheme,

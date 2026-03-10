@@ -78,7 +78,7 @@
     top: 48px;
     left: 0;
     right: 0;
-    bottom: 132px;
+    bottom: 60px;
     display: flex;
     flex-direction: column;
     overflow: hidden;
@@ -534,6 +534,36 @@
     top: -16px;
     max-width: 56px;
     padding: 0;
+}
+
+/* 导航标签 */
+.nav-badge {
+    position: absolute;
+    top: 2px;
+    right: 4px;
+    font-size: 8px;
+    font-weight: 700;
+    padding: 2px 4px;
+    border-radius: 8px;
+    line-height: 1.2;
+    white-space: nowrap;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.2);
+    pointer-events: none;
+}
+
+.nav-badge.guest {
+    background: #9ca3af;
+    color: white;
+}
+
+.nav-badge.user {
+    background: #3b82f6;
+    color: white;
+}
+
+.nav-badge.admin {
+    background: linear-gradient(135deg, #f59e0b, #ef4444);
+    color: white;
 }
 
 .add-icon {
