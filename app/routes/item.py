@@ -4,7 +4,7 @@ from flask import Blueprint, request, jsonify, Response
 from datetime import datetime
 from app import db_client
 from app.services.item_service import ItemService
-from app.utils.jwt_auth import jwt_required, get_current_user
+from app.utils.jwt_auth import jwt_required, get_current_user, jwt_optional
 import json
 
 item_bp = Blueprint('item', __name__)
@@ -17,9 +17,9 @@ def log(message):
 
 
 @item_bp.route('/total', methods=['GET'])
-@jwt_required
+@jwt_optional
 def total():
-    """获取所有物品 API"""
+    """获取所有物品 API - 允许游客访问公共冰箱"""
     current_user = get_current_user()
     user_id = current_user['user_id']
     
@@ -32,6 +32,9 @@ def total():
     if fridge_id == 'public':
         items = item_service.get_user_items('public')
     else:
+        # 游客只能访问公共冰箱
+        if user_id == 'public':
+            return jsonify({'success': False, 'error': '游客只能访问公共冰箱'}), 403
         # 查询指定冰箱的物品
         items = [item for item in item_service.get_user_items(user_id) 
                 if item.get('fridge_id') == fridge_id]
@@ -167,9 +170,9 @@ def delete_item():
 
 
 @item_bp.route('/search', methods=['POST'])
-@jwt_required
+@jwt_optional
 def search():
-    """搜索物品 API"""
+    """搜索物品 API - 允许游客访问公共冰箱"""
     current_user = get_current_user()
     user_id = current_user['user_id']
     
@@ -183,6 +186,9 @@ def search():
     if fridge_id == 'public':
         items = item_service.search_items('public', searchbox)
     else:
+        # 游客只能访问公共冰箱
+        if user_id == 'public':
+            return jsonify({'success': False, 'error': '游客只能访问公共冰箱'}), 403
         # 搜索指定冰箱的物品
         all_items = item_service.search_items(user_id, searchbox)
         items = [item for item in all_items if item.get('fridge_id') == fridge_id]
@@ -755,15 +761,23 @@ def batch_insert():
 
 
 @item_bp.route('/chat-history', methods=['GET'])
-@jwt_required
+@jwt_optional
 def get_chat_history():
-    """获取用户的对话历史 API"""
+    """获取用户的对话历史 API - 允许游客访问"""
     from app.models.chat_history import ChatHistory
     
     current_user = get_current_user()
     user_id = current_user['user_id']
     
     try:
+        # 游客返回空历史
+        if user_id == 'public':
+            return jsonify({
+                'success': True,
+                'data': [],
+                'count': 0
+            }), 200
+        
         chat_history_model = ChatHistory(db_client.fridge.chat_history)
         history = chat_history_model.get_user_history(user_id, limit=30)
         

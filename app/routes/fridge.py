@@ -2,7 +2,7 @@
 """冰箱管理路由"""
 from flask import Blueprint, request, jsonify, session
 from app.utils.auth import login_required, get_current_user_id
-from app.utils.jwt_auth import jwt_required
+from app.utils.jwt_auth import jwt_required, jwt_optional
 from app import db_client
 from app.services.fridge_service import FridgeService
 
@@ -15,15 +15,23 @@ def get_fridge_service():
 
 
 @fridge_bp.route('/list', methods=['GET'])
-@jwt_required
+@jwt_optional
 def list_fridges():
-    """获取用户的所有冰箱（包括家庭共享冰箱）"""
+    """获取用户的所有冰箱（包括家庭共享冰箱）- 允许游客访问"""
     try:
         from app.services.family_service import FamilyService
         
         fridge_service = get_fridge_service()
         family_service = FamilyService(db_client.fridge)
         user_id = request.user_id  # 从 JWT Token 中获取用户 ID
+        
+        # 游客只返回空列表
+        if user_id == 'public':
+            return jsonify({
+                'success': True,
+                'my_fridges': [],
+                'shared_fridges': []
+            })
         
         # 获取用户自己的冰箱
         my_fridges = fridge_service.get_user_fridges(user_id)

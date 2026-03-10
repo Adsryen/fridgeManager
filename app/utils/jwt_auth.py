@@ -128,3 +128,40 @@ def get_current_user() -> dict:
         'username': request.username,
         'is_admin': request.is_admin
     }
+
+
+def jwt_optional(f):
+    """可选 JWT 认证装饰器
+    
+    允许游客访问，但如果提供了 token 则验证
+    用于公共冰箱等允许游客访问的路由
+    """
+    @wraps(f)
+    def decorated_function(*args, **kwargs):
+        token = None
+        auth_header = request.headers.get('Authorization')
+        
+        if auth_header and auth_header.startswith('Bearer '):
+            token = auth_header.split(' ')[1]
+        
+        if token:
+            # 如果提供了 token，验证它
+            payload = verify_token(token)
+            if payload:
+                # Token 有效，设置用户信息
+                request.user_id = payload['user_id']
+                request.username = payload['username']
+                request.is_admin = payload['is_admin']
+            else:
+                # Token 无效，作为游客处理
+                request.user_id = 'public'
+                request.username = '游客'
+                request.is_admin = False
+        else:
+            # 没有 token，作为游客处理
+            request.user_id = 'public'
+            request.username = '游客'
+            request.is_admin = False
+        
+        return f(*args, **kwargs)
+    return decorated_function
