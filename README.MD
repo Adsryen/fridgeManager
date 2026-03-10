@@ -2,348 +2,323 @@
 
 > 智能冰箱库存管理系统，帮助你有效管理冰箱中的食材，减少浪费，提升生活品质！
 
-[![Python](https://img.shields.io/badge/Python-3.12+-blue.svg)](https://python.org)
-[![Flask](https://img.shields.io/badge/Flask-3.1.0-green.svg)](https://flask.palletsprojects.com)
-[![SQLite](https://img.shields.io/badge/SQLite-3-green.svg)](https://www.sqlite.org)
-[![Bootstrap](https://img.shields.io/badge/Bootstrap-5.0.0-purple.svg)](https://getbootstrap.com)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+[![Deploy with Vercel](https://vercel.com/button)](https://vercel.com/new/clone?repository-url=https%3A%2F%2Fgithub.com%2FAdsryen%2FfridgeManager&project-name=fridge-manager&repository-name=fridgeManager&root-directory=frontend&env=VITE_API_BASE_URL&envDescription=后端%20API%20地址)
 
-[English](./docs/README_EN.md) | 中文
+[English](./docs/README_EN.md) | 中文 | [技术文档](./docs/技术文档.md) | [开发指南](./docs/开发指南.md)
 
 ---
 
 ## 📋 目录
 
-- [项目说明](#项目说明)
+- [项目介绍](#项目介绍)
 - [功能特性](#功能特性)
-- [技术栈](#技术栈)
-- [快速开始](#快速开始)
+- [在线体验](#在线体验)
+- [快速部署](#快速部署)
 - [使用指南](#使用指南)
-- [API 文档](#api-文档)
-- [项目结构](#项目结构)
-- [测试](#测试)
-- [许可证](#许可证)
+- [常见问题](#常见问题)
+- [支持与反馈](#支持与反馈)
 
-## 项目说明
+## 项目介绍
 
-本项目基于 [hill0106/fridgeManager](https://github.com/hill0106/fridgeManager) 进行二次开发，在原有功能基础上新增了多用户支持和用户认证系统。
+**冰箱里面还有啥** 是一个智能冰箱库存管理系统，帮助家庭有效管理食材，减少浪费，提升生活品质。
 
-**原项目**：hill0106/fridgeManager - 冰箱管理大師
+### 🎯 解决的问题
+- 🤔 忘记冰箱里有什么食材
+- 📅 不知道食材什么时候过期
+- 🗑️ 食材过期造成浪费
+- 👨‍👩‍👧‍👦 家庭成员无法共享食材信息
 
-**主要改进**：
-- ✅ 多用户支持 - 每个用户独立管理自己的冰箱
-- ✅ 用户认证系统 - 注册、登录、密码加密
-- ✅ 数据隔离 - 用户数据完全隔离
-- ✅ 数据库优化 - 从 MongoDB 改为 SQLite，更轻量
-- ✅ 性能提升 - 添加数据库索引
-- ✅ 隐私保护 - 数据库文件不提交到 Git
+### 🌟 项目亮点
+- **多用户支持**：每个用户独立管理，数据完全隔离
+- **家庭共享**：支持家庭成员共享冰箱管理
+- **智能提醒**：自动识别过期和即将过期的食材
+- **现代化界面**：Vue 3 + TypeScript 构建的响应式界面
+- **轻量部署**：基于 SQLite，无需复杂数据库配置
+
+> 本项目基于 [hill0106/fridgeManager](https://github.com/hill0106/fridgeManager) 进行二次开发，在原有功能基础上新增了多用户支持、现代化前端界面和家庭共享功能。
 
 ## ✨ 功能特性
 
-### 🎯 核心功能
-- **👤 用户系统**：注册、登录、多用户数据隔离
-- **📦 物品管理**：添加、编辑、删除冰箱物品
-- **🔍 智能搜索**：按物品名称实时搜索
-- **📅 过期追踪**：自动识别过期和即将过期的物品
-- **🏷️ 分类管理**：12 种食材分类（蔬菜、水果、海鲜、肉类等）
-- **📍 位置管理**：三种存储位置（冷藏、冷冻、常温）
-- **📊 数据总览**：一目了然查看所有物品
+### 👤 用户管理
+- **账户系统**：注册、登录、密码重置
+- **多用户支持**：每个用户独立的数据空间
+- **家庭共享**：创建或加入家庭，共享冰箱管理
 
-### 🎨 用户体验
-- **响应式设计**：适配各种屏幕尺寸
-- **直观界面**：简洁美观的用户界面
-- **实时反馈**：AJAX 驱动的无缝操作
-- **图标支持**：Font Awesome 图标库
+### 🧊 冰箱管理
+- **多冰箱支持**：管理多个冰箱（家用、办公室等）
+- **权限控制**：设置冰箱访问权限
+- **智能分类**：12种食材分类（蔬菜、水果、肉类等）
+- **位置管理**：冷藏、冷冻、常温三种存储位置
 
-## 🛠 技术栈
+### 📦 物品管理
+- **快速添加**：支持手动输入、语音输入、OCR识别
+- **智能搜索**：按名称、类别、位置实时搜索
+- **批量操作**：批量编辑、删除物品
+- **过期提醒**：自动标识过期和即将过期物品
 
-### 后端
-- **Python 3.12+**：主要编程语言
-- **Flask 3.1.0**：Web 框架
-- **SQLite 3**：轻量级数据库（无需额外安装）
-- **JWT**：用户认证
-- **APScheduler**：定时任务
+### 🤖 AI 功能
+- **智能对话**：AI助手帮你管理冰箱
+- **OCR识别**：拍照识别食材信息
+- **语音输入**：语音添加物品信息
+- **智能建议**：基于库存推荐菜谱
 
-### 前端
-- **Vue 3**：渐进式 JavaScript 框架
-- **TypeScript**：类型安全
-- **Vite**：现代化构建工具
-- **Pinia**：状态管理
-- **Vue Router**：路由管理
-- **Element Plus**：UI 组件库
-- **Axios**：HTTP 客户端
+### 📱 用户体验
+- **响应式设计**：完美适配手机、平板、电脑
+- **暗黑模式**：支持明暗主题切换
+- **离线支持**：部分功能支持离线使用
+- **快速操作**：一键添加、快速筛选
 
-### 开发工具
-- **Virtual Environment**：Python 虚拟环境
-- **ESLint + Prettier**：代码规范
-- **Version Control**：Git
+## 🌐 在线体验
 
-## 🚀 快速开始
+### 演示地址
+- **前端演示**：[https://fridge-manager.vercel.app](https://fridge-manager.vercel.app)
+- **API文档**：[查看接口文档](./docs/API接口文档.md)
 
-### 前置要求
-- Python 3.12 或更高版本
-- Node.js 18+ 和 npm
-- Git
+### 测试账号
+```
+用户名：demo
+密码：123456
+```
 
-### 开发环境部署
+> 💡 演示环境数据会定期重置，请勿存储重要信息
 
-#### 1. 克隆仓库
+## 🚀 快速部署
+
+### 方式一：Vercel 一键部署（推荐）
+
+点击下方按钮，一键部署前端到 Vercel：
+
+[![Deploy with Vercel](https://vercel.com/button)](https://vercel.com/new/clone?repository-url=https%3A%2F%2Fgithub.com%2FAdsryen%2FfridgeManager&project-name=fridge-manager&repository-name=fridgeManager&root-directory=frontend&env=VITE_API_BASE_URL&envDescription=后端%20API%20地址)
+
+**部署步骤：**
+1. 点击按钮，跳转到 Vercel
+2. 登录 Vercel 账号（支持 GitHub 登录）
+3. 配置项目：
+   - **Framework Preset**：选择 `Vite`（重要！）
+   - **Root Directory**：`frontend`
+   - **Environment Variables**：
+     - `VITE_API_BASE_URL`：你的后端 API 地址
+4. 点击 **Deploy** 开始部署
+5. 等待 1-2 分钟完成部署
+6. 访问 Vercel 提供的域名
+
+> 📖 详细部署教程：[Vercel 部署指南](./docs/Vercel部署指南.md)
+
+### 方式二：Docker 部署
+
 ```bash
+# 克隆项目
+git clone https://github.com/Adsryen/fridgeManager.git
+cd fridgeManager/docker
+
+# 启动服务
+docker-compose up -d
+
+# 访问应用
+# 前端：http://localhost:8080
+# 后端：http://localhost:8080/api
+```
+
+### 方式三：本地开发
+
+```bash
+# 1. 克隆项目
 git clone https://github.com/Adsryen/fridgeManager.git
 cd fridgeManager
-```
 
-#### 2. 后端设置
-```bash
-# 创建虚拟环境
+# 2. 后端设置
 python -m venv venv
-
-# 激活虚拟环境
-# Windows
-venv\Scripts\activate
-# Linux/Mac
-source venv/bin/activate
-
-# 安装依赖
+venv\Scripts\activate  # Windows
 pip install -r requirements.txt
-```
 
-#### 3. 前端设置
-```bash
+# 3. 前端设置
 cd frontend
 npm install
-```
 
-#### 4. 启动开发服务器
-
-**方式一：使用启动脚本（推荐）**
-```bash
+# 4. 启动开发服务器
 # Windows PowerShell
 .\start_dev.ps1
 
-# 或者使用 npm
-npm run dev:all
+# 或分别启动
+python run.py  # 后端：http://localhost:8080
+npm run dev    # 前端：http://localhost:5173
 ```
 
-**方式二：分别启动**
-```bash
-# 终端 1 - 启动后端（端口 8080）
-python run.py
-
-# 终端 2 - 启动前端（端口 5173）
-cd frontend
-npm run dev
-```
-
-#### 5. 访问应用
-- 前端：`http://localhost:5173`
-- 后端 API：`http://localhost:8080`
-
-### 生产环境部署
-
-#### Docker 部署（推荐）
-
-1. **克隆仓库**
-   ```bash
-   git clone https://github.com/Adsryen/fridgeManager.git
-   cd fridgeManager/docker
-   ```
-
-2. **启动服务**
-   ```bash
-   docker-compose up -d
-   ```
-
-3. **访问应用**
-   
-   打开浏览器访问 `http://localhost:8080`
-
-详细说明请查看 [Docker 部署指南](./docker/README.md)
-
-#### Vercel 部署前端
-
-[![Deploy with Vercel](https://vercel.com/button)](https://vercel.com/new/clone?repository-url=https%3A%2F%2Fgithub.com%2FAdsryen%2FfridgeManager&project-name=fridge-manager&repository-name=fridgeManager&root-directory=frontend&env=VITE_API_BASE_URL&envDescription=后端%20API%20地址&envLink=https%3A%2F%2Fgithub.com%2FAdsryen%2FfridgeManager%23vercel-部署)
-
-**环境变量配置：**
-- `VITE_API_BASE_URL`：后端 API 地址（例如：`https://your-backend.com`）
-
-**部署步骤：**
-1. 点击上方按钮，跳转到 Vercel
-2. 登录 Vercel 账号
-3. 配置环境变量 `VITE_API_BASE_URL`
-4. 点击 Deploy 开始部署
-5. 部署完成后，访问 Vercel 提供的域名
+> 🔧 详细开发指南：[开发指南](./docs/开发指南.md)
 
 ## 📖 使用指南
 
-### 首次使用
-1. 访问 `http://127.0.0.1:8080`
-2. 点击"立即注册"创建账号
-3. 填写用户名、邮箱、密码（至少 6 位）
-4. 注册成功后自动登录
+### 🔐 账户管理
 
-### 添加物品
-1. 点击"新增商品"按钮
+#### 注册账户
+1. 访问应用首页
+2. 点击"立即注册"
+3. 填写用户名、邮箱、密码（至少6位）
+4. 点击"注册"完成账户创建
+
+#### 登录系统
+1. 在登录页面输入用户名和密码
+2. 点击"登录"进入系统
+3. 系统会记住登录状态，下次访问自动登录
+
+### 🏠 家庭管理
+
+#### 创建家庭
+1. 进入"家庭"页面
+2. 点击"创建家庭"
+3. 输入家庭名称和描述
+4. 点击"创建"完成
+
+#### 加入家庭
+1. 获取家庭邀请码（由家庭创建者提供）
+2. 在"家庭"页面点击"加入家庭"
+3. 输入邀请码
+4. 点击"加入"
+
+### 🧊 冰箱管理
+
+#### 创建冰箱
+1. 在"冰箱"页面点击"新建冰箱"
+2. 输入冰箱名称（如"家用冰箱"、"办公室冰箱"）
+3. 选择所属家庭（可选）
+4. 点击"创建"
+
+#### 切换冰箱
+- 在顶部导航栏点击冰箱名称
+- 从下拉菜单中选择要管理的冰箱
+
+### 📦 物品管理
+
+#### 添加物品
+**方式一：手动添加**
+1. 点击"添加物品"按钮
 2. 填写物品信息：
-   - **名称**：物品名称
-   - **过期日期**：选择过期日期
+   - **名称**：食材名称
    - **数量**：物品数量
-   - **位置**：冷藏/冷冻/常温
-   - **类别**：选择合适的食材分类
-3. 点击"添加"完成
+   - **过期日期**：选择过期日期
+   - **存储位置**：冷藏/冷冻/常温
+   - **分类**：选择食材类别
+3. 点击"保存"
 
-### 查看物品
-- **全部商品**：查看所有物品
-- **尚在保存期限**：查看未过期物品
-- **已过期**：查看过期物品
-- **按位置筛选**：冷藏/冷冻
-- **按类别筛选**：12 种食材分类
-- **搜索功能**：按关键词实时搜索
+**方式二：语音添加**
+1. 点击"语音添加"按钮
+2. 说出物品信息（如"苹果3个明天过期"）
+3. 系统自动识别并填充表单
+4. 确认信息后保存
 
-### 编辑/删除物品
-- 点击物品旁的编辑按钮进行修改
-- 点击删除按钮移除物品
+**方式三：拍照识别**
+1. 点击"拍照添加"按钮
+2. 拍摄食材照片
+3. 系统自动识别物品信息
+4. 确认并保存
 
-## 🔌 API 文档
+#### 查看物品
+- **全部物品**：查看所有库存
+- **即将过期**：查看3天内过期的物品
+- **已过期**：查看已过期物品
+- **按位置筛选**：冷藏/冷冻/常温
+- **按分类筛选**：蔬菜、水果、肉类等
 
-### 端点列表
+#### 编辑物品
+1. 在物品列表中点击要编辑的物品
+2. 修改相关信息
+3. 点击"保存"
 
-| 方法 | 端点 | 描述 | 参数 |
-|------|------|------|------|
-| GET | `/` | 主页 | - |
-| GET/POST | `/register` | 用户注册 | username, email, password |
-| GET/POST | `/login` | 用户登录 | username, password |
-| GET | `/logout` | 用户登出 | - |
-| POST | `/insert` | 添加物品 | itemName, itemDate, itemPlace, itemNum, itemType |
-| POST | `/search` | 搜索物品 | text |
-| POST | `/stateok/<time>` | 获取未过期物品 | time (时间戳) |
-| POST | `/statebad/<time>` | 获取已过期物品 | time (时间戳) |
-| POST | `/cold` | 获取冷藏物品 | - |
-| POST | `/frozer` | 获取冷冻物品 | - |
-| POST | `/tag/<tagName>` | 按类别获取物品 | tagName |
-| POST | `/total` | 获取所有物品 | - |
-| POST | `/delete/<_id>` | 删除物品 | _id |
-| POST | `/getone/<_id>` | 获取单个物品 | _id |
-| POST | `/edit/<_id>` | 编辑物品 | _id, itemName, itemDate, itemPlace, itemNum, itemType |
+#### 删除物品
+1. 在物品列表中找到要删除的物品
+2. 点击删除按钮
+3. 确认删除
 
-### 数据结构
+### 🤖 AI 助手
 
-```json
-{
-  "_id": "unique_id",
-  "user_id": "user_id",
-  "Name": "物品名称",
-  "ExpireDate": "2024-12-31T00:00:00.000Z",
-  "Place": "cold|frozer|room",
-  "Num": 1,
-  "Type": "vegetable|fruit|seafood|meat|beverage|diary|egg|bread|frozen|sauce|snack|other"
-}
-```
+#### 智能对话
+1. 点击右下角的AI助手图标
+2. 输入问题（如"今天有什么菜可以做？"）
+3. AI会根据你的库存推荐菜谱
 
-## 📁 项目结构
+#### 语音交互
+1. 在对话框中点击语音按钮
+2. 说出你的问题
+3. AI会语音回复
 
-```
-fridgeManager/
-├── app/                      # 后端应用核心代码
-│   ├── __init__.py           # Flask 应用工厂
-│   ├── models/               # 数据模型
-│   │   ├── user.py           # 用户模型
-│   │   ├── item.py           # 物品模型
-│   │   ├── fridge.py         # 冰箱模型
-│   │   ├── family.py         # 家庭模型
-│   │   └── ...
-│   ├── routes/               # 路由蓝图
-│   │   ├── auth.py           # 认证路由
-│   │   ├── item.py           # 物品路由
-│   │   ├── fridge.py         # 冰箱路由
-│   │   ├── family.py         # 家庭路由
-│   │   └── admin.py          # 管理员路由
-│   ├── services/             # 业务逻辑
-│   │   ├── user_service.py
-│   │   ├── item_service.py
-│   │   ├── fridge_service.py
-│   │   └── family_service.py
-│   ├── utils/                # 工具函数
-│   │   ├── jwt_auth.py       # JWT 认证
-│   │   ├── database.py       # 数据库工具
-│   │   └── validators.py     # 数据验证
-│   └── tasks/                # 定时任务
-│       └── scheduler.py      # 任务调度器
-├── frontend/                 # Vue3 前端应用
-│   ├── src/
-│   │   ├── api/              # API 接口
-│   │   ├── assets/           # 静态资源
-│   │   ├── components/       # Vue 组件
-│   │   │   ├── common/       # 通用组件
-│   │   │   ├── item/         # 物品组件
-│   │   │   ├── fridge/       # 冰箱组件
-│   │   │   ├── family/       # 家庭组件
-│   │   │   └── ai/           # AI 功能组件
-│   │   ├── composables/      # 组合式函数
-│   │   ├── router/           # 路由配置
-│   │   ├── stores/           # Pinia 状态管理
-│   │   ├── styles/           # 全局样式
-│   │   ├── types/            # TypeScript 类型
-│   │   ├── utils/            # 工具函数
-│   │   ├── views/            # 页面视图
-│   │   ├── App.vue           # 根组件
-│   │   └── main.ts           # 入口文件
-│   ├── public/               # 公共资源
-│   ├── .env.development      # 开发环境变量
-│   ├── .env.production       # 生产环境变量
-│   ├── package.json          # 前端依赖
-│   ├── tsconfig.json         # TypeScript 配置
-│   ├── vite.config.ts        # Vite 配置
-│   └── vercel.json           # Vercel 部署配置
-├── config/                   # 后端配置文件
-│   └── settings.py           # 应用配置
-├── docker/                   # Docker 部署
-│   ├── Dockerfile            # Docker 镜像
-│   ├── docker-compose.yml    # Docker Compose 配置
-│   └── README.md             # Docker 部署指南
-├── docs/                     # 文档
-│   ├── README_EN.md          # 英文文档
-│   ├── API接口文档.md        # API 文档
-│   └── 快速开始.md           # 快速开始指南
-├── scripts/                  # 脚本工具
-│   └── migrate_*.py          # 数据迁移脚本
-├── static/                   # Flask 静态资源（旧版）
-├── templates/                # Flask 模板（旧版）
-├── tests/                    # 测试套件
-├── data/                     # 数据库目录（不提交到 Git）
-├── start_dev.ps1             # 开发环境启动脚本
-├── run.py                    # 后端启动入口
-├── requirements.txt          # Python 依赖
-└── README.md                 # 项目文档（中文）
-```
+### ⚙️ 个人设置
 
-## 🧪 测试
+#### 修改个人信息
+1. 点击右上角头像
+2. 选择"个人设置"
+3. 修改用户名、邮箱等信息
+4. 点击"保存"
 
-本项目包含完整的测试框架：
+#### 主题设置
+1. 在个人设置中找到"主题设置"
+2. 选择明亮/暗黑主题
+3. 系统会自动保存设置
 
-### 测试类型
-- **单元测试**：Flask 路由和独立函数
-- **集成测试**：数据库操作和 API 端点
-- **Pytest 测试**：使用 fixtures 和 mocking 的现代测试
+#### 通知设置
+1. 在个人设置中配置通知偏好
+2. 设置过期提醒时间（1天、3天、7天前）
+3. 选择通知方式（邮件、站内消息）
 
-### 运行测试
-```bash
-# 运行所有测试
-python run_tests.py
+## ❓ 常见问题
 
-# 运行特定类型测试
-python run_tests.py --type unittest
-python run_tests.py --type pytest
-python run_tests.py --type coverage
-```
+### 部署相关
+
+**Q: Vercel 部署时选择什么框架？**
+A: 选择 **Vite**，不是 Vue.js。因为项目使用 Vite 作为构建工具。
+
+**Q: 部署后 API 请求失败怎么办？**
+A: 检查环境变量 `VITE_API_BASE_URL` 是否正确配置，确保后端服务正常运行。
+
+**Q: 如何配置自定义域名？**
+A: 在 Vercel Dashboard 的项目设置中添加自定义域名，并按提示配置 DNS。
+
+### 使用相关
+
+**Q: 忘记密码怎么办？**
+A: 在登录页面点击"忘记密码"，输入邮箱地址重置密码。
+
+**Q: 如何邀请家庭成员？**
+A: 在家庭页面点击"邀请成员"，分享邀请码给家庭成员。
+
+**Q: 物品过期提醒在哪里设置？**
+A: 在个人设置的"通知设置"中配置过期提醒时间。
+
+**Q: 支持哪些浏览器？**
+A: 支持 Chrome、Firefox、Safari、Edge 等现代浏览器。
+
+### 技术相关
+
+**Q: 数据存储在哪里？**
+A: 数据存储在 SQLite 数据库中，支持本地部署和云端部署。
+
+**Q: 是否支持数据导出？**
+A: 支持导出物品清单为 Excel 或 CSV 格式。
+
+**Q: 如何备份数据？**
+A: 定期备份 `data/fridge.db` 文件即可。
+
+## 🆘 支持与反馈
+
+### 获取帮助
+- 📖 [查看完整文档](./docs/)
+- 🐛 [提交问题](https://github.com/Adsryen/fridgeManager/issues)
+- 💬 [讨论交流](https://github.com/Adsryen/fridgeManager/discussions)
+
+### 贡献代码
+欢迎提交 Pull Request！请先阅读 [开发指南](./docs/开发指南.md)。
+
+### 联系方式
+- GitHub: [@Adsryen](https://github.com/Adsryen)
+- Email: [your-email@example.com](mailto:your-email@example.com)
+
+---
 
 ## 📄 许可证
 
 本项目采用 MIT 许可证 - 详见 [LICENSE](LICENSE) 文件。
 
-**教育用途**：本项目基于中央大学数据库系统期中项目进行二次开发，用于教育和研究目的。
-
-**原项目致谢**：感谢 [hill0106](https://github.com/hill0106) 创建的原始项目。
+**致谢**：感谢 [hill0106](https://github.com/hill0106) 创建的原始项目 [fridgeManager](https://github.com/hill0106/fridgeManager)。
 
 ---
 
@@ -351,8 +326,6 @@ python run_tests.py --type coverage
 
 **⭐ 如果这个项目对你有帮助，请给个 Star！**
 
-原项目 / Original Project: [hill0106/fridgeManager](https://github.com/hill0106/fridgeManager)
-
-二次开发 / Secondary Development: [Adsryen](https://github.com/Adsryen)
+[🏠 项目主页](https://github.com/Adsryen/fridgeManager) | [📖 技术文档](./docs/技术文档.md) | [🚀 开发指南](./docs/开发指南.md) | [📋 更新日志](./CHANGELOG.md)
 
 </div>
