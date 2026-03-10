@@ -81,10 +81,14 @@ const axiosInstance: AxiosInstance = axios.create({
 // 请求拦截器 - 添加 JWT Token 和防重复请求
 axiosInstance.interceptors.request.use(
   (config: InternalAxiosRequestConfig) => {
-    // 添加 JWT Token
+    // 添加 JWT Token（仅在有 token 时添加）
     const token = localStorage.getItem('token')
     if (token && config.headers) {
       config.headers.Authorization = `Bearer ${token}`
+    }
+    // 如果没有 token，确保不发送 Authorization 头（游客模式）
+    else if (config.headers && config.headers.Authorization) {
+      delete config.headers.Authorization
     }
     
     // 防止重复请求（GET 请求）
@@ -135,11 +139,16 @@ axiosInstance.interceptors.response.use(
       
       switch (status) {
         case 401:
-          // Token 无效或过期，清除本地存储并跳转到登录页
-          localStorage.removeItem('token')
-          localStorage.removeItem('user')
-          ElMessage.error('登录已过期，请重新登录')
-          router.push('/login')
+          // Token 无效或过期
+          // 如果有 token，说明 token 过期，清除并提示
+          const token = localStorage.getItem('token')
+          if (token) {
+            localStorage.removeItem('token')
+            localStorage.removeItem('user')
+            ElMessage.error('登录已过期，请重新登录')
+            router.push('/login')
+          }
+          // 如果没有 token，说明是游客访问了需要登录的接口，不显示错误
           break
         case 403:
           ElMessage.error('权限不足')

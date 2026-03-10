@@ -1,5 +1,10 @@
 <script setup lang="ts">
 import { RouterView } from 'vue-router'
+import { useTheme } from './composables/useTheme'
+
+// 初始化主题
+const { loadTheme } = useTheme()
+loadTheme()
 </script>
 
 <template>

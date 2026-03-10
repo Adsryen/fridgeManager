@@ -30,13 +30,13 @@ const routes: RouteRecordRaw[] = [
     path: '/profile',
     name: 'Profile',
     component: () => import(/* webpackChunkName: "user" */ '../views/Profile.vue'),
-    meta: { requiresAuth: true, title: '个人资料' }
+    meta: { requiresAuth: false, title: '个人资料' }
   },
   {
     path: '/family',
     name: 'Family',
     component: () => import(/* webpackChunkName: "family" */ '../views/Family.vue'),
-    meta: { requiresAuth: true, title: '家庭管理' }
+    meta: { requiresAuth: false, title: '家庭管理' }
   },
   {
     path: '/admin',
