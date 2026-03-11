@@ -36,12 +36,15 @@ docs/
 *.md
 web.png
 
-# Scripts
-scripts/
+# Scripts (排除测试脚本，但保留迁移脚本)
+scripts/test_*.py
 
-# Docker
-docker/
-.dockerignore
+# Docker (只排除不需要的文件)
+docker/build.ps1
+docker/build.sh
+docker/*.yml
+docker/.env.example
+docker/README.md
 
 # OS
 .DS_Store

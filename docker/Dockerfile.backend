@@ -1,0 +1,49 @@
+# 后端 API 镜像
+FROM python:3.12-slim
+
+# 设置代理参数
+ARG HTTP_PROXY
+ARG HTTPS_PROXY
+ARG NO_PROXY
+
+# 配置 pip 代理和超时
+RUN if [ -n "$HTTP_PROXY" ]; then \
+        pip config set global.proxy $HTTP_PROXY && \
+        pip config set global.timeout 300; \
+    else \
+        pip config set global.timeout 300; \
+    fi
+
+WORKDIR /app
+
+# 设置环境变量
+ENV PYTHONDONTWRITEBYTECODE=1 \
+    PYTHONUNBUFFERED=1 \
+    FLASK_ENV=production \
+    HOST=0.0.0.0 \
+    PORT=8080 \
+    DATABASE_DIR=/data
+
+# 复制依赖文件
+COPY requirements.txt ./
+
+# 安装依赖
+RUN pip install --no-cache-dir -r requirements.txt gunicorn
+
+# 复制后端代码
+COPY app/ ./app/
+COPY config/ ./config/
+COPY run.py ./
+
+# 创建数据目录
+RUN mkdir -p /data
+
+# 暴露端口
+EXPOSE 8080
+
+# 健康检查
+HEALTHCHECK --interval=30s --timeout=10s --start-period=40s --retries=3 \
+    CMD python -c "import urllib.request; urllib.request.urlopen('http://localhost:8080/health')" || exit 1
+
+# 启动命令
+CMD ["gunicorn", "--bind", "0.0.0.0:8080", "--workers", "4", "--timeout", "120", "--access-logfile", "-", "--error-logfile", "-", "run:app"]

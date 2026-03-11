@@ -1,17 +1,91 @@
+# 简化版 Docker Compose - 前后端分离
+# 适用场景：前后端独立部署，用户自行配置反向代理
+
 services:
-  fridge-manager:
+  # 后端 API 服务
+  backend:
+    image: fridge-manager-backend:latest
     build:
       context: ..
-      dockerfile: docker/Dockerfile
+      dockerfile: docker/Dockerfile.backend
+      args:
+        - HTTP_PROXY=http://host.docker.internal:17890
+        - HTTPS_PROXY=http://host.docker.internal:17890
+        - NO_PROXY=localhost,127.0.0.1
+    container_name: fridge-backend
     ports:
       - "8080:8080"
     environment:
-      HOST: 0.0.0.0
-      PORT: 8080
+      # Flask CORS 配置 - 允许的前端域名
+      CORS_ORIGINS: "https://bx.prlrr.com,http://localhost:3000"
+      
+      # 数据库配置
       DATABASE_DIR: /data
       FLASK_ENV: production
+      
+      # 可选：AI 功能配置
+      # OPENAI_API_KEY: your-openai-key
+      # OPENAI_API_BASE: https://api.openai.com/v1
+      
+      # 可选：密钥配置（不设置会自动生成）
+      # SECRET_KEY: your-secret-key
     volumes:
-      - fridge_data:/data
+      - backend_data:/data
+    restart: unless-stopped
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:8080/health')"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  # 前端服务
+  frontend:
+    image: fridge-manager-frontend:latest
+    build:
+      context: ..
+      dockerfile: docker/Dockerfile.frontend
+      args:
+        - HTTP_PROXY=http://host.docker.internal:17890
+        - HTTPS_PROXY=http://host.docker.internal:17890
+        - NO_PROXY=localhost,127.0.0.1
+        # 构建时的 API 地址（可选，也可以运行时配置）
+        - VITE_API_BASE_URL=https://bx.gr.prlrr.com
+    container_name: fridge-frontend
+    ports:
+      - "3000:80"
+    restart: unless-stopped
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    depends_on:
+      - backend
+    healthcheck:
+      test: ["CMD", "wget", "--quiet", "--tries=1", "--spider", "http://localhost/health"]
+      interval: 30s
+      timeout: 3s
+      retries: 3
 
 volumes:
-  fridge_data:
+  backend_data:
+
+# 使用说明：
+# 
+# 1. 构建镜像：
+#    docker-compose -f docker/docker-compose.simple.yml build
+#
+# 2. 启动服务：
+#    docker-compose -f docker/docker-compose.simple.yml up -d
+#
+# 3. 访问地址：
+#    - 前端: http://localhost:3000
+#    - 后端: http://localhost:8080
+#
+# 4. 生产环境部署：
+#    - 在前面配置 Nginx/Caddy/Traefik 等反向代理
+#    - 配置 SSL 证书
+#    - 修改 CORS_ORIGINS 为实际的前端域名
+#    - 修改 VITE_API_BASE_URL 为实际的后端域名
+#
+# 5. 环境变量配置：
+#    可以创建 .env 文件或在 docker-compose.yml 中修改
