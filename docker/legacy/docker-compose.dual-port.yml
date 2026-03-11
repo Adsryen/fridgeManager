@@ -1,0 +1,40 @@
+# 双端口模式：前端 + 独立后端端口
+# 适用场景：需要同时提供前端和独立的后端 API 端口
+
+services:
+  fridge-manager:
+    build:
+      context: ..
+      dockerfile: docker/Dockerfile
+    container_name: fridge-manager-dual-port
+    ports:
+      - "3000:3000"    # 前端 HTTP 访问端口
+      - "3001:3001"    # 前端 HTTPS 端口
+      - "8080:8080"    # 独立后端 API 端口
+    environment:
+      SERVER_NAME: yourdomain.com
+      ENABLE_HTTPS: "true"
+      ENABLE_FRONTEND: "true"       # 启用前端
+      ENABLE_BACKEND_PORT: "true"   # 启用独立后端端口
+      CORS_ORIGIN: "*"              # Nginx CORS 配置
+      CORS_ORIGINS: "*"             # Flask CORS 配置（允许所有源）
+      
+      # SSL 证书配置
+      SSL_CERT_PATH: /etc/nginx/ssl/cert.pem
+      SSL_KEY_PATH: /etc/nginx/ssl/key.pem
+      
+      DATABASE_DIR: /data
+      FLASK_ENV: production
+    volumes:
+      - fridge_data:/data
+      # 挂载 SSL 证书
+      - ./ssl/cert.pem:/etc/nginx/ssl/cert.pem:ro
+      - ./ssl/key.pem:/etc/nginx/ssl/key.pem:ro
+    restart: unless-stopped
+
+volumes:
+  fridge_data:
+
+# 访问方式：
+# 前端: https://yourdomain.com:3001
+# API: https://yourdomain.com:3001/api/ 或 http://yourdomain.com:8080

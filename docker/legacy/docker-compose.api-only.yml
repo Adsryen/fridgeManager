@@ -1,0 +1,35 @@
+# 仅后端 API 模式
+# 适用场景：前端托管在 Vercel，只需要后端 API 服务
+
+services:
+  fridge-manager:
+    build:
+      context: ..
+      dockerfile: docker/Dockerfile
+    container_name: fridge-manager-api-https
+    ports:
+      - "8080:8080"    # 后端 HTTP API 端口
+      - "8081:8081"    # 后端 HTTPS API 端口
+    environment:
+      SERVER_NAME: api.yourdomain.com           # 修改为你的 API 域名
+      ENABLE_HTTPS: "true"                      # 建议启用 HTTPS
+      ENABLE_FRONTEND: "false"                  # 禁用前端
+      ENABLE_BACKEND_PORT: "false"              # 不需要独立端口
+      CORS_ORIGIN: "https://your-app.vercel.app"  # Nginx CORS 配置
+      CORS_ORIGINS: "https://your-app.vercel.app,http://localhost:5173,http://127.0.0.1:5173"  # Flask CORS 配置
+      
+      # SSL 证书配置
+      SSL_CERT_PATH: /etc/nginx/ssl/cert.pem
+      SSL_KEY_PATH: /etc/nginx/ssl/key.pem
+      
+      DATABASE_DIR: /data
+      FLASK_ENV: production
+    volumes:
+      - fridge_data:/data
+      # 挂载 SSL 证书
+      - ./ssl/cert.pem:/etc/nginx/ssl/cert.pem:ro
+      - ./ssl/key.pem:/etc/nginx/ssl/key.pem:ro
+    restart: unless-stopped
+
+volumes:
+  fridge_data:

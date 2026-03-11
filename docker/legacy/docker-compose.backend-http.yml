@@ -1,0 +1,54 @@
+# 仅后端 HTTP 模式
+# 适用场景：前端托管在 Vercel，后端提供 HTTP API（不使用 SSL 证书）
+# 注意：生产环境建议在前面加 Nginx 或 Cloudflare 等反向代理提供 HTTPS
+
+services:
+  fridge-manager:
+    image: fridge-manager:latest
+    build:
+      context: ..
+      dockerfile: docker/Dockerfile
+      args:
+        - HTTP_PROXY=http://host.docker.internal:17890
+        - HTTPS_PROXY=http://host.docker.internal:17890
+        - NO_PROXY=localhost,127.0.0.1
+      extra_hosts:
+        - "host.docker.internal:host-gateway"  # Windows 访问宿主机代理
+    container_name: fridge-manager-api-http
+    ports:
+      - "8080:8080"    # HTTP 后端 API 端口
+    environment:
+      SERVER_NAME: localhost                    # 修改为你的域名或 IP
+      ENABLE_HTTPS: "false"                     # 不启用 HTTPS
+      ENABLE_FRONTEND: "false"                  # 禁用前端
+      ENABLE_BACKEND_PORT: "false"              # 不需要独立端口
+      CORS_ORIGIN: "https://bx.prlrr.com"       # Nginx CORS 配置
+      CORS_ORIGINS: "https://bx.prlrr.com,http://localhost:5173,http://127.0.0.1:5173"  # Flask CORS 配置
+      
+      DATABASE_DIR: /data
+      FLASK_ENV: production
+      
+      # 可选配置
+      # SECRET_KEY: your-secret-key
+      # OPENAI_API_KEY: your-openai-key
+    volumes:
+      - fridge_data:/data
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8080/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+volumes:
+  fridge_data:
+
+# 使用方法：
+# 1. 修改 CORS_ORIGIN 和 CORS_ORIGINS 为你的 Vercel 前端地址
+# 2. 启动：docker-compose -f docker-compose.backend-http.yml up -d
+# 3. API 访问：http://your-server-ip:8080/
+# 4. 在 Vercel 环境变量中设置：VITE_API_BASE_URL=http://your-server-ip:8080
+
+# 安全建议：
+# - 生产环境建议在前面加反向代理（Nginx/Cloudflare）提供 HTTPS
+# - 或者使用 docker-compose.api-only.yml 配置 SSL 证书

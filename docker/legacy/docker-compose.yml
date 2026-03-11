@@ -1,0 +1,92 @@
+services:
+  fridge-manager:
+    build:
+      context: ..
+      dockerfile: docker/Dockerfile
+    container_name: fridge-manager
+    ports:
+      - "3000:3000"  # HTTP 前端端口
+      - "3001:3001"  # HTTPS 前端端口
+      - "8080:8080"  # HTTP 后端端口（独立后端或仅后端模式）
+      - "8081:8081"  # HTTPS 后端端口（仅后端模式）
+    environment:
+      # === 基础配置 ===
+      SERVER_NAME: localhost                    # 修改为你的域名
+      
+      # === 功能开关 ===
+      ENABLE_HTTPS: "false"                     # 是否启用 HTTPS (true/false)
+      ENABLE_FRONTEND: "true"                   # 是否启用前端 (true/false)
+      ENABLE_BACKEND_PORT: "false"              # 是否启用独立后端端口 8080 (true/false)
+      
+      # === SSL 证书配置（启用 HTTPS 时需要）===
+      SSL_CERT_PATH: /etc/nginx/ssl/cert.pem   # 证书文件路径
+      SSL_KEY_PATH: /etc/nginx/ssl/key.pem     # 密钥文件路径
+      
+      # === CORS 配置 ===
+      CORS_ORIGIN: "*"                          # Nginx CORS 配置
+      CORS_ORIGINS: "*"                         # Flask CORS 配置（允许所有源）
+      
+      # === 后端配置 ===
+      HOST: 127.0.0.1
+      PORT: 8080
+      DATABASE_DIR: /data
+      FLASK_ENV: production
+      
+      # === 可选配置 ===
+      # SECRET_KEY: your-secret-key
+      # OPENAI_API_KEY: your-openai-key
+      # MAIL_SERVER: smtp.gmail.com
+      # MAIL_PORT: 587
+      # MAIL_USERNAME: your-email@gmail.com
+      # MAIL_PASSWORD: your-app-password
+    volumes:
+      - fridge_data:/data                       # 数据持久化
+      # === SSL 证书挂载（启用 HTTPS 时取消注释）===
+      # - ./ssl/cert.pem:/etc/nginx/ssl/cert.pem:ro
+      # - ./ssl/key.pem:/etc/nginx/ssl/key.pem:ro
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:3000/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+
+volumes:
+  fridge_data:
+    driver: local
+
+# ========================================
+# 部署模式示例
+# ========================================
+
+# 1. 完整模式（前端 + 后端）- 默认配置
+#    访问: http://localhost:3000 (前端)
+#    API: http://localhost:3000/api/ (后端 API)
+
+# 2. 仅后端 API + HTTPS 模式（配合 Vercel 前端）
+#    修改环境变量:
+#    ENABLE_FRONTEND: "false"
+#    ENABLE_HTTPS: "true"
+#    CORS_ORIGIN: "https://your-app.vercel.app"
+#    访问: https://localhost:8081 (直接 API)
+
+# 3. 仅后端 API + HTTP 模式（配合 Vercel 前端，无证书）
+#    修改环境变量:
+#    ENABLE_FRONTEND: "false"
+#    ENABLE_HTTPS: "false"
+#    CORS_ORIGIN: "https://your-app.vercel.app"
+#    访问: http://localhost:8080 (直接 API)
+
+# 4. 双端口模式（前端 + 独立后端端口）
+#    修改环境变量:
+#    ENABLE_BACKEND_PORT: "true"
+#    访问: http://localhost:3000 (前端)
+#    API: http://localhost:8080 (独立后端)
+
+# 5. HTTPS 模式
+#    修改环境变量:
+#    ENABLE_HTTPS: "true"
+#    SERVER_NAME: "your-domain.com"
+#    取消注释 SSL 证书挂载
+#    访问: https://localhost:3001

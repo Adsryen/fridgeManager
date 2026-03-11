@@ -1,0 +1,27 @@
+# 完整模式：前端 + 后端一体化部署
+# 适用场景：单机部署，一个容器提供完整服务
+
+services:
+  fridge-manager:
+    build:
+      context: ..
+      dockerfile: docker/Dockerfile
+    container_name: fridge-manager-fullstack
+    ports:
+      - "3000:3000"    # 前端 HTTP 访问端口
+      - "3001:3001"    # 前端 HTTPS 端口
+    environment:
+      SERVER_NAME: localhost
+      ENABLE_HTTPS: "false"
+      ENABLE_FRONTEND: "true"       # 启用前端
+      ENABLE_BACKEND_PORT: "false"  # 不需要独立后端端口
+      CORS_ORIGIN: "*"              # Nginx CORS 配置
+      CORS_ORIGINS: "*"             # Flask CORS 配置（允许所有源）
+      DATABASE_DIR: /data
+      FLASK_ENV: production
+    volumes:
+      - fridge_data:/data
+    restart: unless-stopped
+
+volumes:
+  fridge_data:

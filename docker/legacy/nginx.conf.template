@@ -1,0 +1,95 @@
+user www-data;
+worker_processes auto;
+pid /run/nginx.pid;
+
+events {
+    worker_connections 1024;
+    use epoll;
+}
+
+http {
+    include /etc/nginx/mime.types;
+    default_type application/octet-stream;
+
+    # 日志格式
+    log_format main '$remote_addr - $remote_user [$time_local] "$request" '
+                    '$status $body_bytes_sent "$http_referer" '
+                    '"$http_user_agent" "$http_x_forwarded_for"';
+
+    access_log /var/log/nginx/access.log main;
+    error_log /var/log/nginx/error.log warn;
+
+    # 性能优化
+    sendfile on;
+    tcp_nopush on;
+    tcp_nodelay on;
+    keepalive_timeout 65;
+    types_hash_max_size 2048;
+    client_max_body_size 20M;
+
+    # Gzip 压缩
+    gzip on;
+    gzip_vary on;
+    gzip_proxied any;
+    gzip_comp_level 6;
+    gzip_types text/plain text/css text/xml text/javascript 
+               application/json application/javascript application/xml+rss 
+               application/rss+xml font/truetype font/opentype 
+               application/vnd.ms-fontobject image/svg+xml;
+
+    # HTTP 服务器配置 - 3000 端口（前端）/ 8080 端口（仅后端）
+    server {
+        listen ${HTTP_PORT} default_server;
+        listen [::]:${HTTP_PORT} default_server;
+        server_name ${SERVER_NAME};
+
+        # 如果启用了 HTTPS，重定向到 HTTPS
+        ${HTTPS_REDIRECT}
+
+        ${FRONTEND_CONFIG}
+
+        # 后端 API 代理
+        location /api/ {
+            # CORS 预检请求
+            if ($request_method = 'OPTIONS') {
+                add_header 'Access-Control-Allow-Origin' '${CORS_ORIGIN}' always;
+                add_header 'Access-Control-Allow-Methods' 'GET, POST, PUT, DELETE, OPTIONS' always;
+                add_header 'Access-Control-Allow-Headers' 'Content-Type, Authorization, X-Requested-With' always;
+                add_header 'Access-Control-Allow-Credentials' 'true' always;
+                add_header 'Access-Control-Max-Age' 3600 always;
+                add_header 'Content-Type' 'text/plain charset=UTF-8' always;
+                add_header 'Content-Length' 0 always;
+                return 204;
+            }
+
+            proxy_pass http://127.0.0.1:8080/;
+            proxy_http_version 1.1;
+            proxy_set_header Upgrade $http_upgrade;
+            proxy_set_header Connection 'upgrade';
+            proxy_set_header Host $host;
+            proxy_set_header X-Real-IP $remote_addr;
+            proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+            proxy_set_header X-Forwarded-Proto $scheme;
+            proxy_cache_bypass $http_upgrade;
+            proxy_read_timeout 300s;
+            proxy_connect_timeout 75s;
+
+            # CORS 响应头
+            add_header 'Access-Control-Allow-Origin' '${CORS_ORIGIN}' always;
+            add_header 'Access-Control-Allow-Credentials' 'true' always;
+            add_header 'Access-Control-Expose-Headers' 'Content-Length, Content-Range' always;
+        }
+
+        # 健康检查端点
+        location /health {
+            proxy_pass http://127.0.0.1:8080/health;
+            access_log off;
+        }
+    }
+
+    # 独立的后端 API 端口 - 8080（可选）
+    ${BACKEND_PORT_CONFIG}
+
+    # HTTPS 服务器配置 - 3001 端口（前端）/ 8081 端口（仅后端）
+    ${HTTPS_SERVER_BLOCK}
+}
