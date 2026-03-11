@@ -87,6 +87,12 @@ def create_app(config_name: str = 'default') -> Flask:
     app.register_blueprint(fridge_bp, url_prefix='/fridge')
     app.register_blueprint(family_bp, url_prefix='/family')
     
+    # 注册健康检查端点
+    @app.route('/health')
+    def health_check():
+        """健康检查端点"""
+        return {'status': 'healthy', 'service': 'fridge-manager'}, 200
+    
     # 注册错误处理
     register_error_handlers(app)
     

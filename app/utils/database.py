@@ -277,7 +277,8 @@ class SQLiteMongoLikeClient:
             "default_view TEXT DEFAULT 'all', "
             "theme_color TEXT DEFAULT 'pink', "
             "dark_mode TEXT DEFAULT 'auto', "
-            "profile_public INTEGER DEFAULT 0"
+            "profile_public INTEGER DEFAULT 0, "
+            "current_fridge_id TEXT DEFAULT 'public'"
             ")"
         )
         
@@ -310,6 +311,9 @@ class SQLiteMongoLikeClient:
             "openai_api_base TEXT, "
             "openai_api_key TEXT, "
             "openai_model TEXT DEFAULT 'gpt-3.5-turbo', "
+            "openai_chat_model TEXT DEFAULT 'gpt-3.5-turbo', "
+            "openai_vision_model TEXT DEFAULT 'gpt-4-vision-preview', "
+            "openai_audio_model TEXT DEFAULT 'whisper-1', "
             "created_at TEXT, "
             "updated_at TEXT"
             ")"
