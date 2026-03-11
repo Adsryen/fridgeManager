@@ -13,6 +13,7 @@
     "build:dev": "vue-tsc -b && vite build --mode development"
   },
   "dependencies": {
+    "@fortawesome/fontawesome-free": "^7.2.0",
     "axios": "^1.13.6",
     "element-plus": "^2.13.5",
     "pinia": "^2.3.1",

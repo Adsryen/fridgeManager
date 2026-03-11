@@ -92,7 +92,7 @@ export const useUserStore = defineStore('user', () => {
    * 从本地存储初始化用户状态
    * 应用启动时调用
    */
-  function initFromStorage() {
+  async function initFromStorage() {
     const storedUser = localStorage.getItem('user')
     const storedToken = localStorage.getItem('token')
     
@@ -100,6 +100,15 @@ export const useUserStore = defineStore('user', () => {
       try {
         user.value = JSON.parse(storedUser)
         token.value = storedToken
+        
+        // 验证 token 是否有效
+        try {
+          await fetchProfile()
+        } catch (error) {
+          console.warn('Token validation failed, clearing stored data')
+          // Token 无效，清除存储的数据
+          logout()
+        }
       } catch (error) {
         console.error('Failed to parse stored user data:', error)
         // 如果解析失败，清除无效数据

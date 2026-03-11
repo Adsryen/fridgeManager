@@ -45,6 +45,7 @@ export interface Fridge {
 
 // 冰箱权限模型
 export interface FridgePermission {
+  fridge_id?: string
   is_family_shared: boolean
   is_editable_by_family: boolean
 }
@@ -54,8 +55,9 @@ export interface Family {
   _id: string
   name: string
   family_code: string
-  owner_id: string
-  owner_username: string
+  creator_id: string // 修正字段名
+  owner_id?: string // 兼容字段
+  owner_username?: string
   member_count: number
   created_at: string
 }

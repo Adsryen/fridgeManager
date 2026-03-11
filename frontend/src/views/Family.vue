@@ -52,7 +52,7 @@
               <div class="family-info">
                 <div class="family-name">{{ family.name }}</div>
                 <div class="family-meta">
-                  <span v-if="family.owner_id === userStore.user?._id" class="owner-badge">
+                  <span v-if="family.creator_id === userStore.user?._id" class="owner-badge">
                     <i class="fas fa-crown"></i> 所有者
                   </span>
                   <span class="member-count">
@@ -69,12 +69,62 @@
                   <i class="fas fa-copy"></i>
                 </button>
               </div>
+              
+              <!-- 家庭冰箱列表 -->
+              <div class="family-fridges-section">
+                <div class="section-title-small">
+                  <i class="fas fa-snowflake"></i>
+                  <span>家庭冰箱</span>
+                  <button class="refresh-btn" @click="loadFamilyFridges(family._id)" title="刷新">
+                    <i class="fas fa-sync-alt" :class="{ spinning: loadingFridges[family._id] }"></i>
+                  </button>
+                </div>
+                
+                <div v-if="loadingFridges[family._id]" class="loading-fridges">
+                  <i class="fas fa-spinner fa-spin"></i>
+                  <span>加载中...</span>
+                </div>
+                
+                <div v-else-if="familyFridges[family._id] && familyFridges[family._id]!.length > 0" class="fridges-grid">
+                  <div
+                    v-for="fridge in familyFridges[family._id]"
+                    :key="fridge._id"
+                    class="fridge-mini-card"
+                    @click="manageFridgePermission(fridge)"
+                  >
+                    <div class="fridge-mini-icon">
+                      <i class="fas fa-snowflake"></i>
+                    </div>
+                    <div class="fridge-mini-info">
+                      <div class="fridge-mini-name">{{ fridge.name }}</div>
+                      <div class="fridge-mini-owner">{{ fridge.owner_username }}</div>
+                    </div>
+                    <div class="fridge-mini-status">
+                      <span v-if="fridge.permission?.is_family_shared" class="status-badge shared">
+                        <i class="fas fa-check-circle"></i>
+                      </span>
+                      <span v-if="fridge.permission?.is_editable_by_family" class="status-badge editable">
+                        <i class="fas fa-edit"></i>
+                      </span>
+                      <span v-if="fridge.user_id === userStore.user?._id" class="status-badge owner">
+                        <i class="fas fa-crown"></i>
+                      </span>
+                    </div>
+                  </div>
+                </div>
+                
+                <div v-else class="no-fridges">
+                  <i class="fas fa-inbox"></i>
+                  <span>暂无共享冰箱</span>
+                </div>
+              </div>
+              
               <div class="family-actions">
                 <button class="btn-secondary" @click="viewMembers(family)">
                   <i class="fas fa-users"></i> 查看成员
                 </button>
                 <button
-                  v-if="family.owner_id === userStore.user?._id"
+                  v-if="family.creator_id === userStore.user?._id"
                   class="btn-danger"
                   @click="deleteFamily(family)"
                 >
@@ -194,6 +244,15 @@
         :members="[]"
       />
     </Drawer>
+
+    <!-- 冰箱权限管理抽屉 -->
+    <Drawer v-model="showPermissionManager" title="冰箱权限设置">
+      <FridgePermissionManager
+        v-if="currentFridge"
+        :fridge="currentFridge"
+        @updated="handlePermissionUpdated"
+      />
+    </Drawer>
   </div>
 </template>
 
@@ -204,8 +263,10 @@ import { useUserStore } from '../stores/user'
 import { useTheme } from '../composables/useTheme'
 import Drawer from '../components/common/Drawer.vue'
 import MemberList from '../components/family/MemberList.vue'
+import FridgePermissionManager from '../components/fridge/FridgePermissionManager.vue'
 import { ElMessage, ElMessageBox } from 'element-plus'
-import type { Family } from '../types/models'
+import { getFamilyFridges } from '../api/family'
+import type { Family, Fridge } from '../types/models'
 
 const familyStore = useFamilyStore()
 const userStore = useUserStore()
@@ -214,9 +275,15 @@ const { isDark, toggleTheme } = useTheme()
 const showCreateForm = ref(false)
 const showJoinForm = ref(false)
 const showMemberList = ref(false)
+const showPermissionManager = ref(false)
 const creating = ref(false)
 const joining = ref(false)
 const currentFamily = ref<Family | null>(null)
+const currentFridge = ref<Fridge | null>(null)
+
+// 家庭冰箱数据
+const familyFridges = ref<Record<string, Fridge[]>>({})
+const loadingFridges = ref<Record<string, boolean>>({})
 
 const createForm = ref({
   name: ''
@@ -244,6 +311,40 @@ const viewMembers = (family: Family) => {
   showMemberList.value = true
 }
 
+const loadFamilyFridges = async (familyId: string) => {
+  loadingFridges.value[familyId] = true
+  try {
+    const response = await getFamilyFridges(familyId)
+    familyFridges.value[familyId] = response.data || []
+  } catch (error: any) {
+    console.error('加载家庭冰箱失败:', error)
+    familyFridges.value[familyId] = []
+  } finally {
+    loadingFridges.value[familyId] = false
+  }
+}
+
+const manageFridgePermission = (fridge: Fridge) => {
+  // 只有冰箱所有者可以管理权限
+  if (fridge.user_id !== userStore.user?._id) {
+    ElMessage.info('只有冰箱所有者可以管理权限')
+    return
+  }
+  currentFridge.value = fridge
+  showPermissionManager.value = true
+}
+
+const handlePermissionUpdated = async () => {
+  // 重新加载当前家庭的冰箱列表
+  if (currentFamily.value) {
+    await loadFamilyFridges(currentFamily.value._id)
+  }
+  // 重新加载所有家庭的冰箱
+  for (const family of familyStore.families) {
+    await loadFamilyFridges(family._id)
+  }
+}
+
 const handleCreate = async () => {
   if (!createForm.value.name) {
     ElMessage.error('请输入家庭名称')
@@ -257,6 +358,11 @@ const handleCreate = async () => {
     showCreateForm.value = false
     createForm.value.name = ''
     await familyStore.loadFamilies()
+    // 加载新创建家庭的冰箱
+    const newFamily = familyStore.families[familyStore.families.length - 1]
+    if (newFamily) {
+      await loadFamilyFridges(newFamily._id)
+    }
   } catch (error: any) {
     ElMessage.error(error.message || '创建失败')
   } finally {
@@ -282,6 +388,11 @@ const handleJoin = async () => {
     showJoinForm.value = false
     joinForm.value.code = ''
     await familyStore.loadFamilies()
+    // 加载新加入家庭的冰箱
+    const newFamily = familyStore.families[familyStore.families.length - 1]
+    if (newFamily) {
+      await loadFamilyFridges(newFamily._id)
+    }
   } catch (error: any) {
     ElMessage.error(error.message || '加入失败')
   } finally {
@@ -329,8 +440,12 @@ const leaveFamily = async (family: Family) => {
   }
 }
 
-onMounted(() => {
-  familyStore.loadFamilies()
+onMounted(async () => {
+  await familyStore.loadFamilies()
+  // 加载所有家庭的冰箱
+  for (const family of familyStore.families) {
+    await loadFamilyFridges(family._id)
+  }
 })
 </script>
 
@@ -679,5 +794,174 @@ onMounted(() => {
 .guest-actions .btn-primary i,
 .guest-actions .btn-secondary i {
   font-size: 13px;
+}
+
+/* 家庭冰箱区域 */
+.family-fridges-section {
+  margin-top: 16px;
+  padding-top: 16px;
+  border-top: 1px solid var(--border-color);
+}
+
+.section-title-small {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--text-primary);
+  margin-bottom: 12px;
+}
+
+.section-title-small i {
+  color: var(--primary-color);
+  font-size: 14px;
+}
+
+.refresh-btn {
+  margin-left: auto;
+  width: 28px;
+  height: 28px;
+  border-radius: 6px;
+  background: var(--bg-color);
+  border: 1px solid var(--border-color);
+  color: var(--text-secondary);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.refresh-btn:active {
+  transform: scale(0.9);
+}
+
+.refresh-btn i.spinning {
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+
+.loading-fridges {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 20px;
+  font-size: 13px;
+  color: var(--text-secondary);
+}
+
+.loading-fridges i {
+  color: var(--primary-color);
+}
+
+.fridges-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 8px;
+}
+
+.fridge-mini-card {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 12px;
+  background: var(--bg-color);
+  border-radius: 10px;
+  border: 1px solid var(--border-color);
+  cursor: pointer;
+  transition: all 0.2s;
+  position: relative;
+}
+
+.fridge-mini-card:active {
+  transform: scale(0.98);
+  background: var(--card-bg);
+}
+
+.fridge-mini-icon {
+  width: 36px;
+  height: 36px;
+  border-radius: 8px;
+  background: linear-gradient(135deg, #60a5fa, #3b82f6);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: white;
+  font-size: 16px;
+}
+
+.fridge-mini-info {
+  flex: 1;
+  min-width: 0;
+}
+
+.fridge-mini-name {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--text-primary);
+  margin-bottom: 2px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.fridge-mini-owner {
+  font-size: 11px;
+  color: var(--text-secondary);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.fridge-mini-status {
+  display: flex;
+  gap: 4px;
+  flex-wrap: wrap;
+}
+
+.status-badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  font-size: 10px;
+}
+
+.status-badge.shared {
+  background: #10b981;
+  color: white;
+}
+
+.status-badge.editable {
+  background: #f59e0b;
+  color: white;
+}
+
+.status-badge.owner {
+  background: linear-gradient(135deg, #f59e0b, #ef4444);
+  color: white;
+}
+
+.no-fridges {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  padding: 24px;
+  color: var(--text-secondary);
+  font-size: 13px;
+}
+
+.no-fridges i {
+  font-size: 32px;
+  opacity: 0.3;
 }
 </style>

@@ -41,13 +41,21 @@
               </div>
               <div class="fridge-info">
                 <div class="fridge-name">{{ fridge.name }}</div>
-                <div class="fridge-meta">{{ fridge.item_count || 0 }} 个物品</div>
+                <div class="fridge-meta">
+                  <span class="item-count">{{ fridge.item_count || 0 }} 个物品</span>
+                  <span v-if="fridge.permission?.is_family_shared" class="share-badge">
+                    <i class="fas fa-users"></i> 已共享
+                  </span>
+                </div>
               </div>
               <div class="fridge-actions">
-                <button class="icon-btn" @click="renameFridge(fridge)" title="重命名">
+                <button class="action-btn edit" @click="renameFridge(fridge)" title="重命名">
                   <i class="fas fa-edit"></i>
                 </button>
-                <button class="icon-btn danger" @click="deleteFridge(fridge)" title="删除">
+                <button class="action-btn share" @click="manageFridgeShare(fridge)" title="共享设置">
+                  <i class="fas fa-share-alt"></i>
+                </button>
+                <button class="action-btn delete" @click="deleteFridge(fridge)" title="删除">
                   <i class="fas fa-trash"></i>
                 </button>
               </div>
@@ -133,6 +141,15 @@
     <Drawer v-model="showCreateForm" title="创建冰箱">
       <FridgeForm @success="handleCreateSuccess" @cancel="showCreateForm = false" />
     </Drawer>
+
+    <!-- 冰箱权限管理抽屉 -->
+    <Drawer v-model="showShareManager" title="共享设置">
+      <FridgePermissionManager
+        v-if="currentFridge"
+        :fridge="currentFridge"
+        @updated="handleShareUpdated"
+      />
+    </Drawer>
   </div>
 </template>
 
@@ -144,6 +161,7 @@ import { useUserStore } from '../stores/user'
 import { useTheme } from '../composables/useTheme'
 import Drawer from '../components/common/Drawer.vue'
 import FridgeForm from '../components/fridge/FridgeForm.vue'
+import FridgePermissionManager from '../components/fridge/FridgePermissionManager.vue'
 import { ElMessage, ElMessageBox } from 'element-plus'
 import type { Fridge } from '../types/models'
 
@@ -152,6 +170,8 @@ const userStore = useUserStore()
 const router = useRouter()
 const { isDark, toggleTheme } = useTheme()
 const showCreateForm = ref(false)
+const showShareManager = ref(false)
+const currentFridge = ref<Fridge | null>(null)
 
 const toggleDarkMode = async () => {
   await toggleTheme()
@@ -184,6 +204,16 @@ const renameFridge = async (fridge: Fridge) => {
   } catch {
     // 用户取消
   }
+}
+
+const manageFridgeShare = (fridge: Fridge) => {
+  currentFridge.value = fridge
+  showShareManager.value = true
+}
+
+const handleShareUpdated = async () => {
+  await fridgeStore.loadFridges()
+  showShareManager.value = false
 }
 
 const deleteFridge = async (fridge: Fridge) => {
@@ -307,14 +337,85 @@ onMounted(() => {
 .fridge-meta {
   font-size: 13px;
   color: var(--text-secondary);
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.item-count {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.share-badge {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  padding: 2px 6px;
+  background: #10b981;
+  color: white;
+  border-radius: 10px;
+  font-size: 11px;
+  font-weight: 500;
+}
+
+.share-badge i {
+  font-size: 10px;
 }
 
 .fridge-actions {
   display: flex;
-  gap: 8px;
+  gap: 6px;
 }
 
-.icon-btn {
+.action-btn {
+  width: 36px;
+  height: 36px;
+  border-radius: 8px;
+  border: none;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.2s;
+  font-size: 14px;
+}
+
+.action-btn.edit {
+  background: var(--bg-color);
+  color: var(--primary-color);
+  border: 1px solid var(--border-color);
+}
+
+.action-btn.edit:active {
+  background: var(--primary-color);
+  color: white;
+  transform: scale(0.95);
+}
+
+.action-btn.share {
+  background: #10b981;
+  color: white;
+}
+
+.action-btn.share:active {
+  background: #059669;
+  transform: scale(0.95);
+}
+
+.action-btn.delete {
+  background: var(--danger-color);
+  color: white;
+}
+
+.action-btn.delete:active {
+  background: #dc2626;
+  transform: scale(0.95);
+}
+
+/* 冰箱管理页面的 icon-btn 样式继承自 layout.css */
+.fridge-actions .icon-btn {
   width: 36px;
   height: 36px;
   border-radius: 8px;
@@ -328,16 +429,16 @@ onMounted(() => {
   transition: all 0.2s;
 }
 
-.icon-btn:hover {
+.fridge-actions .icon-btn:active {
   background: var(--bg-secondary);
-  transform: scale(1.05);
+  transform: scale(0.95);
 }
 
-.icon-btn.danger {
+.fridge-actions .icon-btn.danger {
   color: var(--danger-color);
 }
 
-.icon-btn.danger:hover {
+.fridge-actions .icon-btn.danger:active {
   background: var(--danger-color);
   color: white;
 }
