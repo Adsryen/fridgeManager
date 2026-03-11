@@ -29,6 +29,9 @@ if (-not (Test-Path "frontend/node_modules")) {
 Write-Host ""
 Write-Host "[3/4] Starting backend server (Flask)..." -ForegroundColor Yellow
 
+# Set CORS origins to allow Vercel frontend
+$env:CORS_ORIGINS = "http://localhost:5173,http://127.0.0.1:5173,https://bx.prlrr.com"
+
 # Start backend process
 $backendProcess = Start-Process -FilePath $pythonCmd -ArgumentList "run.py" -PassThru -NoNewWindow -RedirectStandardOutput "backend.log" -RedirectStandardError "backend.err.log"
 
