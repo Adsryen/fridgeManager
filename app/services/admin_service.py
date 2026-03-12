@@ -139,13 +139,14 @@ class AdminService:
         now = datetime.now().strftime('%Y-%m-%dT%H:%M:%S.000Z')
         
         # 查找所有过期物品
-        expired_items = self.db.item.find({'ExpireDate': {'$lt': now}})
+        all_items = self.db.item.find({})
+        expired_items = [item for item in all_items if item.get('ExpireDate', '') < now]
         count = len(expired_items)
         
         # 删除过期物品
         if count > 0:
-            expired_ids = [item['_id'] for item in expired_items]
-            self.db.item.delete_many({'_id': {'$in': expired_ids}})
+            for item in expired_items:
+                self.db.item.delete_one({'_id': item['_id']})
         
         return count
     

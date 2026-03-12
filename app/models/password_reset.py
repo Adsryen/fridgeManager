@@ -91,7 +91,9 @@ class PasswordResetToken:
         Args:
             db_client: 数据库客户端
         """
-        db_client.delete_many(
-            PasswordResetToken.COLLECTION_NAME,
-            {'expires_at': {'$lt': datetime.now()}}
-        )
+        now = datetime.now()
+        all_tokens = db_client.find(PasswordResetToken.COLLECTION_NAME, {})
+        expired_tokens = [token for token in all_tokens if token.get('expires_at') and token['expires_at'] < now]
+        
+        for token in expired_tokens:
+            db_client.delete_one(PasswordResetToken.COLLECTION_NAME, {'_id': token['_id']})

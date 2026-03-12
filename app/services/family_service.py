@@ -76,18 +76,43 @@ class FamilyService:
     
     def get_user_families(self, user_id: str) -> list[dict]:
         """获取用户所在的所有家庭"""
-        members = self.db.family_member.find({'user_id': user_id})
-        families = []
-        for member in members:
-            family = self.get_family(member['family_id'])
-            if family:
-                family['role'] = member['role']
-                family['joined_at'] = member['joined_at']
-                families.append(family)
-        return families
+        try:
+            print(f"[调试] 开始查询用户 {user_id} 的家庭")
+            members = list(self.db.family_member.find({'user_id': user_id}))
+            print(f"[调试] 查询到的成员记录数: {len(members)}")
+            
+            families = []
+            for member in members:
+                print(f"[调试] 处理成员记录: {member}")
+                family = self.get_family(member['family_id'])
+                if family:
+                    print(f"[调试] 找到家庭: {family['name']}")
+                    # 计算家庭成员数量 - 使用SQLite兼容的方法
+                    family_members = self.db.family_member.find({'family_id': family['_id']})
+                    member_count = len(family_members)
+                    print(f"[调试] 家庭成员数量: {member_count}")
+                    family['member_count'] = member_count
+                    family['role'] = member['role']
+                    family['joined_at'] = member['joined_at']
+                    families.append(family)
+                else:
+                    print(f"[调试] 未找到家庭 ID: {member['family_id']}")
+            
+            print(f"[调试] 最终返回的家庭数量: {len(families)}")
+            return families
+        except Exception as e:
+            print(f"[调试] get_user_families 出错: {str(e)}")
+            import traceback
+            traceback.print_exc()
+            raise
     
     def get_family_members(self, family_id: str) -> list[dict]:
         """获取家庭所有成员"""
+        # 获取家庭信息以确定创建者
+        family = self.get_family(family_id)
+        if not family:
+            return []
+        
         members = self.db.family_member.find({'family_id': family_id})
         result = []
         for member in members:
@@ -99,7 +124,8 @@ class FamilyService:
                     'username': user['username'],
                     'email': user['email'],
                     'role': member['role'],
-                    'joined_at': member['joined_at']
+                    'joined_at': member['joined_at'],
+                    'is_owner': user['_id'] == family['creator_id']  # 添加是否为创建者的标识
                 })
         return result
     
@@ -113,16 +139,40 @@ class FamilyService:
     
     def update_family(self, family_id: str, user_id: str, name: str) -> bool:
         """更新家庭名称（仅创建者和管理员）"""
+        print(f"[调试] 更新家庭请求 - family_id: {family_id}, user_id: {user_id}, name: {name}")
+        
         family = self.get_family(family_id)
         if not family:
+            print(f"[调试] 家庭不存在: {family_id}")
             raise ValueError('家庭不存在')
         
+        print(f"[调试] 找到家庭: {family['name']}, creator_id: {family['creator_id']}")
+        
+        # 检查是否是家庭创建者
+        if family['creator_id'] == user_id:
+            print(f"[调试] 用户是家庭创建者，允许修改")
+            # 创建者可以直接修改
+            result = self.db.family.update_one(
+                {'_id': family_id},
+                {'$set': {
+                    'name': name,
+                    'updated_at': datetime.now().strftime('%Y-%m-%dT%H:%M:%S.000Z')
+                }}
+            )
+            print(f"[调试] 更新结果: {result.modified_count}")
+            return result.modified_count > 0
+        
+        print(f"[调试] 用户不是创建者，检查管理员权限")
+        # 检查是否是管理员
         member = self.db.family_member.find_one({
             'family_id': family_id,
             'user_id': user_id
         })
         
+        print(f"[调试] 成员记录: {member}")
+        
         if not member or member['role'] not in ['creator', 'admin']:
+            print(f"[调试] 权限不足 - member: {member}")
             raise ValueError('只有创建者和管理员可以修改家庭信息')
         
         result = self.db.family.update_one(
@@ -178,10 +228,15 @@ class FamilyService:
     def set_fridge_permission(self, fridge_id: str, is_family_shared: bool, 
                              is_editable_by_family: bool) -> bool:
         """设置冰箱权限"""
+        print(f"[FamilyService] 设置冰箱权限 - 冰箱ID: {fridge_id}")
+        print(f"[FamilyService] 家庭共享: {is_family_shared}, 允许编辑: {is_editable_by_family}")
+        
         # 检查权限是否已存在
         existing = self.db.fridge_permission.find_one({'fridge_id': fridge_id})
+        print(f"[FamilyService] 现有权限记录: {existing}")
         
         if existing:
+            print(f"[FamilyService] 更新现有权限记录")
             result = self.db.fridge_permission.update_one(
                 {'fridge_id': fridge_id},
                 {'$set': {
@@ -190,26 +245,36 @@ class FamilyService:
                     'updated_at': datetime.now().strftime('%Y-%m-%dT%H:%M:%S.000Z')
                 }}
             )
+            print(f"[FamilyService] 更新结果: modified_count={result.modified_count}")
             return result.modified_count > 0
         else:
+            print(f"[FamilyService] 创建新权限记录")
             permission = FridgePermission(
                 fridge_id=fridge_id,
                 is_family_shared=is_family_shared,
                 is_editable_by_family=is_editable_by_family
             )
-            self.db.fridge_permission.insert_one(permission.to_dict())
+            result = self.db.fridge_permission.insert_one(permission.to_dict())
+            print(f"[FamilyService] 创建结果: inserted_id={result.inserted_id}")
             return True
     
     def get_fridge_permission(self, fridge_id: str) -> dict | None:
         """获取冰箱权限"""
+        print(f"[FamilyService] 获取冰箱权限 - 冰箱ID: {fridge_id}")
         permission = self.db.fridge_permission.find_one({'fridge_id': fridge_id})
+        print(f"[FamilyService] 查询到的权限记录: {permission}")
+        
         if not permission:
             # 返回默认权限
-            return {
+            default_permission = {
                 'fridge_id': fridge_id,
                 'is_family_shared': False,
                 'is_editable_by_family': False
             }
+            print(f"[FamilyService] 返回默认权限: {default_permission}")
+            return default_permission
+        
+        print(f"[FamilyService] 返回现有权限: {permission}")
         return permission
     
     def get_family_shared_fridges(self, family_id: str) -> list[dict]:

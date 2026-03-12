@@ -66,12 +66,13 @@ class TaskScheduler:
             cutoff_date = (datetime.now() - timedelta(days=auto_delete_days)).strftime('%Y-%m-%dT%H:%M:%S.000Z')
             
             # 查找过期超过指定天数的物品
-            expired_items = self.db.item.find({'ExpireDate': {'$lt': cutoff_date}})
+            all_items = self.db.item.find({})
+            expired_items = [item for item in all_items if item.get('ExpireDate', '') < cutoff_date]
             count = len(expired_items)
             
             if count > 0:
-                expired_ids = [item['_id'] for item in expired_items]
-                self.db.item.delete_many({'_id': {'$in': expired_ids}})
+                for item in expired_items:
+                    self.db.item.delete_one({'_id': item['_id']})
                 print(f"[定时任务] 自动删除了 {count} 个过期物品")
             
         except Exception as e:

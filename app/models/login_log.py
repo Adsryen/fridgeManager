@@ -55,19 +55,24 @@ class LoginLog:
         from datetime import timedelta
         
         cutoff_time = (datetime.now() - timedelta(minutes=minutes)).isoformat()
-        logs = self.collection.find({
+        all_logs = self.collection.find({
             'username': username,
-            'success': False,
-            'login_time': {'$gte': cutoff_time}
+            'success': False
         })
-        return len(logs)
+        recent_logs = [log for log in all_logs if log.get('login_time', '') >= cutoff_time]
+        return len(recent_logs)
     
     def clear_old_logs(self, days: int = 90):
         """清理旧日志"""
         from datetime import timedelta
         
         cutoff_time = (datetime.now() - timedelta(days=days)).isoformat()
-        result = self.collection.delete_many({
-            'login_time': {'$lt': cutoff_time}
-        })
-        return result.deleted_count
+        all_logs = self.collection.find({})
+        old_logs = [log for log in all_logs if log.get('login_time', '') < cutoff_time]
+        
+        deleted_count = 0
+        for log in old_logs:
+            result = self.collection.delete_one({'_id': log['_id']})
+            deleted_count += result.deleted_count
+        
+        return deleted_count

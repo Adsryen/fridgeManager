@@ -79,6 +79,7 @@ def create_app(config_name: str = 'default') -> Flask:
     from app.routes import auth_bp, item_bp, main_bp, admin_bp, settings_bp
     from app.routes.fridge import fridge_bp
     from app.routes.family import family_bp
+    from app.routes.item_history import item_history_bp
     app.register_blueprint(main_bp)
     app.register_blueprint(auth_bp, url_prefix='/auth')
     app.register_blueprint(item_bp, url_prefix='/item')
@@ -86,6 +87,7 @@ def create_app(config_name: str = 'default') -> Flask:
     app.register_blueprint(settings_bp, url_prefix='/settings')
     app.register_blueprint(fridge_bp, url_prefix='/fridge')
     app.register_blueprint(family_bp, url_prefix='/family')
+    app.register_blueprint(item_history_bp)
     
     # 注册健康检查端点
     @app.route('/health')
