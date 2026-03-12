@@ -46,5 +46,5 @@ router.beforeEach((to, _from, next) => {
 router.afterEach((to) => {
   // 设置页面标题
   const title = to.meta.title as string
-  document.title = title ? `${title} - 智能冰箱管理系统` : '智能冰箱管理系统'
+  document.title = title ? `${title} - 冰箱里面还有啥` : '冰箱里面还有啥'
 })

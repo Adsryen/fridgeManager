@@ -13,6 +13,7 @@ export const useFridgeStore = defineStore('fridge', () => {
   const myFridges = ref<Fridge[]>([])
   const sharedFridges = ref<Fridge[]>([])
   const loading = ref(false)
+  const fridgeItemCounts = ref<Record<string, number>>({}) // 存储各个冰箱的物品数量
   
   // 计算属性
   
@@ -145,6 +146,43 @@ export const useFridgeStore = defineStore('fridge', () => {
   }
   
   /**
+   * 获取指定冰箱的物品数量
+   * @param fridgeId 冰箱 ID
+   */
+  function getFridgeItemCount(fridgeId: string): number {
+    if (fridgeId === 'public') {
+      return fridgeItemCounts.value['public'] || 0
+    }
+    
+    // 先从冰箱对象的 item_count 字段获取
+    const fridge = allFridges.value.find(f => f._id === fridgeId)
+    if (fridge && typeof fridge.item_count === 'number') {
+      return fridge.item_count
+    }
+    
+    // 如果没有，从缓存中获取
+    return fridgeItemCounts.value[fridgeId] || 0
+  }
+  
+  /**
+   * 更新冰箱物品数量
+   * @param fridgeId 冰箱 ID
+   * @param count 物品数量
+   */
+  function updateFridgeItemCount(fridgeId: string, count: number) {
+    fridgeItemCounts.value[fridgeId] = count
+    
+    // 同时更新冰箱对象中的 item_count
+    if (fridgeId !== 'public') {
+      const fridge = myFridges.value.find(f => f._id === fridgeId) || 
+                   sharedFridges.value.find(f => f._id === fridgeId)
+      if (fridge) {
+        fridge.item_count = count
+      }
+    }
+  }
+  
+  /**
    * 获取指定冰箱的详细信息
    * @param fridgeId 冰箱 ID
    */
@@ -161,6 +199,7 @@ export const useFridgeStore = defineStore('fridge', () => {
     myFridges.value = []
     sharedFridges.value = []
     loading.value = false
+    fridgeItemCounts.value = {}
     localStorage.removeItem('currentFridgeId')
   }
   
@@ -170,6 +209,7 @@ export const useFridgeStore = defineStore('fridge', () => {
     myFridges,
     sharedFridges,
     loading,
+    fridgeItemCounts,
     // 计算属性
     allFridges,
     currentFridge,
@@ -183,6 +223,8 @@ export const useFridgeStore = defineStore('fridge', () => {
     deleteFridge,
     initFromStorage,
     getFridgeDetails,
+    getFridgeItemCount,
+    updateFridgeItemCount,
     clearState
   }
 })

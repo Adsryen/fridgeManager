@@ -164,6 +164,9 @@ export const useItemStore = defineStore('item', () => {
         items.value = response.data.map(normalizeItem)
         console.log('[ItemStore] 物品数量:', items.value.length)
         console.log('[ItemStore] 第一个物品:', items.value[0])
+        
+        // 更新冰箱的物品数量
+        fridgeStore.updateFridgeItemCount(fridgeStore.currentFridgeId, items.value.length)
       }
       return response
     } finally {

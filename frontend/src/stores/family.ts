@@ -59,9 +59,15 @@ export const useFamilyStore = defineStore('family', () => {
   async function loadFamilies() {
     loading.value = true
     try {
+      console.log('[调试] 开始调用家庭列表API')
       const response = await familyApi.getFamilyList()
+      console.log('[调试] 家庭列表API响应:', response)
       if (response.success && response.data) {
         families.value = response.data
+        console.log('[调试] 设置家庭列表数据:', families.value)
+      } else {
+        console.log('[调试] API响应失败或无数据')
+        families.value = []
       }
       return response
     } finally {

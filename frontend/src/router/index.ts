@@ -61,6 +61,12 @@ const routes: RouteRecordRaw[] = [
         name: 'AdminSettings',
         component: () => import(/* webpackChunkName: "admin" */ '../views/admin/Settings.vue'),
         meta: { requiresAuth: true, requiresAdmin: true, title: '系统设置' }
+      },
+      {
+        path: 'ai-settings',
+        name: 'AdminAISettings',
+        component: () => import(/* webpackChunkName: "admin" */ '../views/admin/AISettings.vue'),
+        meta: { requiresAuth: true, requiresAdmin: true, title: 'AI设置' }
       }
     ]
   },

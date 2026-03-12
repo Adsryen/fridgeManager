@@ -3,6 +3,7 @@
 // 用户模型
 export interface User {
   _id: string
+  id?: string // 兼容后端返回的字段
   username: string
   email: string
   is_admin: boolean
