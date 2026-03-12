@@ -77,7 +77,8 @@ const userStore = useUserStore()
 
 // 判断当前用户是否是创建者
 const isOwner = computed(() => {
-  return props.family.owner_id === userStore.user?._id
+  const userId = userStore.user?._id || userStore.user?.id
+  return props.family.creator_id === userId
 })
 
 // 角色文本

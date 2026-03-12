@@ -32,6 +32,13 @@
 
           <div class="fridge-actions">
             <button
+              class="action-btn history-btn"
+              @click="showHistoryDialog(fridge)"
+              title="历史记录"
+            >
+              <i class="fas fa-history"></i>
+            </button>
+            <button
               class="action-btn permission-btn"
               @click="showPermissionDialog(fridge)"
               title="权限设置"
@@ -208,6 +215,20 @@
         </el-button>
       </template>
     </el-dialog>
+
+    <!-- 历史记录对话框 -->
+    <el-dialog
+      v-model="historyDialogVisible"
+      :title="`${currentFridge?.name} - 历史记录`"
+      width="600px"
+      :close-on-click-modal="false"
+    >
+      <ItemHistory
+        v-if="currentFridge && historyDialogVisible"
+        :fridge-id="currentFridge._id"
+        @restored="handleItemRestored"
+      />
+    </el-dialog>
   </div>
 </template>
 
@@ -218,6 +239,7 @@ import { useFridgeStore } from '@/stores/fridge'
 import { useFamilyStore } from '@/stores/family'
 import { useItemStore } from '@/stores/item'
 import type { Fridge } from '@/types/models'
+import ItemHistory from '@/components/item/ItemHistory.vue'
 
 const fridgeStore = useFridgeStore()
 const familyStore = useFamilyStore()
@@ -249,6 +271,7 @@ const permissionForm = reactive({
 const renameDialogVisible = ref(false)
 const deleteDialogVisible = ref(false)
 const permissionDialogVisible = ref(false)
+const historyDialogVisible = ref(false)
 const renaming = ref(false)
 const deleting = ref(false)
 const savingPermission = ref(false)
@@ -293,6 +316,12 @@ const showPermissionDialog = async (fridge: Fridge) => {
   }
   
   permissionDialogVisible.value = true
+}
+
+// 显示历史记录对话框
+const showHistoryDialog = (fridge: Fridge) => {
+  currentFridge.value = fridge
+  historyDialogVisible.value = true
 }
 
 // 处理重命名
@@ -382,6 +411,15 @@ const handleSavePermission = async () => {
   } finally {
     savingPermission.value = false
   }
+}
+
+// 处理物品恢复
+const handleItemRestored = async () => {
+  // 重新加载冰箱列表以更新物品数量
+  await fridgeStore.loadFridges()
+  // 重新加载物品列表
+  await itemStore.loadItems()
+  ElMessage.success('物品已恢复')
 }
 </script>
 
@@ -549,6 +587,11 @@ const handleSavePermission = async () => {
 
 .delete-btn:hover {
   background: var(--danger-color);
+  color: white;
+}
+
+.history-btn:hover {
+  background: var(--info-color);
   color: white;
 }
 

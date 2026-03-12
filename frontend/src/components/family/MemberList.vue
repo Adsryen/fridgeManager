@@ -54,9 +54,9 @@
 
 <script setup lang="ts">
 import { computed } from 'vue'
-import { useUserStore } from '@/stores/user'
-import { useFamilyStore } from '@/stores/family'
-import type { FamilyMember } from '@/types/models'
+import { useUserStore } from '../../stores/user'
+import { useFamilyStore } from '../../stores/family'
+import type { FamilyMember } from '../../types/models'
 
 interface Props {
   familyId: string
@@ -80,13 +80,21 @@ const familyStore = useFamilyStore()
 // 判断当前用户是否可以移除成员（只有创建者可以）
 const canRemove = computed(() => {
   const family = familyStore.families.find(f => f._id === props.familyId)
-  return family?.owner_id === userStore.user?._id
+  return family?.creator_id === userStore.user?._id
 })
 
 // 格式化日期
 const formatDate = (dateStr: string) => {
   if (!dateStr) return ''
+  
+  // 创建Date对象，如果是UTC时间字符串，会自动转换为本地时间
   const date = new Date(dateStr)
+  
+  // 检查日期是否有效
+  if (isNaN(date.getTime())) {
+    return dateStr // 如果无法解析，返回原字符串
+  }
+  
   const year = date.getFullYear()
   const month = String(date.getMonth() + 1).padStart(2, '0')
   const day = String(date.getDate()).padStart(2, '0')

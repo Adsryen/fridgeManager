@@ -12,7 +12,12 @@
       </div>
     </div>
 
-    <div class="permission-settings">
+    <div v-if="loading" class="loading-indicator">
+      <i class="fas fa-spinner fa-spin"></i>
+      <span>加载权限设置...</span>
+    </div>
+
+    <div v-else class="permission-settings">
       <div class="setting-item">
         <div class="setting-info">
           <div class="setting-label">
@@ -62,8 +67,8 @@
 </template>
 
 <script setup lang="ts">
-import { ref, watch } from 'vue'
-import { setFridgePermission } from '../../api/family'
+import { ref, watch, onMounted } from 'vue'
+import { setFridgePermission, getFridgePermission } from '../../api/family'
 import { ElMessage } from 'element-plus'
 import type { Fridge, FridgePermission } from '../../types/models'
 
@@ -78,11 +83,54 @@ const emit = defineEmits<{
 
 const localPermission = ref<FridgePermission>({
   fridge_id: props.fridge._id,
-  is_family_shared: props.fridge.permission?.is_family_shared || false,
-  is_editable_by_family: props.fridge.permission?.is_editable_by_family || false
+  is_family_shared: false,
+  is_editable_by_family: false
 })
 
 const saving = ref(false)
+const loading = ref(false)
+
+// 获取权限数据
+const loadPermission = async () => {
+  loading.value = true
+  console.log('[权限管理] 开始加载权限数据，冰箱ID:', props.fridge._id)
+  try {
+    const response = await getFridgePermission(props.fridge._id)
+    console.log('[权限管理] 获取权限响应:', response)
+    if (response.success && response.data) {
+      const newPermission = {
+        fridge_id: props.fridge._id,
+        is_family_shared: Boolean(response.data.is_family_shared),
+        is_editable_by_family: Boolean(response.data.is_editable_by_family)
+      }
+      console.log('[权限管理] 设置新权限数据:', newPermission)
+      localPermission.value = newPermission
+    } else {
+      console.log('[权限管理] 使用默认权限数据')
+      localPermission.value = {
+        fridge_id: props.fridge._id,
+        is_family_shared: false,
+        is_editable_by_family: false
+      }
+    }
+  } catch (error: any) {
+    console.error('[权限管理] 获取权限失败:', error)
+    // 使用默认值
+    localPermission.value = {
+      fridge_id: props.fridge._id,
+      is_family_shared: false,
+      is_editable_by_family: false
+    }
+  } finally {
+    loading.value = false
+    console.log('[权限管理] 权限加载完成，最终状态:', localPermission.value)
+  }
+}
+
+// 组件挂载时获取权限数据
+onMounted(() => {
+  loadPermission()
+})
 
 // 监听 props 变化
 watch(() => props.fridge.permission, (newPermission) => {
@@ -96,35 +144,40 @@ watch(() => props.fridge.permission, (newPermission) => {
 }, { deep: true })
 
 const handleShareChange = async () => {
+  console.log('[权限管理] 家庭共享开关变化:', localPermission.value.is_family_shared)
   // 如果关闭共享，同时关闭编辑权限
   if (!localPermission.value.is_family_shared) {
+    console.log('[权限管理] 关闭共享，同时关闭编辑权限')
     localPermission.value.is_editable_by_family = false
   }
   await savePermission()
 }
 
 const handleEditableChange = async () => {
+  console.log('[权限管理] 编辑权限开关变化:', localPermission.value.is_editable_by_family)
   await savePermission()
 }
 
 const savePermission = async () => {
   saving.value = true
+  console.log('[权限管理] 开始保存权限，当前状态:', localPermission.value)
   try {
-    await setFridgePermission(
+    const response = await setFridgePermission(
       props.fridge._id,
       localPermission.value.is_family_shared,
       localPermission.value.is_editable_by_family
     )
+    console.log('[权限管理] 保存权限响应:', response)
     ElMessage.success('权限设置已保存')
-    emit('updated')
+    // 保存成功后重新获取最新权限数据
+    console.log('[权限管理] 保存成功，重新加载权限数据')
+    await loadPermission()
   } catch (error: any) {
+    console.error('[权限管理] 保存权限失败:', error)
     ElMessage.error(error.message || '保存失败')
-    // 恢复原值
-    localPermission.value = {
-      fridge_id: props.fridge._id,
-      is_family_shared: props.fridge.permission?.is_family_shared || false,
-      is_editable_by_family: props.fridge.permission?.is_editable_by_family || false
-    }
+    // 保存失败时也重新加载确保状态正确
+    console.log('[权限管理] 保存失败，重新加载权限数据')
+    await loadPermission()
   } finally {
     saving.value = false
   }
@@ -276,6 +329,7 @@ const savePermission = async () => {
   cursor: not-allowed;
 }
 
+.loading-indicator,
 .saving-indicator {
   display: flex;
   align-items: center;
@@ -288,6 +342,7 @@ const savePermission = async () => {
   color: var(--text-secondary);
 }
 
+.loading-indicator i,
 .saving-indicator i {
   color: var(--primary-color);
 }
