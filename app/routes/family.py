@@ -97,18 +97,24 @@ def leave_family(family_id):
 def list_families():
     """获取用户所在的所有家庭（JWT 认证）"""
     try:
+        print(f"[调试] 收到家庭列表请求")
         # 从 JWT Token 中获取用户 ID
         user_id = request.user_id
+        print(f"[调试] 用户ID: {user_id}")
         db = get_db()
         family_service = FamilyService(db)
         
         families = family_service.get_user_families(user_id)
+        print(f"[调试] 查询到的家庭数量: {len(families)}")
         
         return jsonify({
             'success': True,
             'data': families
         })
     except Exception as e:
+        print(f"[调试] 家庭列表查询出错: {str(e)}")
+        import traceback
+        traceback.print_exc()
         return jsonify({'success': False, 'error': str(e)}), 500
 
 
@@ -241,23 +247,35 @@ def set_fridge_permission(fridge_id):
         is_family_shared = data.get('is_family_shared', False)
         is_editable_by_family = data.get('is_editable_by_family', False)
         
+        print(f"[权限设置] 冰箱ID: {fridge_id}")
+        print(f"[权限设置] 请求数据: {data}")
+        print(f"[权限设置] 家庭共享: {is_family_shared}")
+        print(f"[权限设置] 允许编辑: {is_editable_by_family}")
+        
         # 从 JWT Token 中获取用户 ID
         user_id = request.user_id
+        print(f"[权限设置] 用户ID: {user_id}")
         db = get_db()
         
         # 检查是否是冰箱所有者
         fridge = db.fridge.find_one({'_id': fridge_id})
+        print(f"[权限设置] 冰箱信息: {fridge}")
         if not fridge or fridge['user_id'] != user_id:
+            print(f"[权限设置] 权限检查失败 - 冰箱所有者: {fridge.get('user_id') if fridge else 'None'}, 当前用户: {user_id}")
             return jsonify({'success': False, 'error': '只有冰箱所有者可以设置权限'}), 403
         
         family_service = FamilyService(db)
-        family_service.set_fridge_permission(fridge_id, is_family_shared, is_editable_by_family)
+        result = family_service.set_fridge_permission(fridge_id, is_family_shared, is_editable_by_family)
+        print(f"[权限设置] 设置结果: {result}")
         
         return jsonify({
             'success': True,
             'message': '权限设置成功'
         }), 200
     except Exception as e:
+        print(f"[权限设置] 异常: {str(e)}")
+        import traceback
+        traceback.print_exc()
         return jsonify({'success': False, 'error': str(e)}), 500
 
 
@@ -266,13 +284,18 @@ def set_fridge_permission(fridge_id):
 def get_fridge_permission(fridge_id):
     """获取冰箱权限（JWT 认证）"""
     try:
+        print(f"[获取权限] 冰箱ID: {fridge_id}")
         db = get_db()
         family_service = FamilyService(db)
         permission = family_service.get_fridge_permission(fridge_id)
+        print(f"[获取权限] 权限数据: {permission}")
         
         return jsonify({
             'success': True,
             'data': permission
         }), 200
     except Exception as e:
+        print(f"[获取权限] 异常: {str(e)}")
+        import traceback
+        traceback.print_exc()
         return jsonify({'success': False, 'error': str(e)}), 500
