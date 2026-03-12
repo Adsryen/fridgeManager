@@ -498,10 +498,10 @@ onMounted(() => {
 
 /* 容器 */
 .admin-container {
-  min-height: 100vh;
-  padding-bottom: 60px;
+  height: 100vh;
+  display: flex;
+  flex-direction: column;
   background: var(--background-color);
-  overflow-y: auto;
 }
 
 /* 顶部导航栏 */
@@ -553,7 +553,9 @@ onMounted(() => {
 
 /* 主内容区 */
 .admin-content {
-  padding: calc(45px + 12px) 12px 12px;
+  flex: 1;
+  padding: calc(45px + 12px) 12px calc(60px + 12px);
+  overflow-y: auto;
 }
 
 /* 底部导航栏 */
