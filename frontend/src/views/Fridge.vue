@@ -36,19 +36,26 @@
               :key="fridge._id"
               class="fridge-item"
             >
-              <div class="fridge-icon">
-                <i class="fas fa-snowflake"></i>
-              </div>
-              <div class="fridge-info">
-                <div class="fridge-name">{{ fridge.name }}</div>
-                <div class="fridge-meta">
-                  <span class="item-count">{{ fridge.item_count || 0 }} 个物品</span>
-                  <span v-if="fridge.permission?.is_family_shared" class="share-badge">
-                    <i class="fas fa-users"></i> 已共享
-                  </span>
+              <div class="fridge-main">
+                <div class="fridge-icon">
+                  <i class="fas fa-snowflake"></i>
+                </div>
+                <div class="fridge-info">
+                  <div class="fridge-header">
+                    <span v-if="fridge.permission?.is_family_shared" class="share-badge">
+                      <i class="fas fa-users"></i> 已共享
+                    </span>
+                    <div class="fridge-name">{{ fridge.name }}</div>
+                  </div>
+                  <div class="fridge-meta">
+                    <span class="item-count">{{ fridge.item_count || 0 }} 个物品</span>
+                  </div>
                 </div>
               </div>
               <div class="fridge-actions">
+                <button class="action-btn history" @click="showFridgeHistory(fridge)" title="历史记录">
+                  <i class="fas fa-history"></i>
+                </button>
                 <button class="action-btn edit" @click="renameFridge(fridge)" title="重命名">
                   <i class="fas fa-edit"></i>
                 </button>
@@ -79,14 +86,26 @@
               :key="fridge._id"
               class="fridge-item"
             >
-              <div class="fridge-icon shared">
-                <i class="fas fa-users"></i>
-              </div>
-              <div class="fridge-info">
-                <div class="fridge-name">{{ fridge.name }}</div>
-                <div class="fridge-meta">
-                  所有者: {{ fridge.owner_username }} · {{ fridge.item_count || 0 }} 个物品
+              <div class="fridge-main">
+                <div class="fridge-icon shared">
+                  <i class="fas fa-users"></i>
                 </div>
+                <div class="fridge-info">
+                  <div class="fridge-header">
+                    <span class="share-badge">
+                      <i class="fas fa-users"></i> 共享
+                    </span>
+                    <div class="fridge-name">{{ fridge.name }}（{{ fridge.owner_username }}）</div>
+                  </div>
+                  <div class="fridge-meta">
+                    <span class="item-count">{{ fridge.item_count || 0 }} 个物品</span>
+                  </div>
+                </div>
+              </div>
+              <div class="fridge-actions">
+                <button class="action-btn history" @click="showFridgeHistory(fridge)" title="历史记录">
+                  <i class="fas fa-history"></i>
+                </button>
               </div>
             </div>
           </div>
@@ -119,7 +138,7 @@
         <i class="fas fa-snowflake"></i>
         <span>冰箱</span>
       </button>
-      <button class="nav-item add-btn" @click="$router.push('/')">
+      <button class="nav-item add-btn" @click="openGlobalAddMenu">
         <div class="add-icon">
           <i class="fas fa-plus"></i>
         </div>
@@ -150,11 +169,20 @@
         @updated="handleShareUpdated"
       />
     </Drawer>
+
+    <!-- 历史记录抽屉 -->
+    <Drawer v-model="showHistoryDialog" :title="`${currentFridge?.name} - 历史记录`">
+      <ItemHistory
+        v-if="currentFridge && showHistoryDialog"
+        :fridge-id="currentFridge._id"
+        @restored="handleHistoryRestored"
+      />
+    </Drawer>
   </div>
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted } from 'vue'
+import { ref, onMounted, inject } from 'vue'
 import { useRouter } from 'vue-router'
 import { useFridgeStore } from '../stores/fridge'
 import { useUserStore } from '../stores/user'
@@ -162,6 +190,7 @@ import { useTheme } from '../composables/useTheme'
 import Drawer from '../components/common/Drawer.vue'
 import FridgeForm from '../components/fridge/FridgeForm.vue'
 import FridgePermissionManager from '../components/fridge/FridgePermissionManager.vue'
+import ItemHistory from '../components/item/ItemHistory.vue'
 import { ElMessage, ElMessageBox } from 'element-plus'
 import type { Fridge } from '../types/models'
 
@@ -171,7 +200,11 @@ const router = useRouter()
 const { isDark, toggleTheme } = useTheme()
 const showCreateForm = ref(false)
 const showShareManager = ref(false)
+const showHistoryDialog = ref(false)
 const currentFridge = ref<Fridge | null>(null)
+
+// 注入全局添加方法
+const openGlobalAddMenu = inject('openGlobalAddMenu') as () => void
 
 const toggleDarkMode = async () => {
   await toggleTheme()
@@ -211,9 +244,19 @@ const manageFridgeShare = (fridge: Fridge) => {
   showShareManager.value = true
 }
 
+const showFridgeHistory = (fridge: Fridge) => {
+  currentFridge.value = fridge
+  showHistoryDialog.value = true
+}
+
 const handleShareUpdated = async () => {
   await fridgeStore.loadFridges()
   showShareManager.value = false
+}
+
+const handleHistoryRestored = async () => {
+  await fridgeStore.loadFridges()
+  ElMessage.success('物品已恢复')
 }
 
 const deleteFridge = async (fridge: Fridge) => {
@@ -292,7 +335,7 @@ onMounted(() => {
 
 .fridge-item {
   display: flex;
-  align-items: center;
+  flex-direction: column;
   gap: 12px;
   padding: 16px;
   background: var(--card-bg);
@@ -303,6 +346,12 @@ onMounted(() => {
 
 .fridge-item:active {
   transform: scale(0.98);
+}
+
+.fridge-main {
+  display: flex;
+  align-items: center;
+  gap: 12px;
 }
 
 .fridge-icon {
@@ -327,11 +376,17 @@ onMounted(() => {
   min-width: 0;
 }
 
+.fridge-header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 4px;
+}
+
 .fridge-name {
   font-size: 16px;
   font-weight: 600;
   color: var(--text-primary);
-  margin-bottom: 4px;
 }
 
 .fridge-meta {
@@ -358,6 +413,7 @@ onMounted(() => {
   border-radius: 10px;
   font-size: 11px;
   font-weight: 500;
+  flex-shrink: 0;
 }
 
 .share-badge i {
@@ -367,6 +423,7 @@ onMounted(() => {
 .fridge-actions {
   display: flex;
   gap: 6px;
+  justify-content: flex-end;
 }
 
 .action-btn {
@@ -411,6 +468,18 @@ onMounted(() => {
 
 .action-btn.delete:active {
   background: #dc2626;
+  transform: scale(0.95);
+}
+
+.action-btn.history {
+  background: var(--bg-color);
+  color: var(--text-secondary);
+  border: 1px solid var(--border-color);
+}
+
+.action-btn.history:active {
+  background: var(--bg-secondary);
+  color: var(--text-primary);
   transform: scale(0.95);
 }
 

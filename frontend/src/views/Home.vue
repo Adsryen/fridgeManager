@@ -58,22 +58,41 @@
             class="fridge-tab"
             :class="{ active: fridgeStore.currentFridgeId === 'public' }"
             @click="switchFridge('public')"
+            style="z-index: 1000; position: relative;"
           >
             <i class="fas fa-users"></i>
             <span>公共冰箱</span>
+            <span v-if="getPublicItemCount() > 0" class="fridge-badge" style="z-index: 1001;">{{ getPublicItemCount() }}</span>
           </button>
-          <!-- 用户的冰箱 -->
+          <!-- 我的冰箱 -->
           <button
-            v-for="fridge in fridgeStore.allFridges"
+            v-for="fridge in fridgeStore.myFridges"
             :key="fridge._id"
             class="fridge-tab"
             :class="{ active: fridgeStore.currentFridgeId === fridge._id }"
             @click="switchFridge(fridge._id)"
+            style="z-index: 1000; position: relative;"
           >
             <i class="fas fa-snowflake"></i>
             <span>{{ fridge.name }}</span>
+            <span v-if="fridge.item_count > 0" class="fridge-badge" style="z-index: 1001;">{{ fridge.item_count }}</span>
           </button>
-          <button class="fridge-tab add-fridge" @click="$router.push('/fridge')">
+          <!-- 家庭共享冰箱 -->
+          <button
+            v-for="fridge in fridgeStore.sharedFridges"
+            :key="fridge._id"
+            class="fridge-tab shared-fridge"
+            :class="{ active: fridgeStore.currentFridgeId === fridge._id }"
+            @click="switchFridge(fridge._id)"
+            style="z-index: 1000; position: relative;"
+          >
+            <i class="fas fa-share-alt"></i>
+            <div class="fridge-info">
+              <span class="fridge-name">{{ fridge.name }}（{{ fridge.owner_username }}）</span>
+            </div>
+            <span v-if="fridge.item_count > 0" class="fridge-badge" style="z-index: 1001;">{{ fridge.item_count }}</span>
+          </button>
+          <button class="fridge-tab add-fridge" @click="$router.push('/fridge')" style="z-index: 1000; position: relative;">
             <i class="fas fa-plus"></i>
             <span>管理冰箱</span>
           </button>
@@ -100,7 +119,6 @@
       <div class="content-with-sidebar">
         <!-- 左侧边栏 -->
         <div class="sidebar">
-          <div class="sidebar-title">全部</div>
           <button
             class="sidebar-item"
             :class="{ active: currentView === 'all' }"
@@ -265,26 +283,6 @@
       </button>
     </div>
 
-    <!-- 添加方式选择气泡菜单 -->
-    <BubbleMenu v-model="showAddMethodSelector">
-      <AddMethodSelector @select="handleAddMethodSelect" />
-    </BubbleMenu>
-
-    <!-- 物品表单抽屉 -->
-    <Drawer v-model="showItemForm" title="添加物品">
-      <ItemForm @success="handleItemSuccess" @cancel="showItemForm = false" />
-    </Drawer>
-
-    <!-- OCR上传抽屉 -->
-    <Drawer v-model="showOCRUpload" title="文字识别">
-      <OCRUpload @success="handleItemSuccess" @cancel="showOCRUpload = false" />
-    </Drawer>
-
-    <!-- AI 对话抽屉 -->
-    <Drawer v-model="showChatDialog" title="AI 助手">
-      <ChatDialog />
-    </Drawer>
-
     <!-- 取出物品对话框 -->
     <Drawer v-model="showTakeOutDialog" title="取出物品">
       <TakeOutDialog
@@ -310,20 +308,14 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, onMounted } from 'vue'
-import { useRouter } from 'vue-router'
+import { ref, computed, onMounted, inject } from 'vue'
 import { useItemStore } from '../stores/item'
 import { useFridgeStore } from '../stores/fridge'
 import { useUserStore } from '../stores/user'
 import { useTheme } from '../composables/useTheme'
 import Drawer from '../components/common/Drawer.vue'
-import BubbleMenu from '../components/common/BubbleMenu.vue'
-import ItemForm from '../components/item/ItemForm.vue'
-import ChatDialog from '../components/ai/ChatDialog.vue'
 import TakeOutDialog from '../components/item/TakeOutDialog.vue'
 import ItemEditForm from '../components/item/ItemEditForm.vue'
-import AddMethodSelector from '../components/item/AddMethodSelector.vue'
-import OCRUpload from '../components/ai/OCRUpload.vue'
 import { ElMessage, ElMessageBox } from 'element-plus'
 import type { Item } from '../types/models'
 import { updateItem as updateItemApi, deleteItem as deleteItemApi } from '../api/item'
@@ -331,18 +323,16 @@ import { updateItem as updateItemApi, deleteItem as deleteItemApi } from '../api
 const itemStore = useItemStore()
 const fridgeStore = useFridgeStore()
 const userStore = useUserStore()
-const router = useRouter()
 const { isDark, toggleTheme } = useTheme()
+
+// 注入全局添加方法
+const openGlobalAddMenu = inject('openGlobalAddMenu') as () => void
 
 const searchQuery = ref('')
 const currentView = ref('all')
 const selectedCategory = ref('all')
-const showItemForm = ref(false)
-const showChatDialog = ref(false)
 const showTakeOutDialog = ref(false)
 const showEditForm = ref(false)
-const showAddMethodSelector = ref(false)
-const showOCRUpload = ref(false)
 const currentItem = ref<Item | null>(null)
 
 const categories = [
@@ -433,6 +423,11 @@ const getPlaceLabel = (place: string) => {
     normal: '室温区'
   }
   return labels[place] || place
+}
+
+const getPublicItemCount = () => {
+  // 使用冰箱store的方法获取公共冰箱的物品数量
+  return fridgeStore.getFridgeItemCount('public')
 }
 
 const getItemEmoji = (type: string) => {
@@ -559,33 +554,9 @@ const deleteItem = async (item: Item) => {
   }
 }
 
-const handleItemSuccess = () => {
-  showItemForm.value = false
-  itemStore.loadItems()
-}
-
 const handleAddClick = () => {
-  // 游客也可以打开添加菜单
-  showAddMethodSelector.value = true
-}
-
-const handleAddMethodSelect = (method: 'ocr' | 'manual' | 'ai') => {
-  showAddMethodSelector.value = false
-  
-  // OCR 和 AI 需要登录
-  if ((method === 'ocr' || method === 'ai') && !userStore.isLoggedIn) {
-    ElMessage.warning('该功能需要登录后使用')
-    router.push('/login')
-    return
-  }
-  
-  if (method === 'manual') {
-    showItemForm.value = true
-  } else if (method === 'ocr') {
-    showOCRUpload.value = true
-  } else if (method === 'ai') {
-    showChatDialog.value = true
-  }
+  // 调用全局添加方法
+  openGlobalAddMenu()
 }
 
 onMounted(async () => {

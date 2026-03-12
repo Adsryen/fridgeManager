@@ -50,13 +50,16 @@
                 <i class="fas fa-users"></i>
               </div>
               <div class="family-info">
-                <div class="family-name">{{ family.name }}</div>
+                <div class="family-name" @click="editFamilyName(family)">
+                  {{ family.name }}
+                  <i v-if="family.creator_id === (userStore.user?._id || userStore.user?.id)" class="fas fa-edit edit-icon"></i>
+                </div>
                 <div class="family-meta">
-                  <span v-if="family.creator_id === userStore.user?._id" class="owner-badge">
+                  <span v-if="family.creator_id === (userStore.user?._id || userStore.user?.id)" class="owner-badge">
                     <i class="fas fa-crown"></i> 所有者
                   </span>
                   <span class="member-count">
-                    <i class="fas fa-user"></i> {{ family.member_count }} 人
+                    <i class="fas fa-user"></i> {{ family.member_count || 0 }} 人
                   </span>
                 </div>
               </div>
@@ -124,7 +127,7 @@
                   <i class="fas fa-users"></i> 查看成员
                 </button>
                 <button
-                  v-if="family.creator_id === userStore.user?._id"
+                  v-if="family.creator_id === (userStore.user?._id || userStore.user?.id)"
                   class="btn-danger"
                   @click="deleteFamily(family)"
                 >
@@ -172,7 +175,7 @@
         <i class="fas fa-snowflake"></i>
         <span>冰箱</span>
       </button>
-      <button class="nav-item add-btn" @click="$router.push('/')">
+      <button class="nav-item add-btn" @click="openGlobalAddMenu">
         <div class="add-icon">
           <i class="fas fa-plus"></i>
         </div>
@@ -241,8 +244,33 @@
       <MemberList
         v-if="currentFamily"
         :family-id="currentFamily._id"
-        :members="[]"
+        :members="familyStore.members"
+        :loading="familyStore.loading"
+        @remove="handleRemoveMember"
       />
+    </Drawer>
+
+    <!-- 编辑家庭名称抽屉 -->
+    <Drawer v-model="showEditForm" title="编辑家庭名称">
+      <div class="form-content">
+        <div class="form-group">
+          <label><i class="fas fa-users"></i> 家庭名称</label>
+          <input
+            v-model="editForm.name"
+            type="text"
+            class="mobile-input"
+            placeholder="请输入家庭名称"
+            maxlength="50"
+          />
+        </div>
+        <div class="form-actions">
+          <button class="btn-secondary" @click="showEditForm = false">取消</button>
+          <button class="btn-primary" :disabled="updating" @click="handleUpdate">
+            <i class="fas fa-check"></i>
+            {{ updating ? '更新中...' : '更新' }}
+          </button>
+        </div>
+      </div>
     </Drawer>
 
     <!-- 冰箱权限管理抽屉 -->
@@ -257,7 +285,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted } from 'vue'
+import { ref, onMounted, inject } from 'vue'
 import { useFamilyStore } from '../stores/family'
 import { useUserStore } from '../stores/user'
 import { useTheme } from '../composables/useTheme'
@@ -272,12 +300,17 @@ const familyStore = useFamilyStore()
 const userStore = useUserStore()
 const { isDark, toggleTheme } = useTheme()
 
+// 注入全局添加方法
+const openGlobalAddMenu = inject('openGlobalAddMenu') as () => void
+
 const showCreateForm = ref(false)
 const showJoinForm = ref(false)
 const showMemberList = ref(false)
+const showEditForm = ref(false)
 const showPermissionManager = ref(false)
 const creating = ref(false)
 const joining = ref(false)
+const updating = ref(false)
 const currentFamily = ref<Family | null>(null)
 const currentFridge = ref<Fridge | null>(null)
 
@@ -293,6 +326,10 @@ const joinForm = ref({
   code: ''
 })
 
+const editForm = ref({
+  name: ''
+})
+
 const toggleDarkMode = async () => {
   await toggleTheme()
 }
@@ -306,8 +343,15 @@ const copyCode = async (code: string) => {
   }
 }
 
-const viewMembers = (family: Family) => {
+const viewMembers = async (family: Family) => {
   currentFamily.value = family
+  // 加载家庭成员数据
+  try {
+    await familyStore.loadMembers(family._id)
+  } catch (error: any) {
+    console.error('加载家庭成员失败:', error)
+    ElMessage.error('加载家庭成员失败')
+  }
   showMemberList.value = true
 }
 
@@ -325,8 +369,11 @@ const loadFamilyFridges = async (familyId: string) => {
 }
 
 const manageFridgePermission = (fridge: Fridge) => {
+  // 获取用户ID，兼容 _id 和 id 字段
+  const userId = userStore.user?._id || userStore.user?.id
+  
   // 只有冰箱所有者可以管理权限
-  if (fridge.user_id !== userStore.user?._id) {
+  if (fridge.user_id !== userId) {
     ElMessage.info('只有冰箱所有者可以管理权限')
     return
   }
@@ -440,8 +487,71 @@ const leaveFamily = async (family: Family) => {
   }
 }
 
+const editFamilyName = (family: Family) => {
+  // 获取用户ID，兼容 _id 和 id 字段
+  const userId = userStore.user?._id || userStore.user?.id
+  
+  // 只有创建者可以编辑
+  if (family.creator_id !== userId) {
+    ElMessage.info('只有家庭创建者可以修改名称')
+    return
+  }
+  currentFamily.value = family
+  editForm.value.name = family.name
+  showEditForm.value = true
+}
+
+const handleUpdate = async () => {
+  if (!currentFamily.value) return
+  
+  if (!editForm.value.name) {
+    ElMessage.error('请输入家庭名称')
+    return
+  }
+
+  updating.value = true
+  try {
+    await familyStore.updateFamily(currentFamily.value._id, editForm.value.name)
+    ElMessage.success('更新成功')
+    showEditForm.value = false
+    await familyStore.loadFamilies()
+  } catch (error: any) {
+    ElMessage.error(error.message || '更新失败')
+  } finally {
+    updating.value = false
+  }
+}
+
+const handleRemoveMember = async (userId: string) => {
+  if (!currentFamily.value) return
+  
+  try {
+    await ElMessageBox.confirm(
+      '确定要移除该成员吗？',
+      '确认移除',
+      {
+        confirmButtonText: '移除',
+        cancelButtonText: '取消',
+        type: 'warning'
+      }
+    )
+    
+    await familyStore.removeMember(currentFamily.value._id, userId)
+    ElMessage.success('成员已移除')
+    // 重新加载家庭列表以更新成员数量
+    await familyStore.loadFamilies()
+  } catch (error: any) {
+    if (error !== 'cancel') {
+      ElMessage.error(error.message || '移除失败')
+    }
+  }
+}
+
 onMounted(async () => {
+  console.log('[调试] Family.vue 组件挂载，开始加载家庭列表')
   await familyStore.loadFamilies()
+  console.log('[调试] 家庭列表加载完成，数量:', familyStore.families.length)
+  console.log('[调试] 家庭列表数据:', familyStore.families)
   // 加载所有家庭的冰箱
   for (const family of familyStore.families) {
     await loadFamilyFridges(family._id)
@@ -538,6 +648,25 @@ onMounted(async () => {
   font-size: 18px;
   font-weight: 600;
   margin-bottom: 4px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  transition: all 0.2s;
+}
+
+.family-name:hover {
+  color: rgba(255, 255, 255, 0.8);
+}
+
+.edit-icon {
+  font-size: 14px;
+  opacity: 0.7;
+  transition: all 0.2s;
+}
+
+.family-name:hover .edit-icon {
+  opacity: 1;
 }
 
 .family-meta {
@@ -605,6 +734,7 @@ onMounted(async () => {
 .family-actions {
   display: flex;
   gap: 8px;
+  margin-top: 20px;
 }
 
 .btn-secondary,
@@ -861,18 +991,19 @@ onMounted(async () => {
 }
 
 .fridges-grid {
-  display: grid;
-  grid-template-columns: repeat(2, 1fr);
-  gap: 8px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
 }
 
 .fridge-mini-card {
   display: flex;
-  flex-direction: column;
-  gap: 8px;
-  padding: 12px;
+  flex-direction: row;
+  align-items: center;
+  gap: 12px;
+  padding: 16px;
   background: var(--bg-color);
-  border-radius: 10px;
+  border-radius: 12px;
   border: 1px solid var(--border-color);
   cursor: pointer;
   transition: all 0.2s;
@@ -885,15 +1016,16 @@ onMounted(async () => {
 }
 
 .fridge-mini-icon {
-  width: 36px;
-  height: 36px;
-  border-radius: 8px;
+  width: 48px;
+  height: 48px;
+  border-radius: 12px;
   background: linear-gradient(135deg, #60a5fa, #3b82f6);
   display: flex;
   align-items: center;
   justify-content: center;
   color: white;
-  font-size: 16px;
+  font-size: 20px;
+  flex-shrink: 0;
 }
 
 .fridge-mini-info {
@@ -902,17 +1034,17 @@ onMounted(async () => {
 }
 
 .fridge-mini-name {
-  font-size: 14px;
+  font-size: 16px;
   font-weight: 600;
   color: var(--text-primary);
-  margin-bottom: 2px;
+  margin-bottom: 4px;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
 }
 
 .fridge-mini-owner {
-  font-size: 11px;
+  font-size: 13px;
   color: var(--text-secondary);
   white-space: nowrap;
   overflow: hidden;

@@ -39,6 +39,7 @@
                 placeholder="3-20个字符"
                 autocomplete="username"
                 @blur="validateUsername"
+                @keyup.enter="focusEmail"
               />
             </div>
             <div v-if="usernameFeedback" class="field-feedback" :class="{ valid: usernameValid, invalid: usernameInvalid }">
@@ -64,6 +65,7 @@
                 placeholder="your@email.com"
                 autocomplete="email"
                 @blur="validateEmail"
+                @keyup.enter="focusPassword"
               />
             </div>
             <div v-if="emailFeedback" class="field-feedback" :class="{ valid: emailValid, invalid: emailInvalid }">
@@ -89,6 +91,7 @@
                 autocomplete="new-password"
                 @input="checkPasswordStrength"
                 @focus="showPasswordRequirements = true"
+                @keyup.enter="focusConfirmPassword"
               />
               <button type="button" class="toggle-password-btn" @click="showPassword = !showPassword">
                 <i :class="showPassword ? 'fas fa-eye-slash' : 'fas fa-eye'"></i>
@@ -133,6 +136,7 @@
                 placeholder="再次输入密码"
                 autocomplete="new-password"
                 @input="validateConfirmPassword"
+                @keyup.enter="handleSubmit"
               />
               <button type="button" class="toggle-password-btn" @click="showConfirmPassword = !showConfirmPassword">
                 <i :class="showConfirmPassword ? 'fas fa-eye-slash' : 'fas fa-eye'"></i>
@@ -292,6 +296,30 @@ const passwordStrengthClass = computed(() => {
 // 返回上一页
 const goBack = () => {
   router.push('/profile')
+}
+
+// 聚焦到邮箱输入框
+const focusEmail = () => {
+  const emailInput = document.getElementById('email') as HTMLInputElement
+  if (emailInput) {
+    emailInput.focus()
+  }
+}
+
+// 聚焦到密码输入框
+const focusPassword = () => {
+  const passwordInput = document.getElementById('password') as HTMLInputElement
+  if (passwordInput) {
+    passwordInput.focus()
+  }
+}
+
+// 聚焦到确认密码输入框
+const focusConfirmPassword = () => {
+  const confirmPasswordInput = document.getElementById('confirmPassword') as HTMLInputElement
+  if (confirmPasswordInput) {
+    confirmPasswordInput.focus()
+  }
 }
 
 // 验证用户名

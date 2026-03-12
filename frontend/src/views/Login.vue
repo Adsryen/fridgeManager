@@ -36,6 +36,7 @@
                 placeholder="请输入用户名"
                 autocomplete="username"
                 autofocus
+                @keyup.enter="focusPassword"
               />
             </div>
           </el-form-item>
@@ -54,6 +55,7 @@
                 id="password"
                 placeholder="请输入密码"
                 autocomplete="current-password"
+                @keyup.enter="handleSubmit"
               />
               <button type="button" class="toggle-password-btn" @click="showPassword = !showPassword">
                 <i :class="showPassword ? 'fas fa-eye-slash' : 'fas fa-eye'"></i>
@@ -172,6 +174,14 @@ const forgotLoading = ref(false)
 // 返回上一页
 const goBack = () => {
   router.push('/profile')
+}
+
+// 聚焦到密码输入框
+const focusPassword = () => {
+  const passwordInput = document.getElementById('password') as HTMLInputElement
+  if (passwordInput) {
+    passwordInput.focus()
+  }
 }
 
 // 显示忘记密码弹窗

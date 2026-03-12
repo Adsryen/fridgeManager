@@ -169,7 +169,7 @@
         <i class="fas fa-snowflake"></i>
         <span>冰箱</span>
       </button>
-      <button class="nav-item add-btn" @click="$router.push('/')">
+      <button class="nav-item add-btn" @click="openGlobalAddMenu">
         <div class="add-icon">
           <i class="fas fa-plus"></i>
         </div>
@@ -190,7 +190,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted } from 'vue'
+import { ref, onMounted, inject } from 'vue'
 import { useRouter } from 'vue-router'
 import { useUserStore } from '../stores/user'
 import { useItemStore } from '../stores/item'
@@ -201,6 +201,9 @@ const router = useRouter()
 const userStore = useUserStore()
 const itemStore = useItemStore()
 const { isDark, toggleTheme } = useTheme()
+
+// 注入全局添加方法
+const openGlobalAddMenu = inject('openGlobalAddMenu') as () => void
 
 const autoTheme = ref(false)
 const currentTheme = ref('pink')
