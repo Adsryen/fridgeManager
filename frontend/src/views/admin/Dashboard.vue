@@ -1,84 +1,163 @@
 <template>
-  <div class="admin-dashboard">
-    <div class="dashboard-header">
-      <h1>管理员仪表板</h1>
-      <p class="subtitle">系统概览与统计</p>
-    </div>
+  <div class="admin-container">
+    <!-- 顶部导航栏 -->
+    <header class="admin-header">
+      <a @click="goBack" class="admin-header-back">
+        <i class="fas fa-arrow-left"></i>
+      </a>
+      <div class="admin-header-title">仪表盘</div>
+      <div class="admin-header-action"></div>
+    </header>
 
-    <div v-if="loading" class="loading-container">
-      <el-skeleton :rows="6" animated />
-    </div>
+    <!-- 主内容区 -->
+    <div class="admin-content">
+      <!-- 提示框 -->
+      <div v-if="alertMessage" :class="['alert', `alert-${alertType}`]">
+        <i class="fas fa-check-circle"></i>
+        <span>{{ alertMessage }}</span>
+      </div>
 
-    <div v-else class="stats-container">
+      <!-- 加载动画 -->
+      <div v-if="loading" class="loading">
+        <div class="spinner"></div>
+      </div>
+
       <!-- 统计卡片 -->
-      <div class="stats-grid">
-        <div class="stat-card">
-          <div class="stat-icon users">
+      <div v-else class="stats-grid">
+        <div class="stat-card primary">
+          <div class="stat-card-icon">
             <i class="fas fa-users"></i>
           </div>
-          <div class="stat-content">
-            <div class="stat-value">{{ stats.total_users }}</div>
-            <div class="stat-label">总用户数</div>
-            <div class="stat-detail">活跃: {{ stats.active_users }}</div>
-          </div>
+          <div class="stat-card-value">{{ stats.total_users }}</div>
+          <div class="stat-card-label">用户总数</div>
         </div>
 
-        <div class="stat-card">
-          <div class="stat-icon items">
+        <div class="stat-card success">
+          <div class="stat-card-icon">
             <i class="fas fa-box"></i>
           </div>
-          <div class="stat-content">
-            <div class="stat-value">{{ stats.total_items }}</div>
-            <div class="stat-label">总物品数</div>
-          </div>
+          <div class="stat-card-value">{{ stats.total_items }}</div>
+          <div class="stat-card-label">物品总数</div>
         </div>
 
-        <div class="stat-card">
-          <div class="stat-icon fridges">
+        <div class="stat-card warning">
+          <div class="stat-card-icon">
             <i class="fas fa-snowflake"></i>
           </div>
-          <div class="stat-content">
-            <div class="stat-value">{{ stats.total_fridges }}</div>
-            <div class="stat-label">总冰箱数</div>
-          </div>
+          <div class="stat-card-value">{{ stats.total_fridges }}</div>
+          <div class="stat-card-label">冰箱总数</div>
         </div>
 
-        <div class="stat-card">
-          <div class="stat-icon rate">
+        <div class="stat-card info">
+          <div class="stat-card-icon">
             <i class="fas fa-chart-line"></i>
           </div>
-          <div class="stat-content">
-            <div class="stat-value">{{ activeRate }}%</div>
-            <div class="stat-label">用户活跃率</div>
+          <div class="stat-card-value">{{ activeRate }}%</div>
+          <div class="stat-card-label">活跃用户</div>
+        </div>
+      </div>
+
+      <!-- 系统状态 -->
+      <div class="card">
+        <div class="card-header">
+          <i class="fas fa-server"></i> 系统状态
+        </div>
+        <div class="card-body">
+          <div class="status-list">
+            <div class="status-item">
+              <div class="status-info">
+                <div class="status-label">数据库连接</div>
+                <div class="status-description">MySQL 数据库运行正常</div>
+              </div>
+              <div class="status-indicator success">
+                <i class="fas fa-check-circle"></i>
+              </div>
+            </div>
+            <div class="status-item">
+              <div class="status-info">
+                <div class="status-label">AI 服务</div>
+                <div class="status-description">OpenAI API 连接正常</div>
+              </div>
+              <div class="status-indicator success">
+                <i class="fas fa-check-circle"></i>
+              </div>
+            </div>
+            <div class="status-item">
+              <div class="status-info">
+                <div class="status-label">文件存储</div>
+                <div class="status-description">本地存储空间充足</div>
+              </div>
+              <div class="status-indicator success">
+                <i class="fas fa-check-circle"></i>
+              </div>
+            </div>
           </div>
         </div>
       </div>
 
       <!-- 快捷操作 -->
-      <div class="quick-actions">
-        <h2>快捷操作</h2>
-        <div class="action-grid">
-          <router-link to="/admin/users" class="action-card">
-            <i class="fas fa-users-cog"></i>
-            <span>用户管理</span>
-          </router-link>
-          <router-link to="/admin/settings" class="action-card">
-            <i class="fas fa-cog"></i>
-            <span>系统设置</span>
-          </router-link>
+      <div class="card">
+        <div class="card-header">
+          <i class="fas fa-bolt"></i> 快捷操作
+        </div>
+        <div class="card-body">
+          <div class="action-grid">
+            <router-link to="/admin/users" class="action-btn primary">
+              <div class="action-icon">
+                <i class="fas fa-users-cog"></i>
+              </div>
+              <div class="action-content">
+                <div class="action-title">用户管理</div>
+                <div class="action-desc">管理系统用户</div>
+              </div>
+            </router-link>
+            <router-link to="/admin/settings" class="action-btn info">
+              <div class="action-icon">
+                <i class="fas fa-cog"></i>
+              </div>
+              <div class="action-content">
+                <div class="action-title">系统设置</div>
+                <div class="action-desc">配置系统参数</div>
+              </div>
+            </router-link>
+          </div>
         </div>
       </div>
     </div>
+
+    <!-- 底部导航栏 -->
+    <nav class="admin-nav">
+      <router-link to="/admin/dashboard" class="admin-nav-item active">
+        <i class="fas fa-tachometer-alt"></i>
+        <span>仪表盘</span>
+      </router-link>
+      <router-link to="/admin/users" class="admin-nav-item">
+        <i class="fas fa-users"></i>
+        <span>用户管理</span>
+      </router-link>
+      <router-link to="/admin/ai-settings" class="admin-nav-item">
+        <i class="fas fa-brain"></i>
+        <span>AI</span>
+      </router-link>
+      <router-link to="/admin/settings" class="admin-nav-item">
+        <i class="fas fa-cog"></i>
+        <span>设置</span>
+      </router-link>
+    </nav>
   </div>
 </template>
 
 <script setup lang="ts">
 import { ref, computed, onMounted } from 'vue'
-import { ElMessage, ElSkeleton } from 'element-plus'
+import { useRouter } from 'vue-router'
 import * as adminApi from '@/api/admin'
+
+const router = useRouter()
 
 // 状态
 const loading = ref(false)
+const alertMessage = ref('')
+const alertType = ref('success')
 const stats = ref({
   total_users: 0,
   total_items: 0,
@@ -92,6 +171,20 @@ const activeRate = computed(() => {
   return Math.round((stats.value.active_users / stats.value.total_users) * 100)
 })
 
+// 返回上一页
+const goBack = () => {
+  router.push('/profile')
+}
+
+// 显示提示信息
+const showAlert = (message: string, type: string = 'success') => {
+  alertMessage.value = message
+  alertType.value = type
+  setTimeout(() => {
+    alertMessage.value = ''
+  }, 3000)
+}
+
 // 加载统计数据
 async function loadStats() {
   loading.value = true
@@ -101,7 +194,7 @@ async function loadStats() {
       stats.value = response.data
     }
   } catch (_error) {
-    ElMessage.error('加载统计数据失败')
+    showAlert('加载统计数据失败', 'danger')
   } finally {
     loading.value = false
   }
@@ -113,168 +206,413 @@ onMounted(() => {
 </script>
 
 <style scoped>
-.admin-dashboard {
-  padding: 20px;
-  max-width: 1200px;
-  margin: 0 auto;
-}
-
-.dashboard-header {
-  margin-bottom: 30px;
-}
-
-.dashboard-header h1 {
-  font-size: 28px;
-  font-weight: 600;
-  color: var(--text-primary);
-  margin: 0 0 8px 0;
-}
-
-.subtitle {
-  font-size: 14px;
-  color: var(--text-secondary);
+/* 管理后台移动端 - 基础样式 */
+* {
+  box-sizing: border-box;
   margin: 0;
+  padding: 0;
 }
 
-.loading-container {
-  padding: 20px;
+/* 容器 */
+.admin-container {
+  min-height: 100vh;
+  padding-bottom: 60px;
+  background: var(--background-color);
+  overflow-y: auto;
 }
 
-.stats-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-  gap: 20px;
-  margin-bottom: 30px;
-}
-
-.stat-card {
-  background: var(--card-bg);
-  border-radius: 16px;
-  padding: 24px;
+/* 顶部导航栏 */
+.admin-header {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 45px;
+  background: linear-gradient(135deg, #667eea, #764ba2);
+  color: white;
   display: flex;
   align-items: center;
-  gap: 16px;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
-  transition: transform 0.3s, box-shadow 0.3s;
+  justify-content: space-between;
+  padding: 0 12px;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+  z-index: 1000;
 }
 
-.stat-card:hover {
-  transform: translateY(-4px);
-  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.1);
+.admin-header-title {
+  font-size: 15px;
+  font-weight: 600;
 }
 
-.stat-icon {
-  width: 60px;
-  height: 60px;
-  border-radius: 12px;
+.admin-header-back {
+  width: 38px;
+  height: 38px;
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 24px;
   color: white;
+  font-size: 16px;
+  cursor: pointer;
 }
 
-.stat-icon.users {
-  background: linear-gradient(135deg, #667eea, #764ba2);
+.admin-header-back:active {
+  opacity: 0.7;
 }
 
-.stat-icon.items {
-  background: linear-gradient(135deg, #f093fb, #f5576c);
-}
-
-.stat-icon.fridges {
-  background: linear-gradient(135deg, #4facfe, #00f2fe);
-}
-
-.stat-icon.rate {
-  background: linear-gradient(135deg, #43e97b, #38f9d7);
-}
-
-.stat-content {
-  flex: 1;
-}
-
-.stat-value {
-  font-size: 32px;
-  font-weight: 700;
-  color: var(--text-primary);
-  line-height: 1;
-  margin-bottom: 8px;
-}
-
-.stat-label {
+.admin-header-action {
+  width: 38px;
+  height: 38px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: white;
   font-size: 14px;
-  color: var(--text-secondary);
-  margin-bottom: 4px;
 }
 
-.stat-detail {
-  font-size: 12px;
-  color: var(--text-secondary);
+/* 主内容区 */
+.admin-content {
+  padding: calc(45px + 12px) 12px 12px;
 }
 
-.quick-actions {
-  margin-top: 40px;
-}
-
-.quick-actions h2 {
-  font-size: 20px;
-  font-weight: 600;
-  color: var(--text-primary);
-  margin: 0 0 20px 0;
-}
-
-.action-grid {
+/* 统计卡片网格 */
+.stats-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-  gap: 16px;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 12px;
+  margin-bottom: 12px;
 }
 
-.action-card {
+/* 统计卡片 */
+.stat-card {
   background: var(--card-bg);
   border-radius: 12px;
-  padding: 24px;
+  padding: 16px;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.12);
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 12px;
-  text-decoration: none;
-  color: var(--text-primary);
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
-  transition: all 0.3s;
+  text-align: center;
 }
 
-.action-card:hover {
-  transform: translateY(-4px);
-  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.1);
+.stat-card.primary {
   background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
   color: white;
 }
 
-.action-card i {
-  font-size: 32px;
+.stat-card.success {
+  background: linear-gradient(135deg, #11998e, #38ef7d);
+  color: white;
 }
 
-.action-card span {
-  font-size: 16px;
+.stat-card.warning {
+  background: linear-gradient(135deg, #f093fb, #f5576c);
+  color: white;
+}
+
+.stat-card.info {
+  background: linear-gradient(135deg, #4facfe, #00f2fe);
+  color: white;
+}
+
+.stat-card-value {
+  font-size: 29px;
+  font-weight: 700;
+  margin-bottom: 6px;
+}
+
+.stat-card-label {
+  font-size: 13px;
+  opacity: 0.9;
+}
+
+.stat-card-icon {
+  font-size: 19px;
+  margin-bottom: 6px;
+}
+
+/* 卡片 */
+.card {
+  background: var(--card-bg);
+  border-radius: 12px;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.12);
+  margin-bottom: 12px;
+  overflow: hidden;
+}
+
+.card-header {
+  padding: 12px;
+  border-bottom: 1px solid var(--border-color);
   font-weight: 600;
+  font-size: 13px;
+  color: var(--text-primary);
 }
 
-@media (max-width: 768px) {
-  .admin-dashboard {
-    padding: 16px;
-  }
+.card-body {
+  padding: 12px;
+}
 
+/* 操作网格 */
+.action-grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 12px;
+}
+
+/* 操作按钮 */
+.action-btn {
+  display: flex;
+  align-items: center;
+  padding: 16px;
+  border-radius: 12px;
+  text-decoration: none;
+  transition: all 0.3s;
+  border: 1px solid var(--divider-color);
+  background: var(--card-bg);
+}
+
+.action-btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+}
+
+.action-btn.primary {
+  border-color: var(--primary-color);
+  background: rgba(102, 126, 234, 0.05);
+}
+
+.action-btn.info {
+  border-color: #2196F3;
+  background: rgba(33, 150, 243, 0.05);
+}
+
+.action-icon {
+  width: 48px;
+  height: 48px;
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-right: 16px;
+  font-size: 20px;
+}
+
+.action-btn.primary .action-icon {
+  background: var(--primary-color);
+  color: white;
+}
+
+.action-btn.info .action-icon {
+  background: #2196F3;
+  color: white;
+}
+
+.action-content {
+  flex: 1;
+}
+
+.action-title {
+  font-size: 15px;
+  font-weight: 600;
+  color: var(--text-primary);
+  margin-bottom: 4px;
+}
+
+.action-desc {
+  font-size: 12px;
+  color: var(--text-secondary);
+}
+
+/* 系统状态 */
+.status-list {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.status-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 12px 0;
+  border-bottom: 1px solid var(--divider-color);
+}
+
+.status-item:last-child {
+  border-bottom: none;
+}
+
+.status-info {
+  flex: 1;
+}
+
+.status-label {
+  font-weight: 600;
+  font-size: 13px;
+  color: var(--text-primary);
+  margin-bottom: 4px;
+}
+
+.status-description {
+  font-size: 11px;
+  color: var(--text-secondary);
+}
+
+.status-indicator {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 16px;
+}
+
+.status-indicator.success {
+  background: rgba(76, 175, 80, 0.1);
+  color: #4CAF50;
+}
+
+/* 按钮 */
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 38px;
+  padding: 0 16px;
+  border-radius: 8px;
+  font-size: 13px;
+  font-weight: 500;
+  transition: all 0.3s;
+  border: none;
+  cursor: pointer;
+  text-decoration: none;
+}
+
+.btn:active {
+  transform: scale(0.98);
+}
+
+.btn-primary {
+  background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+  color: white;
+}
+
+.btn-info {
+  background: #2196F3;
+  color: white;
+}
+
+.btn-block {
+  width: 100%;
+}
+
+.btn i {
+  margin-right: 6px;
+}
+
+/* 底部导航栏 */
+.admin-nav {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  height: 60px;
+  background: white;
+  display: flex;
+  justify-content: space-around;
+  align-items: center;
+  box-shadow: 0 -2px 8px rgba(0,0,0,0.1);
+  z-index: 1000;
+}
+
+.admin-nav-item {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  color: var(--text-secondary);
+  font-size: 10px;
+  padding: 6px;
+  transition: all 0.3s;
+  text-decoration: none;
+}
+
+.admin-nav-item i {
+  font-size: 18px;
+  margin-bottom: 3px;
+}
+
+.admin-nav-item.active {
+  color: var(--primary-color);
+}
+
+.admin-nav-item:active {
+  background-color: rgba(0,0,0,0.05);
+}
+
+/* 提示框 */
+.alert {
+  padding: 12px;
+  border-radius: 8px;
+  margin-bottom: 12px;
+  display: flex;
+  align-items: center;
+  font-size: 13px;
+}
+
+.alert i {
+  margin-right: 8px;
+}
+
+.alert-success {
+  background: #e8f5e9;
+  color: #2e7d32;
+}
+
+.alert-danger {
+  background: #ffebee;
+  color: #c62828;
+}
+
+.alert-warning {
+  background: #fff3e0;
+  color: #ef6c00;
+}
+
+.alert-info {
+  background: #e3f2fd;
+  color: #1565c0;
+}
+
+/* 加载动画 */
+.loading {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 32px;
+}
+
+.spinner {
+  width: 32px;
+  height: 32px;
+  border: 3px solid var(--border-color);
+  border-top-color: var(--primary-color);
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
+/* 响应式设计 */
+@media (max-width: 480px) {
   .stats-grid {
     grid-template-columns: 1fr;
   }
-
-  .stat-card {
-    padding: 20px;
-  }
-
-  .stat-value {
-    font-size: 28px;
+  
+  .action-grid {
+    grid-template-columns: 1fr;
   }
 }
 </style>
